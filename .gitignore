@@ -58,3 +58,19 @@ composer.lock
 .env.development.local
 .env.test.local
 .env.production.local
+
+# TNG Reference (read-only access, do not upload)
+tng-reference/
+tng-reference
+
+# Development dependencies (not for distribution)
+vendor/
+composer.lock
+composer.phar
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+*.map
