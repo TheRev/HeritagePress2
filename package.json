@@ -1,0 +1,63 @@
+{
+  "name": "heritagepress",
+  "version": "1.0.0",
+  "description": "HeritagePress WordPress Plugin - Custom functionality for heritage and historical content management",
+  "main": "heritagepress.php",
+  "scripts": {
+    "start": "echo 'HeritagePress plugin development environment ready'",
+    "dev": "echo 'Development mode - watching for changes...'",
+    "build": "wp-scripts build",
+    "build:dev": "wp-scripts build --mode=development",
+    "watch": "wp-scripts start",
+    "lint:js": "wp-scripts lint-js",
+    "lint:css": "wp-scripts lint-style",
+    "lint:php": "phpcs --standard=WordPress .",
+    "format": "wp-scripts format",
+    "test": "wp-scripts test-unit-js",
+    "zip": "zip -r heritagepress.zip . -x '*.git*' 'node_modules/*' '*.zip' '*.log'"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "heritage",
+    "historical",
+    "content-management",
+    "custom-post-types",
+    "gutenberg"
+  ],
+  "author": "Your Name",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^26.19.0",
+    "@wordpress/eslint-plugin": "^17.7.0",
+    "@wordpress/stylelint-config": "^21.34.0",
+    "@wordpress/prettier-config": "^3.6.0",
+    "sass": "^1.69.5",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  },
+  "dependencies": {
+    "@wordpress/blocks": "^12.25.0",
+    "@wordpress/block-editor": "^12.16.0",
+    "@wordpress/components": "^25.14.0",
+    "@wordpress/element": "^5.25.0",
+    "@wordpress/i18n": "^4.48.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheRev/HeritagePress2.git"
+  },
+  "wordpress": {
+    "pluginName": "HeritagePress",
+    "pluginURI": "https://github.com/TheRev/HeritagePress2",
+    "textDomain": "heritagepress",
+    "version": "1.0.0",
+    "requiredWP": "5.0",
+    "testedWP": "6.4",
+    "requiredPHP": "7.4"
+  }
+}
