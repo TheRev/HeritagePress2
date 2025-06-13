@@ -305,7 +305,7 @@ class HP_Database_Core
   private function insert_default_eventtypes()
   {
     $table_name = $this->get_table_name('eventtypes');
-    
+
     $default_types = array(
       array('BIRT', 'Birth', 'vital', 'Birth of person', 'BIRT', 1, 1),
       array('DEAT', 'Death', 'vital', 'Death of person', 'DEAT', 1, 2),
@@ -347,8 +347,13 @@ class HP_Database_Core
   public function drop_tables()
   {
     $tables = array(
-      'persons', 'families', 'children', 'events', 
-      'eventtypes', 'temp_events', 'timeline_events'
+      'persons',
+      'families',
+      'children',
+      'events',
+      'eventtypes',
+      'temp_events',
+      'timeline_events'
     );
 
     foreach ($tables as $table) {
@@ -364,8 +369,13 @@ class HP_Database_Core
   {
     $stats = array();
     $tables = array(
-      'persons', 'families', 'children', 'events', 
-      'eventtypes', 'temp_events', 'timeline_events'
+      'persons',
+      'families',
+      'children',
+      'events',
+      'eventtypes',
+      'temp_events',
+      'timeline_events'
     );
 
     foreach ($tables as $table) {

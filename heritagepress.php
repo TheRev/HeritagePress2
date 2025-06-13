@@ -6,7 +6,7 @@
  * Description: Complete genealogy management system for WordPress. Import GEDCOM files, manage family trees, and create beautiful genealogy websites.
  * Version: 1.0.0
  * Author: TheRev
- * License: GPL v2 or later
+ * License: MIT
  * Text Domain: heritagepress
  * Domain Path: /languages
  * Requires at least: 5.0

@@ -1,6 +1,7 @@
 # TNG vs HeritagePress Database Table Comparison
 
 ## Summary
+
 - **TNG Original**: 37 tables
 - **HeritagePress Current**: 25 tables
 - **Coverage**: 68% complete (25/37 tables)
@@ -8,6 +9,7 @@
 ## Complete TNG Table List (37 tables)
 
 ### ✅ Implemented in HeritagePress (25/37)
+
 1. **address** → `hp_addresses` ✅
 2. **albums** → `hp_albums` ✅
 3. **albumlinks** → `hp_albumlinks` ✅
@@ -32,11 +34,13 @@
 22. **xnotes** → `hp_xnotes` ✅
 
 ### HeritagePress-Specific Tables (3 additional)
+
 23. **hp_notes** - Basic notes system (WordPress-style)
 24. **hp_user_permissions** - WordPress user integration
 25. **hp_import_logs** - GEDCOM import tracking
 
 ### ⏳ Missing from HeritagePress (12 tables)
+
 1. **album2entities** - Album-entity relationships
 2. **branches** - Family tree branches
 3. **branchlinks** - Branch linkage system
@@ -56,6 +60,7 @@
 ## Priority Analysis for Missing Tables
 
 ### High Priority (Core Functionality)
+
 1. **album2entities** - Essential for flexible album organization
 2. **countries** - Geographic data completeness
 3. **image_tags** - Modern photo management feature
@@ -63,12 +68,14 @@
 5. **templates** - Customization capability
 
 ### Medium Priority (Advanced Features)
+
 6. **branches** & **branchlinks** - Advanced tree organization
 7. **temp_events** - Import processing efficiency
 8. **tlevents** - Timeline visualization
 9. **saveimport** - Large file import UX
 
 ### Low Priority (Specialized Features)
+
 10. **dna_groups**, **dna_links**, **dna_tests** - DNA genealogy (niche feature)
 11. **languages** - Multi-language support (can use WordPress i18n)
 12. **users** - Replaced by WordPress user system
@@ -76,47 +83,56 @@
 ## Implementation Completeness by Category
 
 ### Core Genealogy: 100% ✅
+
 - People, families, children, events → Complete
 - All essential genealogy relationships covered
 
 ### Sources & Documentation: 100% ✅
+
 - Sources, citations, repositories → Complete
 - Professional genealogy documentation standards met
 
 ### Media Management: 90% ✅
+
 - Media, medialinks, albums, albumlinks, mediatypes → Complete
 - Missing: album2entities (flexible album organization)
 - Missing: image_tags (photo tagging)
 
 ### Geographic Data: 75% ✅
+
 - Places, addresses, states, cemeteries → Complete
 - Missing: countries (international support)
 
 ### Research Tools: 100% ✅
+
 - Notes, xnotes, notelinks, mostwanted → Complete
 - Research workflow fully supported
 
 ### System Management: 90% ✅
+
 - Trees, user_permissions, import_logs → Complete (WordPress-enhanced)
 - Missing: templates, reports, saveimport
 
 ### Advanced Features: 20% ✅
+
 - Missing: branches/branchlinks, DNA features, timeline events
 - These are advanced/specialized features
 
 ## Recommended Next Phase Implementation
 
 ### Phase 2A - Essential Missing Tables (5 tables)
+
 ```php
 // High-impact tables for immediate implementation
 1. hp_album2entities    - Flexible album organization
-2. hp_countries         - International place support  
+2. hp_countries         - International place support
 3. hp_image_tags        - Modern photo tagging
 4. hp_reports          - Report generation system
 5. hp_templates        - Template customization
 ```
 
 ### Phase 2B - Advanced Features (4 tables)
+
 ```php
 // Advanced genealogy features
 6. hp_branches         - Tree branch organization
@@ -126,6 +142,7 @@
 ```
 
 ### Phase 2C - Specialized Features (3 tables)
+
 ```php
 // Specialized/niche features
 10. hp_dna_tests       - DNA test management
@@ -136,6 +153,7 @@
 ## Current Status: Excellent Foundation ✅
 
 With 25/37 tables (68%) implemented, HeritagePress has:
+
 - ✅ 100% of core genealogy functionality
 - ✅ 100% of essential research tools
 - ✅ 90%+ of media and geographic features
@@ -146,14 +164,14 @@ The current implementation provides a fully functional genealogy system that mat
 
 ## Comparison Summary
 
-| Category | TNG Tables | HP Implemented | Coverage | Status |
-|----------|------------|----------------|----------|---------|
-| Core Genealogy | 6 | 6 | 100% | ✅ Complete |
-| Sources/Citations | 3 | 3 | 100% | ✅ Complete |
-| Media Management | 6 | 5 | 83% | 🔄 Nearly Complete |
-| Geographic | 4 | 3 | 75% | 🔄 Good Coverage |
-| Research Tools | 4 | 4 | 100% | ✅ Complete |
-| System/Admin | 6 | 5 | 83% | 🔄 WordPress Enhanced |
-| Advanced/DNA | 8 | 0 | 0% | ⏳ Future Phase |
+| Category          | TNG Tables | HP Implemented | Coverage | Status                |
+| ----------------- | ---------- | -------------- | -------- | --------------------- |
+| Core Genealogy    | 6          | 6              | 100%     | ✅ Complete           |
+| Sources/Citations | 3          | 3              | 100%     | ✅ Complete           |
+| Media Management  | 6          | 5              | 83%      | 🔄 Nearly Complete    |
+| Geographic        | 4          | 3              | 75%      | 🔄 Good Coverage      |
+| Research Tools    | 4          | 4              | 100%     | ✅ Complete           |
+| System/Admin      | 6          | 5              | 83%      | 🔄 WordPress Enhanced |
+| Advanced/DNA      | 8          | 0              | 0%       | ⏳ Future Phase       |
 
 **Overall: 68% table coverage with 100% core functionality coverage**

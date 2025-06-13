@@ -382,9 +382,16 @@ class HP_Database_Sources
   public function drop_tables()
   {
     $tables = array(
-      'sources', 'citations', 'repositories', 'notes', 
-      'xnotes', 'notelinks', 'mostwanted', 'associations',
-      'reports', 'templates'
+      'sources',
+      'citations',
+      'repositories',
+      'notes',
+      'xnotes',
+      'notelinks',
+      'mostwanted',
+      'associations',
+      'reports',
+      'templates'
     );
 
     foreach ($tables as $table) {
@@ -400,8 +407,16 @@ class HP_Database_Sources
   {
     $stats = array();
     $tables = array(
-      'sources', 'citations', 'repositories', 'notes', 'xnotes', 
-      'notelinks', 'mostwanted', 'associations', 'reports', 'templates'
+      'sources',
+      'citations',
+      'repositories',
+      'notes',
+      'xnotes',
+      'notelinks',
+      'mostwanted',
+      'associations',
+      'reports',
+      'templates'
     );
 
     foreach ($tables as $table) {
@@ -412,5 +427,4 @@ class HP_Database_Sources
 
     return $stats;
   }
-
 }

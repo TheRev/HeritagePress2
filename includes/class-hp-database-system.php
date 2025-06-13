@@ -394,7 +394,7 @@ class HP_Database_System
   private function insert_default_languages()
   {
     $table_name = $this->get_table_name('languages');
-    
+
     $languages = array(
       array('en', 'English', 'English', 1, 1, 1),
       array('es', 'Español', 'Spanish', 0, 1, 2),
@@ -429,9 +429,17 @@ class HP_Database_System
   public function drop_tables()
   {
     $tables = array(
-      'trees', 'user_permissions', 'import_logs', 'saveimport',
-      'branches', 'branchlinks', 'languages', 'dna_tests', 
-      'dna_links', 'dna_groups', 'users'
+      'trees',
+      'user_permissions',
+      'import_logs',
+      'saveimport',
+      'branches',
+      'branchlinks',
+      'languages',
+      'dna_tests',
+      'dna_links',
+      'dna_groups',
+      'users'
     );
 
     foreach ($tables as $table) {
@@ -447,9 +455,17 @@ class HP_Database_System
   {
     $stats = array();
     $tables = array(
-      'trees', 'user_permissions', 'import_logs', 'saveimport', 
-      'branches', 'branchlinks', 'languages', 'dna_tests', 
-      'dna_links', 'dna_groups', 'users'
+      'trees',
+      'user_permissions',
+      'import_logs',
+      'saveimport',
+      'branches',
+      'branchlinks',
+      'languages',
+      'dna_tests',
+      'dna_links',
+      'dna_groups',
+      'users'
     );
 
     foreach ($tables as $table) {
@@ -460,5 +476,4 @@ class HP_Database_System
 
     return $stats;
   }
-
 }

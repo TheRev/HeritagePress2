@@ -216,7 +216,7 @@ class HP_Database_Geography
   private function insert_default_countries()
   {
     $table_name = $this->get_table_name('countries');
-    
+
     $countries = array(
       array('United States', 'USA', 'US', 'North America', 1),
       array('Canada', 'CAN', 'CA', 'North America', 2),
@@ -261,7 +261,7 @@ class HP_Database_Geography
   private function insert_default_states()
   {
     $table_name = $this->get_table_name('states');
-    
+
     $states = array(
       array('Alabama', 'AL', 'USA', 1),
       array('Alaska', 'AK', 'USA', 2),
@@ -320,7 +320,7 @@ class HP_Database_Geography
         $table_name,
         array(
           'state_name' => $state[0],
-          'state_code' => $state[1], 
+          'state_code' => $state[1],
           'country_code' => $state[2],
           'sort_order' => $state[3],
           'active' => 1
@@ -335,7 +335,11 @@ class HP_Database_Geography
   public function drop_tables()
   {
     $tables = array(
-      'places', 'addresses', 'countries', 'states', 'cemeteries'
+      'places',
+      'addresses',
+      'countries',
+      'states',
+      'cemeteries'
     );
 
     foreach ($tables as $table) {
@@ -351,7 +355,11 @@ class HP_Database_Geography
   {
     $stats = array();
     $tables = array(
-      'places', 'addresses', 'countries', 'states', 'cemeteries'
+      'places',
+      'addresses',
+      'countries',
+      'states',
+      'cemeteries'
     );
 
     foreach ($tables as $table) {
@@ -362,5 +370,4 @@ class HP_Database_Geography
 
     return $stats;
   }
-
 }

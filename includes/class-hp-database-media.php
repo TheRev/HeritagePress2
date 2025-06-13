@@ -262,7 +262,7 @@ class HP_Database_Media
   private function insert_default_mediatypes()
   {
     $table_name = $this->get_table_name('mediatypes');
-    
+
     $default_types = array(
       array('Photo', 'Digital photographs and images', 'jpg,jpeg,png,gif,bmp,tiff', 'fas fa-image', 1),
       array('Document', 'Text documents and PDFs', 'pdf,doc,docx,txt,rtf', 'fas fa-file-alt', 2),
@@ -279,7 +279,7 @@ class HP_Database_Media
         $table_name,
         array(
           'type_name' => $type[0],
-          'description' => $type[1], 
+          'description' => $type[1],
           'file_extensions' => $type[2],
           'icon_class' => $type[3],
           'sort_order' => $type[4],
@@ -295,8 +295,13 @@ class HP_Database_Media
   public function drop_tables()
   {
     $tables = array(
-      'media', 'medialinks', 'mediatypes', 'albums', 
-      'albumlinks', 'album2entities', 'image_tags'
+      'media',
+      'medialinks',
+      'mediatypes',
+      'albums',
+      'albumlinks',
+      'album2entities',
+      'image_tags'
     );
 
     foreach ($tables as $table) {
@@ -312,8 +317,13 @@ class HP_Database_Media
   {
     $stats = array();
     $tables = array(
-      'media', 'medialinks', 'mediatypes', 'albums', 
-      'albumlinks', 'album2entities', 'image_tags'
+      'media',
+      'medialinks',
+      'mediatypes',
+      'albums',
+      'albumlinks',
+      'album2entities',
+      'image_tags'
     );
 
     foreach ($tables as $table) {
@@ -324,5 +334,4 @@ class HP_Database_Media
 
     return $stats;
   }
-
 }

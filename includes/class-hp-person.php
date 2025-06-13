@@ -530,4 +530,31 @@ class HP_Person
 
     return $persons;
   }
+
+  /**
+   * Get person by GEDCOM ID
+   */
+  public static function get_by_gedcom_id($gedcom_id, $tree_id = 'main')
+  {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'hp_persons';
+
+    $person_data = $wpdb->get_row(
+      $wpdb->prepare(
+        "SELECT * FROM $table_name WHERE gedcom_id = %s AND tree_id = %s",
+        $gedcom_id,
+        $tree_id
+      ),
+      ARRAY_A
+    );
+
+    if ($person_data) {
+      $person = new self();
+      $person->data = $person_data;
+      $person->id = $person_data['id'];
+      return $person;
+    }
+
+    return null;
+  }
 }

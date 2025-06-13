@@ -1,0 +1,334 @@
+/**
+ * HeritagePress Public Styles
+ */
+
+/* Container */
+.heritagepress-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Family Tree Styles */
+.hp-family-tree {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hp-person-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px;
+  display: inline-block;
+  min-width: 200px;
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.hp-person-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.hp-person-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.hp-person-dates {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.hp-person-details {
+  font-size: 13px;
+  color: #777;
+}
+
+/* Search Form */
+.hp-search-form {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.hp-search-form h3 {
+  margin: 0 0 15px 0;
+  color: #495057;
+}
+
+.hp-form-group {
+  margin-bottom: 15px;
+}
+
+.hp-form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.hp-form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.hp-form-control:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.hp-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #007cba;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.hp-btn:hover {
+  background: #005a87;
+  color: #fff;
+}
+
+.hp-btn-secondary {
+  background: #6c757d;
+}
+
+.hp-btn-secondary:hover {
+  background: #545b62;
+}
+
+/* Results */
+.hp-search-results {
+  margin-top: 20px;
+}
+
+.hp-result-item {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s ease;
+}
+
+.hp-result-item:hover {
+  border-color: #80bdff;
+}
+
+.hp-result-header {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.hp-result-meta {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.hp-result-excerpt {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #495057;
+}
+
+/* Pagination */
+.hp-pagination {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.hp-pagination a,
+.hp-pagination span {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 0 2px;
+  text-decoration: none;
+  border: 1px solid #dee2e6;
+  color: #007cba;
+}
+
+.hp-pagination a:hover {
+  background: #e9ecef;
+}
+
+.hp-pagination .current {
+  background: #007cba;
+  color: #fff;
+  border-color: #007cba;
+}
+
+/* Timeline */
+.hp-timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.hp-timeline::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #dee2e6;
+  transform: translateX(-50%);
+}
+
+.hp-timeline-item {
+  position: relative;
+  margin: 20px 0;
+  width: 45%;
+}
+
+.hp-timeline-item:nth-child(odd) {
+  margin-left: 55%;
+}
+
+.hp-timeline-item:nth-child(even) {
+  margin-right: 55%;
+  text-align: right;
+}
+
+.hp-timeline-content {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 15px;
+  position: relative;
+}
+
+.hp-timeline-date {
+  font-weight: 600;
+  color: #007cba;
+  margin-bottom: 5px;
+}
+
+.hp-timeline-event {
+  font-size: 14px;
+  color: #495057;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heritagepress-container {
+    padding: 10px;
+  }
+
+  .hp-person-card {
+    min-width: auto;
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .hp-timeline::before {
+    left: 20px;
+  }
+
+  .hp-timeline-item {
+    width: calc(100% - 40px);
+    margin-left: 40px !important;
+    text-align: left !important;
+  }
+
+  .hp-timeline-item::before {
+    left: -30px;
+  }
+}
+
+/* Loading States */
+.hp-loading {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.hp-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007cba;
+  border-radius: 50%;
+  animation: hp-spin 1s linear infinite;
+}
+
+@keyframes hp-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error States */
+.hp-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+.hp-no-results {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Utility Classes */
+.hp-text-center {
+  text-align: center;
+}
+.hp-text-left {
+  text-align: left;
+}
+.hp-text-right {
+  text-align: right;
+}
+.hp-mt-10 {
+  margin-top: 10px;
+}
+.hp-mt-20 {
+  margin-top: 20px;
+}
+.hp-mb-10 {
+  margin-bottom: 10px;
+}
+.hp-mb-20 {
+  margin-bottom: 20px;
+}
+.hp-hidden {
+  display: none;
+}
+.hp-clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
