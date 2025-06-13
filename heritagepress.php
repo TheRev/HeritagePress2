@@ -60,7 +60,7 @@ class HeritagePress
   {
     $this->init_hooks();
     $this->includes();
-    $this->init();
+    // $this->init(); // Removed to prevent double instantiation
   }
 
   /**
@@ -73,19 +73,21 @@ class HeritagePress
     add_action('init', array($this, 'init'), 0);
     add_action('plugins_loaded', array($this, 'load_textdomain'));
   }
-
   /**
    * Include required files
    */
   private function includes()
   {
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-tng-compatible.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-tng-mapper.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-tng-importer.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-person.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-family.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-importer.php';
-
     if (is_admin()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-tng-admin.php';
     }
 
     if (!is_admin() || wp_doing_ajax()) {
@@ -125,15 +127,25 @@ class HeritagePress
       dirname(plugin_basename(__FILE__)) . '/languages/'
     );
   }
-
   /**
    * Plugin activation
    */
   public function activate()
   {
-    // Create database tables
-    $database = new HP_Database();
-    $database->create_tables();
+    // Check if user wants TNG compatibility (can be set via option later)
+    $use_tng_compatibility = get_option('heritagepress_tng_compatibility', false);
+
+    if ($use_tng_compatibility) {
+      // Create TNG-compatible database tables
+      $database = new HP_Database_TNG_Compatible();
+      $database->create_tables();
+      update_option('heritagepress_db_type', 'tng_compatible');
+    } else {
+      // Create standard HeritagePress database tables
+      $database = new HP_Database();
+      $database->create_tables();
+      update_option('heritagepress_db_type', 'standard');
+    }
 
     // Add capabilities
     $this->add_capabilities();

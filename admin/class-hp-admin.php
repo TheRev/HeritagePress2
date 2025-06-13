@@ -11,7 +11,8 @@ if (!defined('ABSPATH')) {
 }
 
 class HP_Admin
-{  /**
+{
+  /**
    * Constructor
    */
   public function __construct()
@@ -32,13 +33,14 @@ class HP_Admin
    * Add admin menu
    */  public function admin_menu()
   {
-    add_submenu_page(
-      'tools.php',
+    add_menu_page(
       'HeritagePress Dashboard',
       'HeritagePress',
       'manage_genealogy',
       'heritagepress',
-      array($this, 'admin_page')
+      array($this, 'admin_page'),
+      'dashicons-networking',
+      30
     );
   }
 
