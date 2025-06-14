@@ -15,7 +15,7 @@ class HP_Database_Manager
 {
   const DB_VERSION = '3.0.0'; // New version with complete genealogy structure
   const STRUCTURE_LOCK = 'LOCKED_2025_06_14'; // Structure protection lock
-  
+
   private $wpdb;
   private $table_prefix;
   private $charset_collate;
@@ -45,17 +45,35 @@ class HP_Database_Manager
     global $wpdb;
     return $wpdb->prefix . 'hp_' . $table;
   }
-
   /**
-   * Check if all required tables exist
+   * Check if all required tables exist using modular classes
    */
   public function tables_exist()
   {
-    $required_tables = $this->get_required_table_list();
+    // Include all modular table classes
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-core.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-events.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-media.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-places.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-dna.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-research.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-system.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-utility.php');
 
-    foreach ($required_tables as $table) {
-      $table_name = self::get_table_name($table);
-      if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
+    // Create instances of each modular class and check tables
+    $modules = [
+      'Core' => new HP_Database_Core(),
+      'Events' => new HP_Database_Events(),
+      'Media' => new HP_Database_Media(),
+      'Places' => new HP_Database_Places(),
+      'DNA' => new HP_Database_DNA(),
+      'Research' => new HP_Database_Research(),
+      'System' => new HP_Database_System(),
+      'Utility' => new HP_Database_Utility()
+    ];
+
+    foreach ($modules as $module_name => $module) {
+      if (!$module->tables_exist()) {
         return false;
       }
     }
@@ -107,7 +125,7 @@ class HP_Database_Manager
     ];
   }
   /**
-   * Create all genealogy database tables from genealogy SQL dump
+   * Create all genealogy database tables using modular classes
    */
   public function create_tables()
   {
@@ -116,21 +134,52 @@ class HP_Database_Manager
     $this->wpdb->hide_errors();
 
     try {
-      // First try to use the SQL dump method
-      if ($this->create_tables_from_sql_dump()) {
-        error_log('HeritagePress: Successfully created tables from genealogy SQL dump');
+      // Include all modular table classes
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-core.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-events.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-media.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-places.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-dna.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-research.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-system.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-utility.php');
+
+      // Create instances of each modular class
+      $modules = [
+        'Core' => new HP_Database_Core(),
+        'Events' => new HP_Database_Events(),
+        'Media' => new HP_Database_Media(),
+        'Places' => new HP_Database_Places(),
+        'DNA' => new HP_Database_DNA(),
+        'Research' => new HP_Database_Research(),
+        'System' => new HP_Database_System(),
+        'Utility' => new HP_Database_Utility()
+      ];
+
+      $created_modules = 0;
+      $total_modules = count($modules);
+
+      // Create tables for each module
+      foreach ($modules as $module_name => $module) {
+        error_log("HeritagePress: Creating {$module_name} tables...");
+        if ($module->create_tables()) {
+          $created_modules++;
+          error_log("HeritagePress: {$module_name} tables created successfully");
+        } else {
+          error_log("HeritagePress: Failed to create {$module_name} tables");
+        }
+      }
+
+      if ($created_modules === $total_modules) {
+        error_log("HeritagePress: All {$total_modules} table modules created successfully");
         update_option('heritagepress_db_version', self::DB_VERSION);
         $this->wpdb->show_errors();
         return true;
+      } else {
+        error_log("HeritagePress: Only {$created_modules} of {$total_modules} modules created successfully");
+        $this->wpdb->show_errors();
+        return false;
       }
-
-      // Fallback to hardcoded structures if SQL dump is not available
-      error_log('HeritagePress: SQL dump not available, using hardcoded table structures');
-      $this->create_tables_hardcoded();
-
-      update_option('heritagepress_db_version', self::DB_VERSION);
-      $this->wpdb->show_errors();
-      return true;
     } catch (Exception $e) {
       $this->wpdb->show_errors();
       error_log('HeritagePress: Database creation error: ' . $e->getMessage());
@@ -365,19 +414,39 @@ class HP_Database_Manager
       // For now, I'll show the pattern and include a few key ones
     ];
   }
-
   /**
-   * Drop all HeritagePress tables
+   * Drop all HeritagePress tables using modular classes
    */
   public function drop_tables()
   {
-    $tables = $this->get_required_table_list();
+    // Include all modular table classes
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-core.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-events.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-media.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-places.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-dna.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-research.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-system.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-utility.php');
 
-    foreach ($tables as $table) {
-      $hp_table = $this->table_prefix . $table;
-      $this->wpdb->query("DROP TABLE IF EXISTS `$hp_table`");
+    // Create instances of each modular class and drop tables
+    $modules = [
+      'Utility' => new HP_Database_Utility(),      // Drop utility tables first
+      'System' => new HP_Database_System(),        // Then system tables
+      'Research' => new HP_Database_Research(),    // Then research tables
+      'DNA' => new HP_Database_DNA(),              // Then DNA tables
+      'Places' => new HP_Database_Places(),        // Then places tables
+      'Media' => new HP_Database_Media(),          // Then media tables
+      'Events' => new HP_Database_Events(),        // Then events tables
+      'Core' => new HP_Database_Core()             // Finally core tables (reverse order)
+    ];
+
+    foreach ($modules as $module_name => $module) {
+      error_log("HeritagePress: Dropping {$module_name} tables...");
+      $module->drop_tables();
     }
 
     delete_option('heritagepress_db_version');
+    error_log('HeritagePress: All tables dropped successfully');
   }
 }

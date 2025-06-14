@@ -1,9 +1,10 @@
 <?php
 
 /**
- * HeritagePress Media & Albums Database
+ * HeritagePress Database Media Tables
  *
- * Handles media, albums, and multimedia content tables
+ * Handles creation of media-related tables: media, medialinks, mediatypes, albums, albumlinks, albumplinks, image_tags
+ * Table structures extracted from TNG SQL file and adapted for HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -13,325 +14,218 @@ if (!defined('ABSPATH')) {
 class HP_Database_Media
 {
   private $wpdb;
+  private $table_prefix;
   private $charset_collate;
 
   public function __construct()
   {
     global $wpdb;
     $this->wpdb = $wpdb;
+    $this->table_prefix = $wpdb->prefix . 'hp_';
     $this->charset_collate = $wpdb->get_charset_collate();
   }
 
   /**
-   * Get table name with proper prefix
-   */
-  public function get_table_name($table)
-  {
-    return $this->wpdb->prefix . 'hp_' . $table;
-  }
-
-  /**
-   * Create all media and album tables
+   * Create all media tables
    */
   public function create_tables()
   {
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    $tables = $this->get_table_structures();
+    $success_count = 0;
+    $total_count = count($tables);
 
-    $this->create_media_table();
-    $this->create_medialinks_table();
-    $this->create_mediatypes_table();
-    $this->create_albums_table();
-    $this->create_albumlinks_table();
-    $this->create_album2entities_table();
-    $this->create_image_tags_table();
-  }
-
-  /**
-   * Media table - photos, documents, multimedia
-   */
-  private function create_media_table()
-  {
-    $table_name = $this->get_table_name('media');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            gedcom_id varchar(50) DEFAULT NULL,
-            tree_id varchar(50) DEFAULT 'main',
-            title varchar(500) DEFAULT NULL,
-            description text,
-            file_name varchar(500) DEFAULT NULL,
-            file_path varchar(1000) DEFAULT NULL,
-            file_size int(11) DEFAULT NULL,
-            mime_type varchar(100) DEFAULT NULL,
-            media_type varchar(100) DEFAULT NULL,
-            thumbnail_path varchar(1000) DEFAULT NULL,
-            notes text,
-            private tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            modified_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY media_type (media_type),
-            KEY mime_type (mime_type),
-            FULLTEXT KEY search_media (title, description)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Media links table - connect media to people/families/events
-   */
-  private function create_medialinks_table()
-  {
-    $table_name = $this->get_table_name('medialinks');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            media_id int(11) NOT NULL,
-            person_id int(11) DEFAULT NULL,
-            family_id int(11) DEFAULT NULL,
-            event_id int(11) DEFAULT NULL,
-            source_id int(11) DEFAULT NULL,
-            link_type varchar(100) DEFAULT 'primary',
-            sort_order int(11) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY media_id (media_id),
-            KEY person_id (person_id),
-            KEY family_id (family_id),
-            KEY event_id (event_id),
-            KEY source_id (source_id),
-            KEY sort_order (sort_order)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Media types table - organize media by type
-   */
-  private function create_mediatypes_table()
-  {
-    $table_name = $this->get_table_name('mediatypes');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            type_name varchar(100) NOT NULL,
-            description varchar(255) DEFAULT NULL,
-            file_extensions varchar(255) DEFAULT NULL,
-            icon_class varchar(100) DEFAULT NULL,
-            sort_order int(11) DEFAULT 0,
-            active tinyint(1) DEFAULT 1,
-            PRIMARY KEY (id),
-            UNIQUE KEY type_name (type_name),
-            KEY sort_order (sort_order),
-            KEY active (active)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-
-    // Insert default media types
-    $this->insert_default_mediatypes();
-  }
-
-  /**
-   * Albums table - photo albums and galleries
-   */
-  private function create_albums_table()
-  {
-    $table_name = $this->get_table_name('albums');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            album_name varchar(255) NOT NULL,
-            description text,
-            album_type varchar(50) DEFAULT 'general',
-            cover_media_id int(11) DEFAULT NULL,
-            sort_order int(11) DEFAULT 0,
-            private tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            modified_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY album_type (album_type),
-            KEY sort_order (sort_order),
-            KEY private (private),
-            FULLTEXT KEY search_album (album_name, description)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Album links table - connect media to albums
-   */
-  private function create_albumlinks_table()
-  {
-    $table_name = $this->get_table_name('albumlinks');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            album_id int(11) NOT NULL,
-            media_id int(11) NOT NULL,
-            sort_order int(11) DEFAULT 0,
-            caption text,
-            is_cover tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY unique_album_media (album_id, media_id),
-            KEY tree_id (tree_id),
-            KEY album_id (album_id),
-            KEY media_id (media_id),
-            KEY sort_order (sort_order),
-            KEY is_cover (is_cover)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Album to entities table - flexible album organization
-   */
-  private function create_album2entities_table()
-  {
-    $table_name = $this->get_table_name('album2entities');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            album_id int(11) NOT NULL,
-            entity_type varchar(50) NOT NULL,
-            entity_id int(11) NOT NULL,
-            event_id int(11) DEFAULT NULL,
-            sort_order float DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY unique_album_entity (tree_id, album_id, entity_type, entity_id),
-            KEY tree_id (tree_id),
-            KEY album_id (album_id),
-            KEY entity_type (entity_type),
-            KEY entity_id (entity_id),
-            KEY sort_order (sort_order)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Image tags table - photo tagging system
-   */
-  private function create_image_tags_table()
-  {
-    $table_name = $this->get_table_name('image_tags');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            media_id int(11) NOT NULL,
-            person_id int(11) DEFAULT NULL,
-            tag_name varchar(255) DEFAULT NULL,
-            x_coordinate int(11) DEFAULT NULL,
-            y_coordinate int(11) DEFAULT NULL,
-            width int(11) DEFAULT NULL,
-            height int(11) DEFAULT NULL,
-            description text,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY media_id (media_id),
-            KEY person_id (person_id),
-            KEY tag_name (tag_name)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Insert default media types
-   */
-  private function insert_default_mediatypes()
-  {
-    $table_name = $this->get_table_name('mediatypes');
-
-    $default_types = array(
-      array('Photo', 'Digital photographs and images', 'jpg,jpeg,png,gif,bmp,tiff', 'fas fa-image', 1),
-      array('Document', 'Text documents and PDFs', 'pdf,doc,docx,txt,rtf', 'fas fa-file-alt', 2),
-      array('Audio', 'Sound recordings and audio files', 'mp3,wav,m4a,wma,aac', 'fas fa-volume-up', 3),
-      array('Video', 'Video recordings and movies', 'mp4,avi,mov,wmv,mkv', 'fas fa-video', 4),
-      array('Certificate', 'Birth, death, marriage certificates', 'pdf,jpg,png,tiff', 'fas fa-certificate', 5),
-      array('Newspaper', 'Newspaper clippings and articles', 'pdf,jpg,png,tiff', 'fas fa-newspaper', 6),
-      array('Map', 'Maps and geographic documents', 'pdf,jpg,png,tiff', 'fas fa-map', 7),
-      array('Other', 'Other types of media', '*', 'fas fa-file', 8)
-    );
-
-    foreach ($default_types as $type) {
-      $this->wpdb->replace(
-        $table_name,
-        array(
-          'type_name' => $type[0],
-          'description' => $type[1],
-          'file_extensions' => $type[2],
-          'icon_class' => $type[3],
-          'sort_order' => $type[4],
-          'active' => 1
-        )
-      );
+    foreach ($tables as $table_name => $structure) {
+      if ($this->create_table($table_name, $structure)) {
+        $success_count++;
+      }
     }
+
+    return $success_count === $total_count;
   }
 
   /**
-   * Drop media and album tables
+   * Drop all media tables
    */
   public function drop_tables()
   {
-    $tables = array(
-      'media',
-      'medialinks',
-      'mediatypes',
-      'albums',
-      'albumlinks',
-      'album2entities',
-      'image_tags'
-    );
+    $tables = ['media', 'medialinks', 'mediatypes', 'albums', 'albumlinks', 'albumplinks', 'image_tags'];
 
     foreach ($tables as $table) {
-      $table_name = $this->get_table_name($table);
-      $this->wpdb->query("DROP TABLE IF EXISTS $table_name");
+      $table_name = $this->table_prefix . $table;
+      $this->wpdb->query("DROP TABLE IF EXISTS `$table_name`");
     }
   }
 
   /**
-   * Get table statistics for media tables
+   * Check if all media tables exist
    */
-  public function get_table_stats()
+  public function tables_exist()
   {
-    $stats = array();
-    $tables = array(
-      'media',
-      'medialinks',
-      'mediatypes',
-      'albums',
-      'albumlinks',
-      'album2entities',
-      'image_tags'
-    );
+    $tables = ['media', 'medialinks', 'mediatypes', 'albums', 'albumlinks', 'albumplinks', 'image_tags'];
 
     foreach ($tables as $table) {
-      $table_name = $this->get_table_name($table);
-      $count = $this->wpdb->get_var("SELECT COUNT(*) FROM $table_name");
-      $stats[$table] = (int)$count;
+      $table_name = $this->table_prefix . $table;
+      if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
+        return false;
+      }
     }
 
-    return $stats;
+    return true;
+  }
+
+  /**
+   * Create a single table
+   */
+  private function create_table($table_name, $structure)
+  {
+    $table_full_name = $this->table_prefix . $table_name;
+
+    // Drop existing table
+    $this->wpdb->query("DROP TABLE IF EXISTS `$table_full_name`");
+
+    // Create new table
+    $sql = "CREATE TABLE `$table_full_name` ($structure) ENGINE=InnoDB {$this->charset_collate}";
+
+    $result = $this->wpdb->query($sql);
+
+    if ($result === false) {
+      error_log("HeritagePress Media: Failed to create table $table_full_name: " . $this->wpdb->last_error);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Get media table structures
+   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   */
+  private function get_table_structures()
+  {
+    return [
+      'media' => "
+                `mediaID` int(11) NOT NULL AUTO_INCREMENT,
+                `mediatypeID` varchar(20) NOT NULL,
+                `mediakey` varchar(255) NOT NULL,
+                `gedcom` varchar(20) NOT NULL,
+                `form` varchar(10) NOT NULL,
+                `path` varchar(255) DEFAULT NULL,
+                `description` text,
+                `datetaken` varchar(50) DEFAULT NULL,
+                `placetaken` text,
+                `notes` text,
+                `owner` text,
+                `thumbpath` varchar(255) DEFAULT NULL,
+                `alwayson` tinyint(4) DEFAULT NULL,
+                `map` text,
+                `abspath` tinyint(4) DEFAULT NULL,
+                `status` varchar(40) DEFAULT NULL,
+                `showmap` smallint(6) DEFAULT NULL,
+                `cemeteryID` int(11) DEFAULT NULL,
+                `plot` text,
+                `linktocem` tinyint(4) DEFAULT NULL,
+                `longitude` varchar(22) DEFAULT NULL,
+                `latitude` varchar(22) DEFAULT NULL,
+                `zoom` tinyint(4) DEFAULT NULL,
+                `width` smallint(6) DEFAULT NULL,
+                `height` smallint(6) DEFAULT NULL,
+                `left_value` smallint(6) NOT NULL,
+                `top_value` smallint(6) NOT NULL,
+                `bodytext` text,
+                `usenl` tinyint(4) DEFAULT NULL,
+                `newwindow` tinyint(4) DEFAULT NULL,
+                `usecollfolder` tinyint(4) DEFAULT NULL,
+                `private` tinyint(4) NOT NULL,
+                `changedate` datetime NOT NULL,
+                `changedby` varchar(100) NOT NULL,
+                PRIMARY KEY (`mediaID`),
+                UNIQUE KEY `mediakey` (`gedcom`,`mediakey`),
+                KEY `mediatypeID` (`mediatypeID`),
+                KEY `changedate` (`changedate`),
+                KEY `description` (`description`(20)),
+                KEY `headstones` (`cemeteryID`,`description`(20))
+            ",
+
+      'medialinks' => "
+                `medialinkID` int(11) NOT NULL AUTO_INCREMENT,
+                `gedcom` varchar(20) NOT NULL,
+                `linktype` char(1) NOT NULL,
+                `personID` varchar(248) NOT NULL,
+                `eventID` varchar(10) NOT NULL,
+                `mediaID` int(11) NOT NULL,
+                `altdescription` text NOT NULL,
+                `altnotes` text NOT NULL,
+                `ordernum` float NOT NULL,
+                `dontshow` tinyint(4) NOT NULL,
+                `defphoto` varchar(1) NOT NULL,
+                PRIMARY KEY (`medialinkID`),
+                UNIQUE KEY `mediaID` (`gedcom`,`personID`(22),`mediaID`,`eventID`),
+                KEY `personID` (`gedcom`,`personID`(22),`ordernum`)
+            ",
+
+      'mediatypes' => "
+                `mediatypeID` varchar(20) NOT NULL,
+                `display` varchar(40) NOT NULL,
+                `path` varchar(127) NOT NULL,
+                `liketype` varchar(20) NOT NULL,
+                `icon` varchar(50) NOT NULL,
+                `thumb` varchar(50) NOT NULL,
+                `exportas` varchar(20) NOT NULL,
+                `disabled` tinyint(4) NOT NULL,
+                `ordernum` tinyint(4) NOT NULL,
+                `localpath` varchar(250) NOT NULL,
+                PRIMARY KEY (`mediatypeID`),
+                KEY `ordernum` (`ordernum`,`display`)
+            ",
+
+      'albums' => "
+                `albumID` int(11) NOT NULL AUTO_INCREMENT,
+                `albumname` varchar(100) NOT NULL,
+                `description` text,
+                `alwayson` tinyint(4) DEFAULT NULL,
+                `keywords` text,
+                `active` tinyint(4) NOT NULL,
+                PRIMARY KEY (`albumID`),
+                KEY `albumname` (`albumname`)
+            ",
+
+      'albumlinks' => "
+                `albumlinkID` int(11) NOT NULL AUTO_INCREMENT,
+                `albumID` int(11) NOT NULL,
+                `mediaID` int(11) NOT NULL,
+                `ordernum` int(11) DEFAULT NULL,
+                `defphoto` varchar(1) NOT NULL,
+                PRIMARY KEY (`albumlinkID`),
+                KEY `albumID` (`albumID`,`ordernum`)
+            ",
+
+      'albumplinks' => "
+                `alinkID` int(11) NOT NULL AUTO_INCREMENT,
+                `gedcom` varchar(20) NOT NULL,
+                `linktype` char(1) NOT NULL,
+                `entityID` varchar(100) NOT NULL,
+                `eventID` varchar(10) NOT NULL,
+                `albumID` int(11) NOT NULL,
+                `ordernum` float NOT NULL,
+                PRIMARY KEY (`alinkID`),
+                UNIQUE KEY `alinkID` (`gedcom`,`entityID`,`albumID`),
+                KEY `entityID` (`gedcom`,`entityID`,`ordernum`)
+            ",
+
+      'image_tags' => "
+                `ID` int(11) NOT NULL AUTO_INCREMENT,
+                `mediaID` int(11) NOT NULL,
+                `rtop` int(11) NOT NULL,
+                `rleft` int(11) NOT NULL,
+                `rheight` int(11) NOT NULL,
+                `rwidth` int(11) NOT NULL,
+                `gedcom` varchar(20) NOT NULL,
+                `linktype` char(1) NOT NULL,
+                `persfamID` varchar(100) NOT NULL,
+                `label` varchar(64) NOT NULL,
+                PRIMARY KEY (`ID`),
+                UNIQUE KEY `mediaID` (`mediaID`,`gedcom`,`persfamID`)
+            "
+    ];
   }
 }

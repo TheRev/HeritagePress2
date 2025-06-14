@@ -67,10 +67,10 @@ if (!defined('ABSPATH')) {
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($table_counts as $table => $count): ?>
+                  <?php foreach ($table_counts as $table => $data): ?>
                     <tr>
-                      <td><?php echo esc_html(ucfirst($table)); ?></td>
-                      <td><?php echo number_format($count); ?></td>
+                      <td><?php echo esc_html($data['label'] ?? ucfirst($table)); ?></td>
+                      <td><?php echo number_format($data['count'] ?? 0); ?></td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>

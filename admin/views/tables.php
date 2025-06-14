@@ -28,7 +28,6 @@ settings_errors('heritagepress_tables');
             <span class="dashicons dashicons-yes-alt"></span>
             <?php _e('All database tables are installed.', 'heritagepress'); ?>
           </p>
-
           <h4><?php _e('Available Actions:', 'heritagepress'); ?></h4>
           <form method="post" style="display: inline;">
             <?php wp_nonce_field('heritagepress_tables'); ?>
@@ -36,6 +35,14 @@ settings_errors('heritagepress_tables');
             <input type="submit" class="button button-secondary"
               value="<?php _e('Update Tables', 'heritagepress'); ?>"
               onclick="return confirm('<?php _e('Are you sure you want to update the database tables?', 'heritagepress'); ?>');">
+          </form>
+
+          <form method="post" style="display: inline; margin-left: 10px;">
+            <?php wp_nonce_field('heritagepress_tables'); ?>
+            <input type="hidden" name="action" value="clean_install">
+            <input type="submit" class="button button-secondary"
+              value="<?php _e('Clean Reinstall', 'heritagepress'); ?>"
+              onclick="return confirm('<?php _e('This will drop and recreate all tables, resolving any conflicts. Continue?', 'heritagepress'); ?>');">
           </form>
 
           <form method="post" style="display: inline; margin-left: 10px;">
@@ -86,11 +93,10 @@ settings_errors('heritagepress_tables');
                 'Geography' => array('places', 'addresses', 'countries', 'states', 'cemeteries'),
                 'System' => array('trees', 'user_permissions', 'import_logs', 'saveimport', 'branches', 'branchlinks', 'languages', 'dna_tests', 'dna_links', 'dna_groups', 'users')
               );
-
               foreach ($categories as $category => $tables):
                 $first_in_category = true;
                 foreach ($tables as $table):
-                  $count = isset($stats[$table]) ? $stats[$table] : 0;
+                  $count = isset($stats[$table]['count']) ? $stats[$table]['count'] : (isset($stats[$table]) && is_numeric($stats[$table]) ? $stats[$table] : 0);
               ?>
                   <tr>
                     <td><?php echo $first_in_category ? esc_html($category) : ''; ?></td>
@@ -123,9 +129,8 @@ settings_errors('heritagepress_tables');
           <li><strong><?php _e('Geography:', 'heritagepress'); ?></strong> <?php _e('Places, addresses, and locations', 'heritagepress'); ?></li>
           <li><strong><?php _e('System:', 'heritagepress'); ?></strong> <?php _e('Configuration, permissions, and advanced features', 'heritagepress'); ?></li>
         </ul>
-
-        <h4><?php _e('TNG Compatibility', 'heritagepress'); ?></h4>
-        <p><?php _e('All 37 TNG database tables are implemented for 100% feature parity.', 'heritagepress'); ?></p>
+        <h4><?php _e('Genealogy Standard Compatibility', 'heritagepress'); ?></h4>
+        <p><?php _e('All genealogy database tables are implemented for comprehensive family tree management.', 'heritagepress'); ?></p>
 
         <h4><?php _e('Table Prefix', 'heritagepress'); ?></h4>
         <p><?php echo sprintf(__('All tables use the prefix: %s', 'heritagepress'), '<code>' . $database->get_table_name('') . '</code>'); ?></p>

@@ -1,9 +1,10 @@
 <?php
 
 /**
- * HeritagePress Core Database Management
+ * HeritagePress Database Core Tables
  *
- * Handles core genealogy tables: people, families, children, events
+ * Handles creation of core genealogy tables: people, families, children
+ * Table structures extracted from TNG SQL file and adapted for HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -13,377 +14,211 @@ if (!defined('ABSPATH')) {
 class HP_Database_Core
 {
   private $wpdb;
+  private $table_prefix;
   private $charset_collate;
 
   public function __construct()
   {
     global $wpdb;
     $this->wpdb = $wpdb;
+    $this->table_prefix = $wpdb->prefix . 'hp_';
     $this->charset_collate = $wpdb->get_charset_collate();
   }
 
   /**
-   * Get table name with proper prefix
-   */
-  public function get_table_name($table)
-  {
-    return $this->wpdb->prefix . 'hp_' . $table;
-  }
-
-  /**
-   * Create all core genealogy tables
+   * Create all core tables
    */
   public function create_tables()
   {
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    $tables = $this->get_table_structures();
+    $success_count = 0;
+    $total_count = count($tables);
 
-    $this->create_persons_table();
-    $this->create_families_table();
-    $this->create_children_table();
-    $this->create_events_table();
-    $this->create_eventtypes_table();
-    $this->create_temp_events_table();
-    $this->create_timeline_events_table();
-  }
-
-  /**
-   * Main persons table - core genealogy records
-   */
-  private function create_persons_table()
-  {
-    $table_name = $this->get_table_name('persons');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            gedcom_id varchar(50) NOT NULL,
-            tree_id varchar(50) DEFAULT 'main',
-            first_name varchar(255) DEFAULT NULL,
-            middle_name varchar(255) DEFAULT NULL,
-            last_name varchar(255) DEFAULT NULL,
-            maiden_name varchar(255) DEFAULT NULL,
-            nickname varchar(255) DEFAULT NULL,
-            prefix varchar(50) DEFAULT NULL,
-            suffix varchar(50) DEFAULT NULL,
-            gender enum('M','F','U') DEFAULT 'U',
-            birth_date varchar(100) DEFAULT NULL,
-            birth_place varchar(500) DEFAULT NULL,
-            birth_date_estimated tinyint(1) DEFAULT 0,
-            death_date varchar(100) DEFAULT NULL,
-            death_place varchar(500) DEFAULT NULL,
-            death_date_estimated tinyint(1) DEFAULT 0,
-            burial_date varchar(100) DEFAULT NULL,
-            burial_place varchar(500) DEFAULT NULL,
-            occupation varchar(255) DEFAULT NULL,
-            education varchar(255) DEFAULT NULL,
-            religion varchar(255) DEFAULT NULL,
-            notes text,
-            private tinyint(1) DEFAULT 0,
-            living tinyint(1) DEFAULT 0,
-            father_id int(11) DEFAULT NULL,
-            mother_id int(11) DEFAULT NULL,
-            primary_photo_id int(11) DEFAULT NULL,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            modified_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            UNIQUE KEY unique_gedcom_tree (gedcom_id, tree_id),
-            KEY tree_id (tree_id),
-            KEY father_id (father_id),
-            KEY mother_id (mother_id),
-            KEY last_name (last_name),
-            KEY birth_date (birth_date),
-            KEY death_date (death_date),
-            KEY living (living),
-            KEY private (private),
-            FULLTEXT KEY search_names (first_name, middle_name, last_name, maiden_name, nickname)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Families table - marriage/relationship units
-   */
-  private function create_families_table()
-  {
-    $table_name = $this->get_table_name('families');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            gedcom_id varchar(50) NOT NULL,
-            tree_id varchar(50) DEFAULT 'main',
-            husband_id int(11) DEFAULT NULL,
-            wife_id int(11) DEFAULT NULL,
-            marriage_date varchar(100) DEFAULT NULL,
-            marriage_place varchar(500) DEFAULT NULL,
-            marriage_date_estimated tinyint(1) DEFAULT 0,
-            divorce_date varchar(100) DEFAULT NULL,
-            divorce_place varchar(500) DEFAULT NULL,
-            engagement_date varchar(100) DEFAULT NULL,
-            engagement_place varchar(500) DEFAULT NULL,
-            notes text,
-            private tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            modified_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            UNIQUE KEY unique_gedcom_tree (gedcom_id, tree_id),
-            KEY tree_id (tree_id),
-            KEY husband_id (husband_id),
-            KEY wife_id (wife_id),
-            KEY marriage_date (marriage_date)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Children table - parent-child relationships
-   */
-  private function create_children_table()
-  {
-    $table_name = $this->get_table_name('children');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            family_id int(11) NOT NULL,
-            person_id int(11) NOT NULL,
-            child_order int(11) DEFAULT 0,
-            relationship_type varchar(50) DEFAULT 'biological',
-            notes text,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY unique_family_child (family_id, person_id),
-            KEY tree_id (tree_id),
-            KEY family_id (family_id),
-            KEY person_id (person_id),
-            KEY child_order (child_order)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Events table - all life events
-   */
-  private function create_events_table()
-  {
-    $table_name = $this->get_table_name('events');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            gedcom_id varchar(50) DEFAULT NULL,
-            tree_id varchar(50) DEFAULT 'main',
-            person_id int(11) DEFAULT NULL,
-            family_id int(11) DEFAULT NULL,
-            event_type varchar(100) NOT NULL,
-            event_date varchar(100) DEFAULT NULL,
-            event_place varchar(500) DEFAULT NULL,
-            event_date_estimated tinyint(1) DEFAULT 0,
-            description text,
-            notes text,
-            private tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            modified_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_by int(11) DEFAULT NULL,
-            modified_by int(11) DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY person_id (person_id),
-            KEY family_id (family_id),
-            KEY event_type (event_type),
-            KEY event_date (event_date)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Event types table - genealogy event type definitions
-   */
-  private function create_eventtypes_table()
-  {
-    $table_name = $this->get_table_name('eventtypes');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            event_type varchar(100) NOT NULL,
-            display_name varchar(100) NOT NULL,
-            category varchar(50) DEFAULT 'personal',
-            description text,
-            gedcom_tag varchar(10) DEFAULT NULL,
-            is_vital tinyint(1) DEFAULT 0,
-            sort_order int(11) DEFAULT 0,
-            active tinyint(1) DEFAULT 1,
-            PRIMARY KEY (id),
-            UNIQUE KEY event_type (event_type),
-            KEY category (category),
-            KEY sort_order (sort_order),
-            KEY active (active)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-
-    // Insert default event types
-    $this->insert_default_eventtypes();
-  }
-
-  /**
-   * Temporary events table - for import processing
-   */
-  private function create_temp_events_table()
-  {
-    $table_name = $this->get_table_name('temp_events');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            import_session_id varchar(50) NOT NULL,
-            gedcom_id varchar(50) DEFAULT NULL,
-            tree_id varchar(50) DEFAULT 'main',
-            person_id varchar(50) DEFAULT NULL,
-            family_id varchar(50) DEFAULT NULL,
-            event_type varchar(100) NOT NULL,
-            event_date varchar(100) DEFAULT NULL,
-            event_place varchar(500) DEFAULT NULL,
-            description text,
-            notes text,
-            raw_data text,
-            processed tinyint(1) DEFAULT 0,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY import_session_id (import_session_id),
-            KEY tree_id (tree_id),
-            KEY person_id (person_id),
-            KEY family_id (family_id),
-            KEY processed (processed)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Timeline events table - for timeline visualization
-   */
-  private function create_timeline_events_table()
-  {
-    $table_name = $this->get_table_name('timeline_events');
-
-    $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            tree_id varchar(50) DEFAULT 'main',
-            event_id int(11) DEFAULT NULL,
-            person_id int(11) DEFAULT NULL,
-            family_id int(11) DEFAULT NULL,
-            event_title varchar(255) NOT NULL,
-            event_date varchar(100) DEFAULT NULL,
-            event_year int(11) DEFAULT NULL,
-            event_description text,
-            event_category varchar(50) DEFAULT 'personal',
-            display_order int(11) DEFAULT 0,
-            is_public tinyint(1) DEFAULT 1,
-            created_date datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY tree_id (tree_id),
-            KEY event_id (event_id),
-            KEY person_id (person_id),
-            KEY family_id (family_id),
-            KEY event_year (event_year),
-            KEY event_category (event_category),
-            KEY display_order (display_order)
-        ) {$this->charset_collate};";
-
-    dbDelta($sql);
-  }
-
-  /**
-   * Insert default event types
-   */
-  private function insert_default_eventtypes()
-  {
-    $table_name = $this->get_table_name('eventtypes');
-
-    $default_types = array(
-      array('BIRT', 'Birth', 'vital', 'Birth of person', 'BIRT', 1, 1),
-      array('DEAT', 'Death', 'vital', 'Death of person', 'DEAT', 1, 2),
-      array('BURI', 'Burial', 'vital', 'Burial of person', 'BURI', 1, 3),
-      array('MARR', 'Marriage', 'family', 'Marriage event', 'MARR', 1, 4),
-      array('DIV', 'Divorce', 'family', 'Divorce event', 'DIV', 0, 5),
-      array('BAPM', 'Baptism', 'religious', 'Baptism or christening', 'BAPM', 0, 6),
-      array('CONF', 'Confirmation', 'religious', 'Religious confirmation', 'CONF', 0, 7),
-      array('EDUC', 'Education', 'personal', 'Education or schooling', 'EDUC', 0, 8),
-      array('OCCU', 'Occupation', 'personal', 'Occupation or career', 'OCCU', 0, 9),
-      array('RESI', 'Residence', 'personal', 'Place of residence', 'RESI', 0, 10),
-      array('IMMI', 'Immigration', 'personal', 'Immigration to new country', 'IMMI', 0, 11),
-      array('EMIG', 'Emigration', 'personal', 'Emigration from country', 'EMIG', 0, 12),
-      array('NATU', 'Naturalization', 'personal', 'Naturalization as citizen', 'NATU', 0, 13),
-      array('MILI', 'Military', 'personal', 'Military service', 'MILI', 0, 14),
-      array('PROB', 'Probate', 'legal', 'Probate of will', 'PROB', 0, 15)
-    );
-
-    foreach ($default_types as $type) {
-      $this->wpdb->replace(
-        $table_name,
-        array(
-          'event_type' => $type[0],
-          'display_name' => $type[1],
-          'category' => $type[2],
-          'description' => $type[3],
-          'gedcom_tag' => $type[4],
-          'is_vital' => $type[5],
-          'sort_order' => $type[6],
-          'active' => 1
-        )
-      );
+    foreach ($tables as $table_name => $structure) {
+      if ($this->create_table($table_name, $structure)) {
+        $success_count++;
+      }
     }
+
+    return $success_count === $total_count;
   }
 
   /**
-   * Drop core tables
+   * Drop all core tables
    */
   public function drop_tables()
   {
-    $tables = array(
-      'persons',
-      'families',
-      'children',
-      'events',
-      'eventtypes',
-      'temp_events',
-      'timeline_events'
-    );
+    $tables = ['people', 'families', 'children'];
 
     foreach ($tables as $table) {
-      $table_name = $this->get_table_name($table);
-      $this->wpdb->query("DROP TABLE IF EXISTS $table_name");
+      $table_name = $this->table_prefix . $table;
+      $this->wpdb->query("DROP TABLE IF EXISTS `$table_name`");
     }
   }
 
   /**
-   * Get table statistics for core tables
+   * Check if all core tables exist
    */
-  public function get_table_stats()
+  public function tables_exist()
   {
-    $stats = array();
-    $tables = array(
-      'persons',
-      'families',
-      'children',
-      'events',
-      'eventtypes',
-      'temp_events',
-      'timeline_events'
-    );
+    $tables = ['people', 'families', 'children'];
 
     foreach ($tables as $table) {
-      $table_name = $this->get_table_name($table);
-      $count = $this->wpdb->get_var("SELECT COUNT(*) FROM $table_name");
-      $stats[$table] = (int)$count;
+      $table_name = $this->table_prefix . $table;
+      if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
+        return false;
+      }
     }
 
-    return $stats;
+    return true;
+  }
+
+  /**
+   * Create a single table
+   */
+  private function create_table($table_name, $structure)
+  {
+    $table_full_name = $this->table_prefix . $table_name;
+
+    // Drop existing table
+    $this->wpdb->query("DROP TABLE IF EXISTS `$table_full_name`");
+
+    // Create new table
+    $sql = "CREATE TABLE `$table_full_name` ($structure) ENGINE=InnoDB {$this->charset_collate}";
+
+    $result = $this->wpdb->query($sql);
+
+    if ($result === false) {
+      error_log("HeritagePress Core: Failed to create table $table_full_name: " . $this->wpdb->last_error);
+      return false;
+    }
+
+    return true;
+  }
+  /**
+   * Get core table structures
+   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   */
+  private function get_table_structures()
+  {
+    return [
+      'people' => "
+                `ID` int(11) NOT NULL AUTO_INCREMENT,
+                `gedcom` varchar(20) NOT NULL,
+                `personID` varchar(22) NOT NULL,
+                `lnprefix` varchar(25) NOT NULL,
+                `lastname` varchar(127) NOT NULL,
+                `firstname` varchar(127) NOT NULL,
+                `birthdate` varchar(50) NOT NULL,
+                `birthdatetr` date NOT NULL,
+                `sex` varchar(25) NOT NULL,
+                `birthplace` text NOT NULL,
+                `deathdate` varchar(50) NOT NULL,
+                `deathdatetr` date NOT NULL,
+                `deathplace` text NOT NULL,
+                `altbirthtype` varchar(5) NOT NULL,
+                `altbirthdate` varchar(50) NOT NULL,
+                `altbirthdatetr` date NOT NULL,
+                `altbirthplace` text NOT NULL,
+                `burialdate` varchar(50) NOT NULL,
+                `burialdatetr` date NOT NULL,
+                `burialplace` text NOT NULL,
+                `burialtype` tinyint(4) NOT NULL,
+                `baptdate` varchar(50) NOT NULL,
+                `baptdatetr` date NOT NULL,
+                `baptplace` text NOT NULL,
+                `confdate` varchar(50) NOT NULL,
+                `confdatetr` date NOT NULL,
+                `confplace` text NOT NULL,
+                `initdate` varchar(50) NOT NULL,
+                `initdatetr` date NOT NULL,
+                `initplace` text NOT NULL,
+                `endldate` varchar(50) NOT NULL,
+                `endldatetr` date NOT NULL,
+                `endlplace` text NOT NULL,
+                `changedate` datetime NOT NULL,
+                `nickname` text NOT NULL,
+                `title` tinytext NOT NULL,
+                `prefix` tinytext NOT NULL,
+                `suffix` tinytext NOT NULL,
+                `nameorder` tinyint(4) NOT NULL,
+                `famc` varchar(22) NOT NULL,
+                `metaphone` varchar(15) NOT NULL,
+                `living` tinyint(4) NOT NULL,
+                `private` tinyint(4) NOT NULL,
+                `branch` varchar(512) NOT NULL,
+                `changedby` varchar(100) NOT NULL,
+                `edituser` varchar(100) NOT NULL,
+                `edittime` int(11) NOT NULL,
+                PRIMARY KEY (`ID`),
+                UNIQUE KEY `gedpers` (`gedcom`,`personID`),
+                KEY `lastname` (`lastname`,`firstname`),
+                KEY `firstname` (`firstname`),
+                KEY `gedlast` (`gedcom`,`lastname`,`firstname`),
+                KEY `gedfirst` (`gedcom`,`firstname`),
+                KEY `birthplace` (`birthplace`(20)),
+                KEY `altbirthplace` (`altbirthplace`(20)),
+                KEY `deathplace` (`deathplace`(20)),
+                KEY `burialplace` (`burialplace`(20)),
+                KEY `baptplace` (`baptplace`(20)),
+                KEY `confplace` (`confplace`(20)),
+                KEY `initplace` (`initplace`(20)),
+                KEY `endlplace` (`endlplace`(20)),
+                KEY `changedate` (`changedate`)
+            ",
+
+      'families' => "
+                `ID` int(11) NOT NULL AUTO_INCREMENT,
+                `gedcom` varchar(20) NOT NULL,
+                `familyID` varchar(22) NOT NULL,
+                `husband` varchar(22) NOT NULL,
+                `wife` varchar(22) NOT NULL,
+                `marrdate` varchar(50) NOT NULL,
+                `marrdatetr` date NOT NULL,
+                `marrplace` text NOT NULL,
+                `marrtype` varchar(90) NOT NULL,
+                `divdate` varchar(50) NOT NULL,
+                `divdatetr` date NOT NULL,
+                `divplace` text NOT NULL,
+                `status` varchar(20) NOT NULL,
+                `sealdate` varchar(50) NOT NULL,
+                `sealdatetr` date NOT NULL,
+                `sealplace` text NOT NULL,
+                `husborder` tinyint(4) NOT NULL,
+                `wifeorder` tinyint(4) NOT NULL,
+                `changedate` datetime NOT NULL,
+                `living` tinyint(4) NOT NULL,
+                `private` tinyint(4) NOT NULL,
+                `branch` varchar(512) NOT NULL,
+                `changedby` varchar(100) NOT NULL,
+                `edituser` varchar(100) NOT NULL,
+                `edittime` int(11) NOT NULL,
+                PRIMARY KEY (`ID`),
+                UNIQUE KEY `familyID` (`gedcom`,`familyID`),
+                KEY `husband` (`gedcom`,`husband`),
+                KEY `wife` (`gedcom`,`wife`),
+                KEY `marrplace` (`marrplace`(20)),
+                KEY `divplace` (`divplace`(20)),
+                KEY `changedate` (`changedate`)
+            ",
+
+      'children' => "
+                `ID` int(11) NOT NULL AUTO_INCREMENT,
+                `gedcom` varchar(20) NOT NULL,
+                `familyID` varchar(22) NOT NULL,
+                `personID` varchar(22) NOT NULL,
+                `frel` varchar(20) NOT NULL,
+                `mrel` varchar(20) NOT NULL,
+                `sealdate` varchar(50) NOT NULL,
+                `sealdatetr` date NOT NULL,
+                `sealplace` text NOT NULL,
+                `haskids` tinyint(4) NOT NULL,
+                `ordernum` smallint(6) NOT NULL,
+                `parentorder` tinyint(4) NOT NULL,
+                PRIMARY KEY (`ID`),
+                UNIQUE KEY `familyID` (`gedcom`,`familyID`,`personID`),
+                KEY `personID` (`gedcom`,`personID`)
+            "
+    ];
   }
 }

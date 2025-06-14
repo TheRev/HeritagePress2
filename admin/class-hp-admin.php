@@ -31,8 +31,10 @@ class HP_Admin
   }
   /**
    * Add admin menu
-   */  public function admin_menu()
+   */
+  public function admin_menu()
   {
+    // Main menu page
     add_menu_page(
       'HeritagePress Dashboard',
       'HeritagePress',
@@ -41,6 +43,46 @@ class HP_Admin
       array($this, 'admin_page'),
       'dashicons-networking',
       30
+    );
+
+    // Dashboard submenu (same as main page)
+    add_submenu_page(
+      'heritagepress',
+      'Dashboard',
+      'Dashboard',
+      'manage_genealogy',
+      'heritagepress',
+      array($this, 'admin_page')
+    );
+
+    // Import GEDCOM submenu
+    add_submenu_page(
+      'heritagepress',
+      'Import GEDCOM',
+      'Import GEDCOM',
+      'import_gedcom',
+      'heritagepress-import',
+      array($this, 'import_page')
+    );
+
+    // People management submenu
+    add_submenu_page(
+      'heritagepress',
+      'Manage People',
+      'People',
+      'edit_genealogy',
+      'heritagepress-people',
+      array($this, 'people_page')
+    );
+
+    // Database tables submenu
+    add_submenu_page(
+      'heritagepress',
+      'Database Tables',
+      'Database',
+      'manage_genealogy',
+      'heritagepress-tables',
+      array($this, 'tables_page')
     );
   }
 
@@ -140,16 +182,17 @@ class HP_Admin
     echo '<p>' . __('People management functionality coming soon...', 'heritagepress') . '</p>';
     echo '</div>';
   }
-
   /**
    * GEDCOM import page
    */
   public function import_page()
   {
-    echo '<div class="wrap">';
-    echo '<h1>' . __('Import GEDCOM', 'heritagepress') . '</h1>';
-    echo '<p>' . __('GEDCOM import functionality coming soon...', 'heritagepress') . '</p>';
-    echo '</div>';
+    // Handle import submission
+    if (isset($_POST['action']) && $_POST['action'] === 'upload_gedcom') {
+      $this->handle_gedcom_import();
+    }
+
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/import.php';
   }
 
   /**
@@ -167,16 +210,26 @@ class HP_Admin
 
     $database = heritage_press()->database;
     $action = sanitize_text_field($_POST['action']);
-
     switch ($action) {
       case 'create_tables':
-        $database->create_tables();
-        add_settings_error(
-          'heritagepress_tables',
-          'tables_created',
-          __('Database tables created successfully!', 'heritagepress'),
-          'success'
-        );
+        // Check if we need a clean install due to conflicts
+        if ($database->needs_clean_install()) {
+          $database->clean_install();
+          add_settings_error(
+            'heritagepress_tables',
+            'tables_recreated',
+            __('Database tables recreated successfully! (Conflicts resolved)', 'heritagepress'),
+            'success'
+          );
+        } else {
+          $database->create_tables();
+          add_settings_error(
+            'heritagepress_tables',
+            'tables_created',
+            __('Database tables created successfully!', 'heritagepress'),
+            'success'
+          );
+        }
         break;
 
       case 'drop_tables':
@@ -198,6 +251,139 @@ class HP_Admin
           'success'
         );
         break;
+
+      case 'clean_install':
+        $database->clean_install();
+        add_settings_error(
+          'heritagepress_tables',
+          'clean_install',
+          __('Clean installation completed! All tables recreated.', 'heritagepress'),
+          'success'
+        );
+        break;
+    }
+  }
+
+  /**
+   * Handle GEDCOM import submission
+   */
+  private function handle_gedcom_import()
+  {
+    if (!current_user_can('import_gedcom')) {
+      add_settings_error(
+        'heritagepress_import',
+        'permission_denied',
+        __('You do not have permission to import GEDCOM files.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_import')) {
+      add_settings_error(
+        'heritagepress_import',
+        'invalid_nonce',
+        __('Security check failed. Please try again.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    // Check if file was uploaded
+    if (!isset($_FILES['gedcom_file']) || $_FILES['gedcom_file']['error'] !== UPLOAD_ERR_OK) {
+      add_settings_error(
+        'heritagepress_import',
+        'upload_error',
+        __('File upload failed. Please try again.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $uploaded_file = $_FILES['gedcom_file'];
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+    $encoding = sanitize_text_field($_POST['encoding']);
+
+    // Validate file type
+    $file_ext = strtolower(pathinfo($uploaded_file['name'], PATHINFO_EXTENSION));
+    if (!in_array($file_ext, ['ged', 'gedcom'])) {
+      add_settings_error(
+        'heritagepress_import',
+        'invalid_file_type',
+        __('Invalid file type. Please upload a .ged or .gedcom file.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    // Move uploaded file to secure location
+    $upload_dir = wp_upload_dir();
+    $heritagepress_dir = $upload_dir['basedir'] . '/heritagepress/';
+
+    if (!file_exists($heritagepress_dir)) {
+      wp_mkdir_p($heritagepress_dir);
+    }
+
+    $target_file = $heritagepress_dir . 'import_' . time() . '.' . $file_ext;
+
+    if (!move_uploaded_file($uploaded_file['tmp_name'], $target_file)) {
+      add_settings_error(
+        'heritagepress_import',
+        'move_file_error',
+        __('Failed to save uploaded file.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    // Prepare import options
+    $options = [
+      'import_living' => isset($_POST['import_living']),
+      'import_private' => isset($_POST['import_private']),
+      'import_sources' => isset($_POST['import_sources']),
+      'import_media' => isset($_POST['import_media']),
+      'encoding' => $encoding
+    ];
+
+    try {
+      // Create GEDCOM importer instance
+      $importer = new HP_GEDCOM_Importer($target_file, $tree_id, $options);
+
+      // Start import process
+      $result = $importer->import();
+
+      if ($result['success']) {
+        add_settings_error(
+          'heritagepress_import',
+          'import_success',
+          sprintf(
+            __('Import completed successfully! Imported %d people, %d families, %d events.', 'heritagepress'),
+            $result['stats']['people_imported'] ?? 0,
+            $result['stats']['families_imported'] ?? 0,
+            $result['stats']['events'] ?? 0
+          ),
+          'success'
+        );
+      } else {
+        add_settings_error(
+          'heritagepress_import',
+          'import_failed',
+          __('Import failed: ', 'heritagepress') . implode(', ', $result['errors']),
+          'error'
+        );
+      }
+    } catch (Exception $e) {
+      add_settings_error(
+        'heritagepress_import',
+        'import_exception',
+        __('Import failed with error: ', 'heritagepress') . $e->getMessage(),
+        'error'
+      );
+    } finally {
+      // Clean up uploaded file
+      if (file_exists($target_file)) {
+        unlink($target_file);
+      }
     }
   }
 }

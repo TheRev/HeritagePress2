@@ -77,31 +77,29 @@ class HeritagePress
    * Include required files
    */
   private function includes()
-  {
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-tng-compatible.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-tng-mapper.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-tng-importer.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-person.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-family.php';
+  {    // Core database and model classes
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-person-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-family-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-importer.php';
+
+    // Admin interface
     if (is_admin()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
-      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-tng-admin.php';
     }
 
+    // Public interface
     if (!is_admin() || wp_doing_ajax()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'public/class-hp-public.php';
     }
   }
-
   /**
    * Initialize plugin
    */
   public function init()
   {
-    // Initialize database
-    $this->database = new HP_Database();
+    // Initialize database manager
+    $this->database = new HP_Database_Manager();
 
     // Initialize admin
     if (is_admin()) {
@@ -132,20 +130,9 @@ class HeritagePress
    */
   public function activate()
   {
-    // Check if user wants TNG compatibility (can be set via option later)
-    $use_tng_compatibility = get_option('heritagepress_tng_compatibility', false);
-
-    if ($use_tng_compatibility) {
-      // Create TNG-compatible database tables
-      $database = new HP_Database_TNG_Compatible();
-      $database->create_tables();
-      update_option('heritagepress_db_type', 'tng_compatible');
-    } else {
-      // Create standard HeritagePress database tables
-      $database = new HP_Database();
-      $database->create_tables();
-      update_option('heritagepress_db_type', 'standard');
-    }
+    // Create database tables using unified database manager
+    $database = new HP_Database_Manager();
+    $database->create_tables();
 
     // Add capabilities
     $this->add_capabilities();
