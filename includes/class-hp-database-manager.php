@@ -191,16 +191,10 @@ class HP_Database_Manager
    */
   private function create_tables_from_sql_dump()
   {    // Try multiple possible locations for the SQL dump
-    $possible_paths = [
-      $this->sql_dump_path,
+    $possible_paths = [      $this->sql_dump_path,
       HERITAGEPRESS_PLUGIN_DIR . 'genealogy.sql',
       ABSPATH . 'BACKUPS/genealogy.sql',
       ABSPATH . '../BACKUPS/genealogy.sql'
-      // Legacy migration paths (commented out):
-      // HERITAGEPRESS_PLUGIN_DIR . '../../../BACKUPS/tng.sql',
-      // HERITAGEPRESS_PLUGIN_DIR . 'tng.sql',
-      // ABSPATH . 'BACKUPS/tng.sql',
-      // ABSPATH . '../BACKUPS/tng.sql'
     ];
 
     $sql_file = null;
@@ -224,7 +218,7 @@ class HP_Database_Manager
     }
 
     // Extract CREATE TABLE statements
-    preg_match_all('/CREATE TABLE `tng_(\w+)` \((.*?)\) ENGINE=/s', $sql_content, $matches, PREG_SET_ORDER);
+    preg_match_all('/CREATE TABLE `hp_(\w+)` \((.*?)\) ENGINE=/s', $sql_content, $matches, PREG_SET_ORDER);
 
     if (empty($matches)) {
       error_log('HeritagePress: No CREATE TABLE statements found in SQL dump');

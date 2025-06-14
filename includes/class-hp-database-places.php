@@ -4,7 +4,7 @@
  * HeritagePress Database Places Tables
  *
  * Handles creation of place-related tables: places, cemeteries, addresses, countries, states
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for places and geography in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {

@@ -3,7 +3,8 @@
 /**
  * HeritagePress Admin Class
  *
- * Handles all admin-side functionality
+ * Professional genealogy admin interface with comprehensive genealogy management
+ * Features tabbed navigation, multi-program GEDCOM import, and complete data management
  */
 
 if (!defined('ABSPATH')) {
@@ -13,12 +14,140 @@ if (!defined('ABSPATH')) {
 class HP_Admin
 {
   /**
+   * Current admin page
+   */
+  private $current_page = '';
+  
+  /**
+   * Current tab
+   */
+  private $current_tab = '';
+  
+  /**
+   * Admin pages configuration
+   */
+  private $admin_pages = array();
+  
+  /**
    * Constructor
    */
   public function __construct()
   {
-    error_log('HP_Admin constructor called - ' . microtime(true));
+    $this->setup_admin_pages();
     $this->init_hooks();
+  }
+  
+  /**
+   * Setup admin pages structure (professional genealogy interface)
+   */
+  private function setup_admin_pages() {
+    $this->admin_pages = array(
+      'dashboard' => array(
+        'title' => 'Dashboard',
+        'capability' => 'manage_genealogy',
+        'icon' => 'dashicons-dashboard',
+        'tabs' => array(
+          'overview' => 'Overview',
+          'statistics' => 'Statistics',
+          'recent' => 'Recent Activity'
+        )
+      ),
+      'people' => array(
+        'title' => 'People',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-groups',
+        'tabs' => array(
+          'browse' => 'Browse',
+          'add' => 'Add New',
+          'search' => 'Advanced Search',
+          'reports' => 'Reports',
+          'utilities' => 'Utilities'
+        )
+      ),
+      'families' => array(
+        'title' => 'Families',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-networking',
+        'tabs' => array(
+          'browse' => 'Browse Families',
+          'add' => 'Add Family',
+          'trees' => 'Family Trees',
+          'reports' => 'Family Reports',
+          'relationships' => 'Relationship Tools'
+        )
+      ),
+      'sources' => array(
+        'title' => 'Sources',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-book-alt',
+        'tabs' => array(
+          'browse' => 'Browse Sources',
+          'add' => 'Add Source',
+          'citations' => 'Citations',
+          'repositories' => 'Repositories',
+          'reports' => 'Source Reports'
+        )
+      ),
+      'media' => array(
+        'title' => 'Media',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-format-gallery',
+        'tabs' => array(
+          'browse' => 'Browse Media',
+          'upload' => 'Upload Media',
+          'types' => 'Media Types',
+          'albums' => 'Albums',
+          'reports' => 'Media Reports'
+        )
+      ),
+      'import-export' => array(
+        'title' => 'Import/Export',
+        'capability' => 'import_gedcom',
+        'icon' => 'dashicons-database-import',
+        'tabs' => array(
+          'gedcom-import' => 'GEDCOM Import',
+          'gedcom-export' => 'GEDCOM Export',
+          'media-import' => 'Media Import',
+          'history' => 'Import History',
+          'backup' => 'Backup/Restore'
+        )
+      ),
+      'places' => array(
+        'title' => 'Places',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-location-alt',
+        'tabs' => array(
+          'browse' => 'Browse Places',
+          'add' => 'Add Places',
+          'geography' => 'Countries/States',
+          'cemeteries' => 'Cemeteries',
+          'maps' => 'Maps Integration'
+        )
+      ),
+      'dna' => array(
+        'title' => 'DNA',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-chart-line',
+        'tabs' => array(
+          'tests' => 'DNA Tests',
+          'matches' => 'DNA Matches',
+          'groups' => 'DNA Groups',
+          'reports' => 'DNA Reports'
+        )
+      ),
+      'settings' => array(
+        'title' => 'Settings',
+        'capability' => 'manage_genealogy',
+        'icon' => 'dashicons-admin-settings',
+        'tabs' => array(
+          'general' => 'General Settings',
+          'users' => 'User Management',
+          'privacy' => 'Privacy Settings',
+          'templates' => 'Template Management',
+          'maintenance' => 'System Maintenance'
+        )
+      )
+    );
   }
   /**
    * Initialize admin hooks

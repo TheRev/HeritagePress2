@@ -4,7 +4,7 @@
  * HeritagePress Database Research Tables
  *
  * Handles creation of research-related tables: sources, citations, repositories, mostwanted, xnotes, notelinks, associations
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for research and sources in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {
@@ -98,7 +98,7 @@ class HP_Database_Research
 
   /**
    * Get research table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Table structures for HeritagePress genealogy system, adapted with hp_ prefix
    */
   private function get_table_structures()
   {

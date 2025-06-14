@@ -4,7 +4,7 @@
  * HeritagePress Database Utility Tables
  *
  * Handles creation of utility tables: saveimport, temp_events
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for utility functions in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {
@@ -98,7 +98,7 @@ class HP_Database_Utility
 
   /**
    * Get utility table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Table structures for HeritagePress genealogy system, adapted with hp_ prefix
    */
   private function get_table_structures()
   {

@@ -4,7 +4,7 @@
  * HeritagePress Database System Tables
  *
  * Handles creation of system/admin tables: users, trees, languages, branches, branchlinks, templates, reports
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for system configuration in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {
@@ -98,7 +98,7 @@ class HP_Database_System
 
   /**
    * Get system table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Table structures for HeritagePress genealogy system, adapted with hp_ prefix
    */
   private function get_table_structures()
   {

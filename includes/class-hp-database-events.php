@@ -4,7 +4,7 @@
  * HeritagePress Database Events Tables
  *
  * Handles creation of event-related tables: events, eventtypes, timelineevents
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for events and genealogy dates in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {

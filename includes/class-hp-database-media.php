@@ -4,7 +4,7 @@
  * HeritagePress Database Media Tables
  *
  * Handles creation of media-related tables: media, medialinks, mediatypes, albums, albumlinks, albumplinks, image_tags
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures for media and multimedia in HeritagePress genealogy system
  */
 
 if (!defined('ABSPATH')) {
