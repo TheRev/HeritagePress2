@@ -62,14 +62,9 @@ $total_people = array_sum($tree_counts);
       <span class="dashicons dashicons-groups"></span>
       <?php _e('Browse People', 'heritagepress'); ?>
       <span class="count">(<?php echo number_format($total_people); ?>)</span>
-    </a>
-    <a href="?page=heritagepress-people&tab=add" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
+    </a> <a href="?page=heritagepress-people&tab=add" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
       <span class="dashicons dashicons-plus-alt"></span>
       <?php _e('Add New', 'heritagepress'); ?>
-    </a>
-    <a href="?page=heritagepress-people&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">
-      <span class="dashicons dashicons-search"></span>
-      <?php _e('Advanced Search', 'heritagepress'); ?>
     </a>
     <a href="?page=heritagepress-people&tab=reports" class="nav-tab <?php echo $current_tab === 'reports' ? 'nav-tab-active' : ''; ?>">
       <span class="dashicons dashicons-chart-bar"></span>
@@ -98,13 +93,8 @@ $total_people = array_sum($tree_counts);
       case 'add':
         include __DIR__ . '/add-person.php';
         break;
-
       case 'edit':
         include __DIR__ . '/edit-person.php';
-        break;
-
-      case 'search':
-        include __DIR__ . '/search-people.php';
         break;
 
       case 'reports':

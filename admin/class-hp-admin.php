@@ -78,7 +78,6 @@ class HP_Admin
         'tabs' => array(
           'browse' => 'Browse',
           'add' => 'Add New',
-          'search' => 'Advanced Search',
           'reports' => 'Reports',
           'utilities' => 'Utilities'
         )
