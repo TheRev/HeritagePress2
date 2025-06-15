@@ -1,0 +1,383 @@
+<?php
+
+/**
+ * Add Tree Tab
+ * Tree creation form based on TNG admin_addtree.php
+ */
+
+if (!defined('ABSPATH')) {
+  exit;
+}
+
+// Handle form submission
+if (isset($_POST['action']) && $_POST['action'] === 'add_tree') {
+  // This is handled in the main admin class
+}
+
+?>
+
+<div class="add-tree-section">
+  <form method="post" action="" class="tree-form">
+    <?php wp_nonce_field('heritagepress_add_tree'); ?>
+    <input type="hidden" name="action" value="add_tree">
+
+    <!-- Basic Tree Information -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h2 class="form-card-title"><?php _e('Basic Tree Information', 'heritagepress'); ?></h2>
+      </div>
+      <div class="form-card-body">
+        <table class="hp-form-table">
+          <tr>
+            <td>
+              <label for="gedcom"><?php _e('Tree ID', 'heritagepress'); ?> <span class="required">*</span></label>
+            </td>
+            <td>
+              <input type="text"
+                name="gedcom"
+                id="gedcom"
+                value=""
+                required
+                maxlength="20"
+                pattern="[a-zA-Z0-9_-]+"
+                class="regular-text">
+              <p class="description">
+                <?php _e('Unique identifier for this tree (letters, numbers, underscore, dash only). Cannot be changed after creation.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="treename"><?php _e('Tree Name', 'heritagepress'); ?> <span class="required">*</span></label>
+            </td>
+            <td>
+              <input type="text"
+                name="treename"
+                id="treename"
+                value=""
+                required
+                maxlength="100"
+                class="regular-text">
+              <p class="description">
+                <?php _e('Display name for this family tree.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="description"><?php _e('Description', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <textarea name="description"
+                id="description"
+                rows="3"
+                cols="50"
+                class="large-text"></textarea>
+              <p class="description">
+                <?php _e('Optional description of this family tree.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Owner Information -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h2 class="form-card-title"><?php _e('Owner Information', 'heritagepress'); ?></h2>
+      </div>
+      <div class="form-card-body">
+        <table class="hp-form-table">
+          <tr>
+            <td>
+              <label for="owner"><?php _e('Owner Name', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="owner"
+                id="owner"
+                value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>"
+                maxlength="100"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="email"><?php _e('Email Address', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="email"
+                name="email"
+                id="email"
+                value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>"
+                maxlength="100"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="address"><?php _e('Address', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <textarea name="address"
+                id="address"
+                rows="3"
+                cols="40"
+                class="large-text"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="city"><?php _e('City', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="city"
+                id="city"
+                value=""
+                maxlength="50"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="state"><?php _e('State/Province', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="state"
+                id="state"
+                value=""
+                maxlength="50"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="country"><?php _e('Country', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="country"
+                id="country"
+                value=""
+                maxlength="50"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="zip"><?php _e('ZIP/Postal Code', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="zip"
+                id="zip"
+                value=""
+                maxlength="10"
+                class="regular-text">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="phone"><?php _e('Phone', 'heritagepress'); ?></label>
+            </td>
+            <td>
+              <input type="text"
+                name="phone"
+                id="phone"
+                value=""
+                maxlength="20"
+                class="regular-text">
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tree Settings -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h2 class="form-card-title"><?php _e('Tree Settings', 'heritagepress'); ?></h2>
+      </div>
+      <div class="form-card-body">
+        <table class="hp-form-table">
+          <tr>
+            <td colspan="2">
+              <label>
+                <input type="checkbox" name="private" id="private" value="1">
+                <?php _e('Private Tree', 'heritagepress'); ?>
+              </label>
+              <p class="description">
+                <?php _e('Private trees are only visible to authorized users.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <label>
+                <input type="checkbox" name="disallowgedcreate" id="disallowgedcreate" value="1">
+                <?php _e('Disallow GEDCOM Creation', 'heritagepress'); ?>
+              </label>
+              <p class="description">
+                <?php _e('Prevent users from creating GEDCOM files from this tree.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <label>
+                <input type="checkbox" name="disallowpdf" id="disallowpdf" value="1">
+                <?php _e('Disallow PDF Creation', 'heritagepress'); ?>
+              </label>
+              <p class="description">
+                <?php _e('Prevent users from creating PDF reports from this tree.', 'heritagepress'); ?>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- GEDCOM Import Option -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h2 class="form-card-title"><?php _e('Initial Data Import', 'heritagepress'); ?></h2>
+      </div>
+      <div class="form-card-body">
+        <p class="description">
+          <?php _e('After creating this tree, you can import data using the Import/Export section.', 'heritagepress'); ?>
+        </p>
+        <div class="import-options">
+          <label>
+            <input type="radio" name="after_create" value="import" checked>
+            <?php _e('Take me to Import/Export after creating this tree', 'heritagepress'); ?>
+          </label>
+          <br>
+          <label>
+            <input type="radio" name="after_create" value="manage">
+            <?php _e('Return to Tree Management', 'heritagepress'); ?>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-card">
+      <div class="form-card-body">
+        <div class="submit-row"> <input type="submit"
+            value="<?php _e('Create Tree', 'heritagepress'); ?>"
+            class="button button-primary button-large">
+          <a href="?page=heritagepress-trees&tab=browse"
+            class="button button-large"><?php _e('Cancel', 'heritagepress'); ?></a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<style>
+  .tree-form .form-card {
+    margin-bottom: 20px;
+  }
+
+  .tree-form .hp-form-table {
+    width: 100%;
+  }
+
+  .tree-form .hp-form-table td {
+    padding: 12px 8px;
+    vertical-align: top;
+  }
+
+  .tree-form .hp-form-table td:first-child {
+    width: 180px;
+    font-weight: 500;
+  }
+
+  .tree-form .required {
+    color: #d63638;
+  }
+
+  .tree-form .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #646970;
+  }
+
+  .tree-form .regular-text,
+  .tree-form .large-text {
+    width: 400px;
+    max-width: 100%;
+  }
+
+  .tree-form .large-text {
+    width: 500px;
+  }
+
+  .import-options label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .submit-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+</style>
+
+<script>
+  jQuery(document).ready(function($) {
+    // Tree ID validation
+    $('#gedcom').on('input', function() {
+      var value = $(this).val();
+      var cleaned = value.replace(/[^a-zA-Z0-9_-]/g, '');
+      if (value !== cleaned) {
+        $(this).val(cleaned);
+      }
+    });
+
+    // Form validation
+    $('.tree-form').on('submit', function(e) {
+      var gedcom = $('#gedcom').val().trim();
+      var treename = $('#treename').val().trim();
+
+      if (!gedcom) {
+        e.preventDefault();
+        alert('<?php _e('Please enter a Tree ID.', 'heritagepress'); ?>');
+        $('#gedcom').focus();
+        return false;
+      }
+
+      if (gedcom.length < 2) {
+        e.preventDefault();
+        alert('<?php _e('Tree ID must be at least 2 characters long.', 'heritagepress'); ?>');
+        $('#gedcom').focus();
+        return false;
+      }
+
+      if (!treename) {
+        e.preventDefault();
+        alert('<?php _e('Please enter a Tree Name.', 'heritagepress'); ?>');
+        $('#treename').focus();
+        return false;
+      }
+
+      // Check for duplicate tree ID via AJAX
+      $.post(ajaxurl, {
+        action: 'hp_check_tree_id',
+        tree_id: gedcom,
+        nonce: '<?php echo wp_create_nonce("heritagepress_check_tree"); ?>'
+      }, function(response) {
+        if (!response.success) {
+          e.preventDefault();
+          alert('<?php _e('This Tree ID already exists. Please choose a different one.', 'heritagepress'); ?>');
+          $('#gedcom').focus().select();
+          return false;
+        }
+      });
+    });
+  });
+</script>

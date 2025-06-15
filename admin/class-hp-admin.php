@@ -101,6 +101,16 @@ class HP_Admin
           'reports' => 'Media Reports'
         )
       ),
+      'trees' => array(
+        'title' => 'Trees',
+        'capability' => 'edit_genealogy',
+        'icon' => 'dashicons-palmtree',
+        'tabs' => array(
+          'browse' => 'Browse Trees',
+          'add' => 'Add Tree',
+          'edit' => 'Edit Tree'
+        )
+      ),
       'import-export' => array(
         'title' => 'Import / Export',
         'capability' => 'import_gedcom',
@@ -154,10 +164,13 @@ class HP_Admin
   {
     add_action('admin_menu', array($this, 'admin_menu'));
     add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
-    add_action('admin_notices', array($this, 'admin_notices'));
-
-    // AJAX hooks for import/export
+    add_action('admin_notices', array($this, 'admin_notices'));    // AJAX hooks for import/export
     add_action('wp_ajax_hp_get_branches', array($this, 'ajax_get_branches'));
+
+    // AJAX hooks for trees management
+    add_action('wp_ajax_hp_check_tree_id', array($this, 'ajax_check_tree_id'));
+    add_action('wp_ajax_hp_delete_tree', array($this, 'ajax_delete_tree'));
+    add_action('wp_ajax_hp_clear_tree', array($this, 'ajax_clear_tree'));
 
     // AJAX hooks for chunked GEDCOM upload
     add_action('wp_ajax_hp_upload_gedcom_chunk', array($this, 'ajax_upload_gedcom_chunk'));
@@ -196,7 +209,19 @@ class HP_Admin
       'manage_genealogy',
       'heritagepress',
       array($this, 'admin_page')
-    );    // Import/Export submenu
+    );
+
+    // Trees submenu
+    add_submenu_page(
+      'heritagepress',
+      'Family Trees',
+      'Trees',
+      'edit_genealogy',
+      'heritagepress-trees',
+      array($this, 'trees_page')
+    );
+
+    // Import/Export submenu
     add_submenu_page(
       'heritagepress',
       'Import / Export',
@@ -214,9 +239,7 @@ class HP_Admin
       'edit_genealogy',
       'heritagepress-people',
       array($this, 'people_page')
-    );
-
-    // Database tables submenu
+    );    // Database tables submenu
     add_submenu_page(
       'heritagepress',
       'Database Tables',
@@ -224,6 +247,16 @@ class HP_Admin
       'manage_genealogy',
       'heritagepress-tables',
       array($this, 'tables_page')
+    );
+
+    // Database migrations submenu
+    add_submenu_page(
+      'heritagepress',
+      'Database Migrations',
+      'Migrations',
+      'manage_genealogy',
+      'heritagepress-migrations',
+      array($this, 'migrations_page')
     );
   }
 
@@ -235,12 +268,11 @@ class HP_Admin
     if (strpos($hook, 'heritagepress') === false) {
       return;
     }
-
     wp_enqueue_style(
       'heritagepress-admin',
       HERITAGEPRESS_PLUGIN_URL . 'admin/css/admin.css',
       array(),
-      HERITAGEPRESS_VERSION
+      HERITAGEPRESS_VERSION . '.' . time()
     );
     wp_enqueue_script(
       'heritagepress-admin',
@@ -297,9 +329,26 @@ class HP_Admin
           )
         )
       );
+    }    // Trees specific assets
+    if (isset($_GET['page']) && $_GET['page'] === 'heritagepress-trees') {
+      wp_enqueue_style(
+        'heritagepress-trees',
+        HERITAGEPRESS_PLUGIN_URL . 'includes/template/Trees/trees.css',
+        array('heritagepress-admin'),
+        HERITAGEPRESS_VERSION . '.' . time() . '.v7'
+      );
+    }
+
+    // GEDCOM specific assets (will move to new importer soon)
+    if (isset($_GET['page']) && $_GET['page'] === 'heritagepress-import') {
+      wp_enqueue_style(
+        'heritagepress-gedcom',
+        HERITAGEPRESS_PLUGIN_URL . 'admin/css/gedcom.css',
+        array('heritagepress-admin'),
+        HERITAGEPRESS_VERSION
+      );
     }
   }
-
   /**
    * Admin notices
    */
@@ -313,6 +362,54 @@ class HP_Admin
       echo __('Database tables are not installed. Please deactivate and reactivate the plugin.', 'heritagepress');
       echo '</p></div>';
     }
+
+    // Display transient admin notices
+    $this->display_admin_notices();
+  }
+
+  /**
+   * Display transient admin notices
+   */
+  private function display_admin_notices()
+  {
+    $notices = get_transient('heritagepress_admin_notices');
+    if (!$notices) {
+      return;
+    }
+
+    foreach ($notices as $notice) {
+      $type = isset($notice['type']) ? $notice['type'] : 'info';
+      $message = isset($notice['message']) ? $notice['message'] : '';
+      $dismissible = isset($notice['dismissible']) ? $notice['dismissible'] : true;
+
+      if (!empty($message)) {
+        echo '<div class="notice notice-' . esc_attr($type) . ($dismissible ? ' is-dismissible' : '') . '">';
+        echo '<p>' . wp_kses_post($message) . '</p>';
+        echo '</div>';
+      }
+    }
+
+    // Clear the notices after displaying
+    delete_transient('heritagepress_admin_notices');
+  }
+
+  /**
+   * Add admin notice
+   */
+  private function add_admin_notice($message, $type = 'success', $dismissible = true)
+  {
+    $notices = get_transient('heritagepress_admin_notices');
+    if (!$notices) {
+      $notices = array();
+    }
+
+    $notices[] = array(
+      'message' => $message,
+      'type' => $type,
+      'dismissible' => $dismissible
+    );
+
+    set_transient('heritagepress_admin_notices', $notices, 30);
   }
 
   /**
@@ -346,6 +443,14 @@ class HP_Admin
   }
 
   /**
+   * Database migrations page
+   */
+  public function migrations_page()
+  {
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/migrations.php';
+  }
+
+  /**
    * People management page
    */
   public function people_page()
@@ -367,6 +472,329 @@ class HP_Admin
     $this->handle_import_export_actions($current_tab);
 
     include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Import/import-export-split.php';
+  }
+
+  /**
+   * Trees page with tabs
+   */
+  public function trees_page()
+  {
+    // Get current tab
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'browse';
+
+    // Get tree ID for edit tab
+    $tree_id = isset($_GET['tree']) ? sanitize_text_field($_GET['tree']) : '';
+
+    // Handle form submissions
+    $this->handle_trees_actions($current_tab);
+
+    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Trees/trees-main.php';
+  }
+  /**
+   * Handle trees page actions
+   */
+  private function handle_trees_actions($current_tab)
+  {
+    if (!current_user_can('edit_genealogy')) {
+      return;
+    }
+
+    // Handle bulk actions from browse tab
+    if (isset($_POST['action']) && $_POST['action'] !== '-1' && !empty($_POST['tree_ids'])) {
+      $this->handle_bulk_tree_actions();
+      return;
+    }
+
+    // Handle individual tree operations
+    if (isset($_POST['action'])) {
+      $action = sanitize_text_field($_POST['action']);
+
+      switch ($action) {
+        case 'add_tree':
+          $this->handle_add_tree();
+          break;
+        case 'update_tree':
+          $this->handle_update_tree();
+          break;
+        case 'delete_tree':
+          $this->handle_delete_tree();
+          break;
+        case 'clear_tree':
+          $this->handle_clear_tree();
+          break;
+      }
+    }
+  }
+
+  /**
+   * Handle bulk tree actions
+   */
+  private function handle_bulk_tree_actions()
+  {
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_bulk_trees')) {
+      wp_die('Security check failed');
+    }
+
+    $tree_ids = array_map('sanitize_text_field', $_POST['tree_ids']);
+    $action = sanitize_text_field($_POST['action']);
+
+    // Handle action2 from bottom bulk selector
+    if ($action === '-1' && isset($_POST['action2']) && $_POST['action2'] !== '-1') {
+      $action = sanitize_text_field($_POST['action2']);
+    }
+
+    $success_count = 0;
+    $error_count = 0;
+
+    switch ($action) {
+      case 'delete':
+        foreach ($tree_ids as $tree_id) {
+          if ($this->delete_tree_data($tree_id, false)) {
+            $success_count++;
+          } else {
+            $error_count++;
+          }
+        }
+
+        if ($success_count > 0) {
+          $this->add_admin_notice(
+            sprintf(_n('%d tree deleted successfully.', '%d trees deleted successfully.', $success_count, 'heritagepress'), $success_count),
+            'success'
+          );
+        }
+
+        if ($error_count > 0) {
+          $this->add_admin_notice(
+            sprintf(_n('Failed to delete %d tree.', 'Failed to delete %d trees.', $error_count, 'heritagepress'), $error_count),
+            'error'
+          );
+        }
+        break;
+
+      case 'clear_data':
+        foreach ($tree_ids as $tree_id) {
+          if ($this->delete_tree_data($tree_id, true)) {
+            $success_count++;
+          } else {
+            $error_count++;
+          }
+        }
+
+        if ($success_count > 0) {
+          $this->add_admin_notice(
+            sprintf(_n('Data cleared from %d tree successfully.', 'Data cleared from %d trees successfully.', $success_count, 'heritagepress'), $success_count),
+            'success'
+          );
+        }
+
+        if ($error_count > 0) {
+          $this->add_admin_notice(
+            sprintf(_n('Failed to clear data from %d tree.', 'Failed to clear data from %d trees.', $error_count, 'heritagepress'), $error_count),
+            'error'
+          );
+        }
+        break;
+    }
+
+    // Redirect to browse tab to show the notices
+    wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse'));
+    exit;
+  }
+
+  /**
+   * Handle add tree action
+   */
+  private function handle_add_tree()
+  {
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_add_tree')) {
+      wp_die('Security check failed');
+    }
+
+    global $wpdb;
+    $trees_table = $wpdb->prefix . 'hp_trees';
+
+    $gedcom = sanitize_text_field($_POST['gedcom']);
+    $treename = sanitize_text_field($_POST['treename']);
+    $description = sanitize_textarea_field($_POST['description']);
+    $owner = sanitize_text_field($_POST['owner']);
+    $email = sanitize_email($_POST['email']);
+
+    $result = $wpdb->insert(
+      $trees_table,
+      array(
+        'gedcom' => $gedcom,
+        'treename' => $treename,
+        'description' => $description,
+        'owner' => $owner,
+        'email' => $email,
+        'secret' => isset($_POST['private']) ? 1 : 0,
+        'disallowgedcreate' => isset($_POST['disallowgedcreate']) ? 1 : 0,
+        'disallowpdf' => isset($_POST['disallowpdf']) ? 1 : 0
+      ),
+      array('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d')
+    );
+    if ($result) {
+      $this->add_admin_notice('Tree added successfully!', 'success');
+      // Redirect to browse tab to show the notice
+      wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse'));
+      exit;
+    } else {
+      $this->add_admin_notice('Error adding tree.', 'error');
+      // Redirect back to add tab to show the error
+      wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=add'));
+      exit;
+    }
+  }
+
+  /**
+   * Handle update tree action
+   */
+  private function handle_update_tree()
+  {
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_update_tree')) {
+      wp_die('Security check failed');
+    }
+
+    global $wpdb;
+    $trees_table = $wpdb->prefix . 'hp_trees';
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+    $treename = sanitize_text_field($_POST['treename']);
+    $description = sanitize_textarea_field($_POST['description']);
+    $owner = sanitize_text_field($_POST['owner']);
+    $email = sanitize_email($_POST['email']);
+    $address = sanitize_textarea_field($_POST['address']);
+    $city = sanitize_text_field($_POST['city']);
+    $state = sanitize_text_field($_POST['state']);
+    $country = sanitize_text_field($_POST['country']);
+    $zip = sanitize_text_field($_POST['zip']);
+    $phone = sanitize_text_field($_POST['phone']);
+
+    $result = $wpdb->update(
+      $trees_table,
+      array(
+        'treename' => $treename,
+        'description' => $description,
+        'owner' => $owner,
+        'email' => $email,
+        'address' => $address,
+        'city' => $city,
+        'state' => $state,
+        'country' => $country,
+        'zip' => $zip,
+        'phone' => $phone,
+        'secret' => isset($_POST['private']) ? 1 : 0,
+        'disallowgedcreate' => isset($_POST['disallowgedcreate']) ? 1 : 0,
+        'disallowpdf' => isset($_POST['disallowpdf']) ? 1 : 0
+      ),
+      array('gedcom' => $tree_id),
+      array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d'),
+      array('%s')
+    );
+    if ($result !== false) {
+      $this->add_admin_notice('Tree updated successfully!', 'success');
+      // Redirect to browse tab to show the notice
+      wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse'));
+      exit;
+    } else {
+      $this->add_admin_notice('Error updating tree.', 'error');
+      // Redirect back to edit tab to show the error
+      wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=edit&tree=' . urlencode($tree_id)));
+      exit;
+    }
+  }
+
+  /**
+   * Handle delete tree action
+   */
+  private function handle_delete_tree()
+  {
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_delete_tree')) {
+      wp_die('Security check failed');
+    }
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+    $data_only = isset($_POST['data_only']) && $_POST['data_only'] == '1';
+    $this->delete_tree_data($tree_id, $data_only);
+
+    if ($data_only) {
+      $this->add_admin_notice('Tree data cleared successfully!', 'success');
+    } else {
+      $this->add_admin_notice('Tree deleted successfully!', 'success');
+    }
+
+    // Redirect to browse tab to show the notice
+    wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse'));
+    exit;
+  }
+
+  /**
+   * Handle clear tree action
+   */
+  private function handle_clear_tree()
+  {
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_clear_tree')) {
+      wp_die('Security check failed');
+    }
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+    $this->delete_tree_data($tree_id, true);
+
+    $this->add_admin_notice('Tree data cleared successfully!', 'success');
+
+    // Redirect to browse tab to show the notice
+    wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse'));
+    exit;
+  }
+  /**
+   * Delete tree data (and optionally tree configuration)
+   */
+  private function delete_tree_data($tree_id, $data_only = true)
+  {
+    global $wpdb;
+
+    try {
+      // List of tables that contain tree data
+      $data_tables = array(
+        'hp_people',
+        'hp_families',
+        'hp_children',
+        'hp_events',
+        'hp_sources',
+        'hp_citations',
+        'hp_repositories',
+        'hp_media',
+        'hp_medialinks',
+        'hp_places',
+        'hp_addresses',
+        'hp_xnotes',
+        'hp_notelinks',
+        'hp_associations',
+        'hp_branches',
+        'hp_branchlinks',
+        'hp_albumlinks',
+        'hp_albumplinks',
+        'hp_dna_tests',
+        'hp_dna_links'
+      );
+
+      // Delete data from all tables
+      foreach ($data_tables as $table) {
+        $table_name = $wpdb->prefix . $table;
+        $wpdb->delete($table_name, array('gedcom' => $tree_id), array('%s'));
+      }
+
+      // If not data only, delete the tree configuration too
+      if (!$data_only) {
+        $trees_table = $wpdb->prefix . 'hp_trees';
+        $result = $wpdb->delete($trees_table, array('gedcom' => $tree_id), array('%s'));
+        return $result !== false;
+      }
+
+      return true;
+    } catch (Exception $e) {
+      return false;
+    }
   }
 
   /**
@@ -395,6 +823,87 @@ class HP_Admin
     ), ARRAY_A);
 
     wp_send_json_success($branches);
+  }
+
+  /**
+   * AJAX handler for checking tree ID availability
+   */
+  public function ajax_check_tree_id()
+  {
+    if (!wp_verify_nonce($_POST['nonce'], 'heritagepress_check_tree')) {
+      wp_die('Security check failed');
+    }
+
+    if (!current_user_can('edit_genealogy')) {
+      wp_die('Insufficient permissions');
+    }
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+
+    global $wpdb;
+    $trees_table = $wpdb->prefix . 'hp_trees';
+    $exists = $wpdb->get_var($wpdb->prepare(
+      "SELECT COUNT(*) FROM $trees_table WHERE gedcom = %s",
+      $tree_id
+    ));
+
+    if ($exists > 0) {
+      wp_send_json_error('Tree ID already exists');
+    } else {
+      wp_send_json_success('Tree ID available');
+    }
+  }
+
+  /**
+   * AJAX handler for deleting trees
+   */
+  public function ajax_delete_tree()
+  {
+    if (!wp_verify_nonce($_POST['nonce'], 'heritagepress_delete_tree')) {
+      wp_die('Security check failed');
+    }
+
+    if (!current_user_can('edit_genealogy')) {
+      wp_die('Insufficient permissions');
+    }
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+    $data_only = isset($_POST['data_only']) && $_POST['data_only'] == '1';
+
+    try {
+      $this->delete_tree_data($tree_id, !$data_only);
+
+      if ($data_only) {
+        wp_send_json_success('Tree data cleared successfully');
+      } else {
+        wp_send_json_success('Tree deleted successfully');
+      }
+    } catch (Exception $e) {
+      wp_send_json_error('Error: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * AJAX handler for clearing tree data
+   */
+  public function ajax_clear_tree()
+  {
+    if (!wp_verify_nonce($_POST['nonce'], 'heritagepress_clear_tree')) {
+      wp_die('Security check failed');
+    }
+
+    if (!current_user_can('edit_genealogy')) {
+      wp_die('Insufficient permissions');
+    }
+
+    $tree_id = sanitize_text_field($_POST['tree_id']);
+
+    try {
+      $this->delete_tree_data($tree_id, true);
+      wp_send_json_success('Tree data cleared successfully');
+    } catch (Exception $e) {
+      wp_send_json_error('Error: ' . $e->getMessage());
+    }
   }
 
   /**

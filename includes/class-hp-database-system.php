@@ -147,7 +147,6 @@ class HP_Database_System
                 PRIMARY KEY (`userID`),
                 UNIQUE KEY `username` (`username`)
             ",
-
       'trees' => "
                 `gedcom` varchar(20) NOT NULL,
                 `treename` varchar(100) NOT NULL,
@@ -165,7 +164,9 @@ class HP_Database_System
                 `disallowpdf` tinyint(4) NOT NULL,
                 `lastimportdate` datetime NOT NULL,
                 `importfilename` varchar(100) NOT NULL,
-                PRIMARY KEY (`gedcom`)
+                `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`gedcom`),
+                KEY `idx_date_created` (`date_created`)
             ",
 
       'languages' => "

@@ -1,0 +1,1087 @@
+/**
+ * Trees Administration CSS
+ * Extends Import section styling for Trees functionality
+ */
+
+/* Trees navigation tabs */
+.trees-admin .nav-tab-wrapper {
+  border-bottom: 1px solid #c3c4c7;
+  margin-bottom: 20px;
+}
+
+.trees-admin .nav-tab {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #50575e;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-decoration: none;
+  margin-right: 6px;
+  position: relative;
+  top: 1px;
+}
+
+.trees-admin .nav-tab:hover {
+  background: #f6f7f7;
+  color: #135e96;
+}
+
+.trees-admin .nav-tab-active {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-bottom: 1px solid #fff;
+  color: #135e96;
+}
+
+/* Form cards */
+.trees-admin .form-card {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.trees-admin .form-card-header {
+  background: #f6f7f7;
+  border-bottom: 1px solid #c3c4c7;
+  padding: 15px 20px;
+  border-radius: 4px 4px 0 0;
+}
+
+.trees-admin .form-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.trees-admin .form-card-body {
+  padding: 20px;
+}
+
+/* Form tables */
+.trees-admin .hp-form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trees-admin .hp-form-table td {
+  padding: 8px 12px;
+  vertical-align: top;
+  border: none;
+}
+
+.trees-admin .hp-form-table td:first-child {
+  width: 150px;
+  font-weight: 500;
+  color: #1d2327;
+}
+
+/* Statistics styling */
+.trees-admin .tree-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.trees-admin .stat-box,
+.trees-admin .stat-item {
+  background: #f0f6fc;
+  border: 1px solid #c6e9ff;
+  border-radius: 4px;
+  padding: 15px;
+  text-align: center;
+}
+
+.trees-admin .stat-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #0073aa;
+  display: block;
+}
+
+.trees-admin .stat-label {
+  font-size: 12px;
+  color: #646970;
+  text-transform: uppercase;
+  margin-top: 5px;
+  display: block;
+}
+
+/* 2x2 Grid Statistics Layout */
+.tree-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stat-compact {
+  font-size: 10px;
+  font-weight: 600;
+  color: #135e96;
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+  padding: 1px 2px;
+}
+
+/* Tree list table */
+.trees-admin .tree-list-table {
+  margin-top: 20px;
+}
+
+.trees-admin .tree-list-table th,
+.trees-admin .tree-list-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #c3c4c7;
+}
+
+.trees-admin .tree-list-table th {
+  background: #f6f7f7;
+  font-weight: 600;
+}
+
+.trees-admin .tree-row:hover {
+  background: #f6f7f7;
+}
+
+/* Actions and buttons */
+.trees-admin .tree-actions {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #dcdcde;
+}
+
+.trees-admin .dangerous-actions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.trees-admin .dangerous-actions h4 {
+  color: #d63638;
+  margin-bottom: 10px;
+}
+
+.trees-admin .button-delete {
+  background: #d63638 !important;
+  border-color: #d63638 !important;
+  color: white !important;
+}
+
+.trees-admin .button-delete:hover {
+  background: #b32d2e !important;
+  border-color: #b32d2e !important;
+}
+
+/* Modal styling */
+.tree-modal {
+  position: fixed;
+  z-index: 100000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+}
+
+.tree-modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 0;
+  border: 1px solid #888;
+  border-radius: 4px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tree-modal-header {
+  padding: 15px 20px;
+  background: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tree-modal-header h3 {
+  margin: 0;
+}
+
+.tree-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-modal-body {
+  padding: 20px;
+}
+
+.tree-modal-body .warning {
+  color: #d63638;
+  font-weight: 500;
+}
+
+.tree-modal-footer {
+  padding: 15px 20px;
+  background: #f1f1f1;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 4px 4px;
+  text-align: right;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Browse Trees Admin Interface Styling */
+.browse-trees-admin-section {
+  margin: 0;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  overflow: hidden; /* Ensure all content is contained */
+}
+
+.browse-trees-admin-section form {
+  margin: 0;
+  background: #fff;
+}
+
+/* Additional containment and layout fixes */
+.browse-trees-admin-section * {
+  box-sizing: border-box;
+}
+
+.browse-trees-admin-section .tablenav {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-top: 1px solid #c3c4c7;
+  border-bottom: 1px solid #c3c4c7;
+}
+
+.browse-trees-admin-section .wp-list-table {
+  margin: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.browse-trees-admin-section .trees-admin-table {
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+.browse-trees-admin-section .trees-admin-table th,
+.browse-trees-admin-section .trees-admin-table td {
+  border-left: none;
+  border-right: none;
+}
+
+/* Ensure form stays within container */
+#trees-admin-form {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+}
+
+/* Fix any floating elements */
+.browse-trees-admin-section .alignleft,
+.browse-trees-admin-section .alignright {
+  float: none !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ensure proper spacing and containment */
+.browse-trees-admin-section .tablenav .actions {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.browse-trees-admin-section .tablenav .displaying-num {
+  margin: 0;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Compact Header Layout */
+.admin-header-compact {
+  background: #f8f9fa;
+  border-bottom: 2px solid #c3c4c7;
+  padding: 12px 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-actions .button {
+  font-weight: 600;
+  border: 2px solid;
+  padding: 6px 12px;
+  height: auto;
+}
+
+.admin-actions .button-primary {
+  background: #0073aa;
+  border-color: #005177;
+  color: #fff;
+  font-weight: 700;
+}
+
+.admin-actions .button-primary:hover {
+  background: #005177;
+  border-color: #003d5c;
+}
+
+/* Compact Search Section */
+.search-section-compact {
+  min-width: 300px;
+  flex: 1;
+  max-width: 500px;
+}
+
+.tree-search-form {
+  margin: 0;
+}
+
+.search-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  padding: 6px 12px;
+  border: 2px solid #8c8f94;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.search-input:focus {
+  border-color: #135e96;
+  outline: none;
+  box-shadow: 0 0 0 1px #135e96;
+}
+
+.search-results-info {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #e7f3ff;
+  border: 1px solid #72aee6;
+  border-radius: 3px;
+  color: #135e96;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Trees Admin Table */
+.trees-admin-table {
+  border: 1px solid #c3c4c7;
+}
+
+.trees-admin-table td,
+.trees-admin-table th {
+  padding: 8px 12px;
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+/* Center all table headers except checkbox column */
+.trees-admin-table th:not(.check-column) {
+  text-align: center;
+}
+
+.trees-admin-table .tree-row {
+  border-bottom: 1px solid #c3c4c7;
+}
+
+.trees-admin-table .tree-row:hover {
+  background-color: #f6f7f7;
+}
+
+.trees-admin-table .check-column {
+  width: 2.2em;
+  text-align: center;
+}
+
+.trees-admin-table .column-treename {
+  width: 20%;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-description {
+  width: 20%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-owner {
+  width: 15%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-stats {
+  width: 15%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-settings {
+  width: 12%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-created {
+  width: 11%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-lastimport {
+  width: 11%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Tree Name Column */
+.treename {
+  text-align: center;
+}
+
+.treename .row-title {
+  font-weight: 700;
+  color: #135e96;
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.treename .row-title:hover {
+  color: #0a4b78;
+  text-decoration: underline;
+}
+
+.tree-id {
+  color: #2c3338;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.row-actions {
+  color: #2c3338;
+  font-size: 13px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.row-actions span {
+  display: inline;
+}
+
+.row-actions a {
+  color: #135e96;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.row-actions a:hover {
+  color: #0a4b78;
+  text-decoration: underline;
+}
+
+.row-actions .submitdelete {
+  color: #cc1818;
+  font-weight: 500;
+}
+
+.row-actions .submitdelete:hover {
+  color: #a00;
+  text-decoration: underline;
+}
+
+/* Statistics Column */
+.tree-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.3;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 1px 0;
+}
+
+.stat-label {
+  color: #2c3338;
+  font-weight: 600;
+}
+
+.stat-number {
+  font-weight: 700;
+  color: #135e96;
+}
+
+/* Compact Statistics Column */
+.tree-stats-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1.2;
+}
+
+.stat-inline {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #135e96;
+  padding: 1px 0;
+  white-space: nowrap;
+}
+
+.stat-inline:before {
+  content: "• ";
+  color: #72aee6;
+  font-weight: bold;
+}
+
+/* Settings Column */
+.tree-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+  align-items: center;
+  text-align: center;
+}
+
+.setting-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: white;
+  margin-bottom: 2px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  min-width: 75px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  justify-content: center;
+}
+
+.setting-badge .dashicons {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.setting-badge.private {
+  background-color: #cc1818;
+  border: 2px solid #a00;
+}
+
+.setting-badge.public {
+  background-color: #046b00;
+  border: 2px solid #035200;
+}
+
+.restrictions-legend {
+  font-size: 9px;
+  color: #666;
+  margin-top: 2px;
+  line-height: 1.1;
+}
+
+.restrictions-legend small {
+  font-weight: 500;
+}
+
+/* Last Import Column */
+.import-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.import-date {
+  font-weight: 700;
+  color: #135e96;
+  font-size: 13px;
+}
+
+.import-time {
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.import-file {
+  color: #135e96;
+  font-size: 10px;
+  margin-top: 2px;
+  text-decoration: none;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.import-file:hover {
+  text-decoration: underline;
+}
+
+.no-import {
+  color: #646970;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Tree Created Column */
+.created-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.created-date {
+  font-weight: 700;
+  color: #135e96;
+  font-size: 13px;
+}
+
+.created-time {
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.no-created {
+  color: #646970;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Column Widths for Better Layout */
+.trees-admin-table .check-column {
+  width: 30px;
+  text-align: center;
+}
+
+.trees-admin-table .column-treename {
+  width: 22%;
+  font-weight: 600;
+}
+
+.trees-admin-table .column-description {
+  width: 25%;
+}
+
+.trees-admin-table .column-owner {
+  width: 18%;
+}
+
+.trees-admin-table .column-stats {
+  width: 10%;
+}
+
+.trees-admin-table .column-settings {
+  width: 12%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-created {
+  width: 11%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trees-admin-table .column-lastimport {
+  width: 11%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Better contrast for descriptions and owner info */
+.column-description {
+  color: #1a1a1a;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.column-owner {
+  color: #1a1a1a;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.column-owner a {
+  color: #135e96;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.column-owner a:hover {
+  color: #0a4b78;
+  text-decoration: underline;
+}
+
+/* Enhanced Bulk Actions */
+.tablenav {
+  margin: 0;
+  height: auto;
+  clear: both;
+  background: #f8f9fa;
+  border-top: 1px solid #c3c4c7;
+  border-bottom: 1px solid #c3c4c7;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tablenav.top {
+  border-top: none;
+  border-bottom: 2px solid #c3c4c7;
+  border-radius: 0;
+}
+
+.tablenav.bottom {
+  border-top: 2px solid #c3c4c7;
+  border-bottom: none;
+  border-radius: 0;
+}
+
+.tablenav .alignleft {
+  float: none;
+  margin: 0;
+}
+
+.tablenav .alignright {
+  float: none;
+  margin: 0;
+}
+
+.tablenav .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulkactions select {
+  border: 2px solid #8c8f94;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #fff;
+  border-radius: 3px;
+  min-width: 150px;
+}
+
+.bulkactions select:focus {
+  border-color: #135e96;
+  outline: none;
+}
+
+.bulkactions .button {
+  font-weight: 600;
+  border: 2px solid #8c8f94;
+  padding: 6px 12px;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 3px;
+}
+
+.bulkactions .button:hover {
+  background: #f0f0f0;
+  border-color: #135e96;
+  color: #135e96;
+}
+
+.displaying-num {
+  font-weight: 600;
+  color: #135e96;
+  font-size: 13px;
+}
+
+/* Enhanced bulk actions styling */
+.browse-trees-admin-section .bulkactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.browse-trees-admin-section .bulkactions select {
+  border: 2px solid #8c8f94;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #fff;
+  border-radius: 3px;
+  min-width: 140px;
+}
+
+.browse-trees-admin-section .bulkactions select:focus {
+  border-color: #135e96;
+  outline: none;
+  box-shadow: 0 0 0 1px #135e96;
+}
+
+.browse-trees-admin-section .bulkactions .button {
+  font-weight: 600;
+  border: 2px solid #8c8f94;
+  background: #f6f7f7;
+  color: #1a1a1a;
+  padding: 6px 12px;
+  border-radius: 3px;
+}
+
+.browse-trees-admin-section .bulkactions .button:hover {
+  background: #f0f0f1;
+  border-color: #135e96;
+  color: #135e96;
+}
+
+.browse-trees-admin-section .tablenav.top {
+  border-top: none;
+  border-bottom: 2px solid #c3c4c7;
+}
+
+.browse-trees-admin-section .tablenav.bottom {
+  border-top: 2px solid #c3c4c7;
+  border-bottom: none;
+  border-radius: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .trees-admin .tree-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .trees-admin .hp-form-table td:first-child {
+    width: 120px;
+  }
+
+  .tree-modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .trees-admin-table .column-description {
+    width: 18%;
+  }
+
+  .trees-admin-table .column-stats {
+    width: 13%;
+  }
+
+  .trees-admin-table .column-created {
+    width: 12%;
+  }
+
+  .trees-admin-table .column-lastimport {
+    width: 12%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .admin-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .search-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-input {
+    min-width: auto;
+  }
+  .trees-admin-table .column-settings,
+  .trees-admin-table .column-created,
+  .trees-admin-table .column-lastimport {
+    display: none;
+  }
+
+  .trees-admin-table .column-treename {
+    width: 40%;
+  }
+
+  .trees-admin-table .column-owner {
+    width: 30%;
+  }
+
+  .trees-admin-table .column-stats {
+    width: 30%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .trees-admin-table .column-created,
+  .trees-admin-table .column-lastimport {
+    display: none;
+  }
+
+  .trees-admin-table .column-treename {
+    width: 35%;
+  }
+
+  .trees-admin-table .column-description {
+    width: 35%;
+  }
+
+  .trees-admin-table .column-owner {
+    width: 30%;
+  }
+}
+
+/* Form validation */
+.trees-admin .required {
+  color: #d63638;
+}
+
+.trees-admin .description {
+  margin-top: 5px;
+  font-style: italic;
+  color: #646970;
+  font-size: 13px;
+}
+
+/* Search and pagination */
+.trees-admin .search-results-info {
+  background: #e7f3ff;
+  border: 1px solid #72aee6;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.trees-admin .no-trees-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #646970;
+}
+
+.trees-admin .pagination-links a,
+.trees-admin .pagination-links .current {
+  padding: 3px 5px;
+  margin: 2px;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  color: #0073aa;
+}
+
+.trees-admin .pagination-links .current {
+  background: #0073aa;
+  color: white;
+}
+
+/* High Contrast Mode for Accessibility */
+@media (prefers-contrast: high) {
+  .trees-admin-table {
+    border: 3px solid #000;
+  }
+
+  .trees-admin-table th {
+    background: #000;
+    color: #fff;
+    border-bottom: 3px solid #000;
+  }
+
+  .trees-admin-table .tree-row {
+    border-bottom: 2px solid #000;
+  }
+
+  .treename .row-title {
+    color: #000;
+    font-weight: 900;
+  }
+
+  .stat-inline {
+    color: #000;
+    font-weight: 900;
+  }
+
+  .setting-badge {
+    border-width: 3px;
+    font-weight: 900;
+  }
+}
