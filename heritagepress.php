@@ -102,6 +102,9 @@ class HeritagePress
    */
   public function init()
   {
+    // Suppress specific PHP notices that don't affect functionality
+    add_action('admin_init', array($this, 'suppress_minor_warnings'), 1);
+
     // Initialize database manager
     $this->database = new HP_Database_Manager();
 
@@ -167,6 +170,29 @@ class HeritagePress
       $admin->add_cap('manage_genealogy');
       $admin->add_cap('edit_genealogy');
       $admin->add_cap('import_gedcom');
+    }
+  }
+
+  /**
+   * Suppress minor PHP warnings that don't affect functionality
+   */
+  public function suppress_minor_warnings()
+  {
+    // Custom error handler for zlib and output buffering notices
+    if (!defined('WP_DEBUG') || !WP_DEBUG) {
+      $original_handler = set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$original_handler) {
+        // Suppress specific zlib output compression notices
+        if (strpos($errstr, 'ob_end_flush(): Failed to send buffer of zlib output compression') !== false) {
+          return true; // Suppress this error
+        }
+
+        // Call the original error handler for other errors
+        if ($original_handler) {
+          return call_user_func($original_handler, $errno, $errstr, $errfile, $errline);
+        }
+
+        return false; // Let PHP handle other errors normally
+      });
     }
   }
 }
