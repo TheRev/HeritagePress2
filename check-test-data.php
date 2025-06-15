@@ -7,10 +7,10 @@ echo "=== HeritagePress Test Data Check ===\n\n";
 
 // Check trees
 echo "Trees table records:\n";
-$trees = $wpdb->get_results("SELECT gedcom, treename FROM {$wpdb->prefix}hp_trees");
+$trees = $wpdb->get_results("SELECT gedcom, treename, people_count FROM {$wpdb->prefix}hp_trees");
 if ($trees) {
   foreach ($trees as $tree) {
-    echo "- {$tree->gedcom}: {$tree->treename}\n";
+    echo "- {$tree->gedcom}: {$tree->treename} ({$tree->people_count} people)\n";
   }
 } else {
   echo "No trees found\n";

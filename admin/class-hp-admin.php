@@ -1492,26 +1492,47 @@ class HP_Admin
 
       require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
       dbDelta($sql);
-    } // Create/update the test tree record first (matching actual table structure)
+    }
+
+    // Check if trees table exists, create if needed
+    if ($wpdb->get_var("SHOW TABLES LIKE '$trees_table'") != $trees_table) {
+      $trees_sql = "CREATE TABLE $trees_table (
+        ID int(11) NOT NULL AUTO_INCREMENT,
+        gedcom varchar(50) NOT NULL,
+        treename varchar(255) NOT NULL,
+        description text,
+        owner varchar(100) DEFAULT NULL,
+        email varchar(100) DEFAULT NULL,
+        rootpersonID varchar(20) DEFAULT NULL,
+        living_prefix varchar(10) DEFAULT '',
+        allow_living varchar(10) DEFAULT 'yes',
+        people_count int(11) DEFAULT 0,
+        family_count int(11) DEFAULT 0,
+        changedate datetime DEFAULT CURRENT_TIMESTAMP,
+        changedby varchar(50) DEFAULT NULL,
+        PRIMARY KEY (ID),
+        UNIQUE KEY gedcom (gedcom)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
+      require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+      dbDelta($trees_sql);
+    }
+
+    // Create/update the test tree record first
     $tree_data = array(
       'gedcom' => 'test_tree',
       'treename' => 'Test Family Tree',
       'description' => 'Sample tree for testing HeritagePress People section',
       'owner' => 'test_admin',
       'email' => 'test@example.com',
-      'address' => '',
-      'city' => '',
-      'state' => '',
-      'country' => '',
-      'zip' => '',
-      'phone' => '',
-      'secret' => 0,
-      'disallowgedcreate' => 0,
-      'disallowpdf' => 0,
-      'lastimportdate' => current_time('mysql'),
-      'importfilename' => 'test_data',
-      'date_created' => current_time('mysql')
-    ); // Check if test tree already exists
+      'rootpersonID' => 'I1',
+      'living_prefix' => '',
+      'allow_living' => 'yes',
+      'people_count' => 5,
+      'family_count' => 0,
+      'changedate' => current_time('mysql'),
+      'changedby' => 'test_import'
+    );    // Check if test tree already exists
     $existing_tree = $wpdb->get_var($wpdb->prepare(
       "SELECT gedcom FROM $trees_table WHERE gedcom = %s",
       'test_tree'

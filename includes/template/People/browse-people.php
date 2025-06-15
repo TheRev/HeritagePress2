@@ -219,43 +219,51 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
           </select>
         </div>
 
-        <div class="search-buttons">
+        <div class="search-field">
           <input type="submit" class="button button-primary" value="<?php _e('Search', 'heritagepress'); ?>" />
           <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=browse'); ?>" class="button"><?php _e('Clear', 'heritagepress'); ?></a>
         </div>
       </div>
 
-      <!-- Filter Options -->
-      <div class="filter-options">
-        <label>
-          <input type="checkbox" name="exactmatch" value="yes" <?php checked($search_params['exactmatch'], 'yes'); ?> />
-          <?php _e('Exact match only', 'heritagepress'); ?>
-        </label>
+      <!-- Advanced Search Options -->
+      <div class="advanced-search-toggle">
+        <button type="button" class="button button-link" id="toggle-advanced"><?php _e('Advanced Options', 'heritagepress'); ?> <span class="dashicons dashicons-arrow-down-alt2"></span></button>
+      </div>
 
-        <label>
-          <input type="checkbox" name="living" value="yes" <?php checked($search_params['living'], 'yes'); ?> />
-          <?php _e('Living people only', 'heritagepress'); ?>
-        </label>
+      <div class="advanced-search-options" id="advanced-options" style="display: none;">
+        <div class="option-row">
+          <label>
+            <input type="checkbox" name="exactmatch" value="yes" <?php checked($search_params['exactmatch'], 'yes'); ?> />
+            <?php _e('Exact match only', 'heritagepress'); ?>
+          </label>
 
-        <label>
-          <input type="checkbox" name="private" value="yes" <?php checked($search_params['private'], 'yes'); ?> />
-          <?php _e('Private people only', 'heritagepress'); ?>
-        </label>
+          <label>
+            <input type="checkbox" name="living" value="yes" <?php checked($search_params['living'], 'yes'); ?> />
+            <?php _e('Living people only', 'heritagepress'); ?>
+          </label>
 
-        <label>
-          <input type="checkbox" name="noparents" value="yes" <?php checked($search_params['noparents'], 'yes'); ?> />
-          <?php _e('No parents', 'heritagepress'); ?>
-        </label>
+          <label>
+            <input type="checkbox" name="private" value="yes" <?php checked($search_params['private'], 'yes'); ?> />
+            <?php _e('Private people only', 'heritagepress'); ?>
+          </label>
+        </div>
 
-        <label>
-          <input type="checkbox" name="nospouse" value="yes" <?php checked($search_params['nospouse'], 'yes'); ?> />
-          <?php _e('No spouse', 'heritagepress'); ?>
-        </label>
+        <div class="option-row">
+          <label>
+            <input type="checkbox" name="noparents" value="yes" <?php checked($search_params['noparents'], 'yes'); ?> />
+            <?php _e('No parents', 'heritagepress'); ?>
+          </label>
 
-        <label>
-          <input type="checkbox" name="nokids" value="yes" <?php checked($search_params['nokids'], 'yes'); ?> />
-          <?php _e('No children', 'heritagepress'); ?>
-        </label>
+          <label>
+            <input type="checkbox" name="nospouse" value="yes" <?php checked($search_params['nospouse'], 'yes'); ?> />
+            <?php _e('No spouse', 'heritagepress'); ?>
+          </label>
+
+          <label>
+            <input type="checkbox" name="nokids" value="yes" <?php checked($search_params['nokids'], 'yes'); ?> />
+            <?php _e('No children', 'heritagepress'); ?>
+          </label>
+        </div>
       </div>
     </form>
   </div>
@@ -336,21 +344,18 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
             </th>
             <?php if (count($trees_result) > 1): ?>
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
-            <?php endif; ?>
-            <th scope="col" class="manage-column column-changed sortable">
+            <?php endif; ?> <th scope="col" class="manage-column column-changed sortable">
               <a href="<?php echo esc_url($change_sort_link); ?>">
                 <span><?php _e('Last Changed', 'heritagepress'); ?></span>
                 <span class="sorting-indicator"></span>
               </a>
             </th>
-            <th scope="col" class="manage-column column-actions"><?php _e('Actions', 'heritagepress'); ?></th>
           </tr>
         </thead>
 
         <tbody id="the-list">
-          <?php if (!empty($people_results)): ?>
-            <?php foreach ($people_results as $person): ?>
-              <tr id="person-<?php echo esc_attr($person['ID']); ?>" class="<?php echo (!empty($person['deathdate']) || $person['living'] == 0) ? 'person-deceased' : 'person-living'; ?>">
+          <?php if (!empty($people_results)): ?> <?php foreach ($people_results as $person): ?>
+              <tr id="person-<?php echo esc_attr($person['ID']); ?>" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-gedcom="<?php echo esc_attr($person['gedcom']); ?>">
                 <th scope="row" class="check-column">
                   <input type="checkbox" name="selected_people[]" value="<?php echo esc_attr($person['ID']); ?>" />
                 </th>
@@ -364,6 +369,17 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                     <span class="edit">
                       <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>"><?php _e('Edit', 'heritagepress'); ?></a>
                     </span>
+                    <span class="view">
+                      | <a href="#"
+                        onclick="alert('Person view page coming soon!'); return false;"
+                        title="<?php _e('View this person on frontend', 'heritagepress'); ?>"><?php _e('View', 'heritagepress'); ?></a>
+                    </span>
+                    <span class="delete">
+                      | <a href="#"
+                        onclick="if(confirm('<?php printf(__('Are you sure you want to delete %s? This action cannot be undone.', 'heritagepress'), esc_js($person['firstname'] . ' ' . $person['lastname'])); ?>')) { deletePerson('<?php echo esc_js($person['personID']); ?>', '<?php echo esc_js($person['gedcom']); ?>'); } return false;"
+                        title="<?php _e('Delete this person', 'heritagepress'); ?>"
+                        class="delete-link"><?php _e('Delete', 'heritagepress'); ?></a>
+                    </span>
                   </div>
                 </td>
                 <td class="column-photo">
@@ -373,20 +389,22 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                   </div>
                 </td>
                 <td class="column-name">
-                  <?php
-                  $name_parts = array();
-                  if (!empty($person['prefix'])) $name_parts[] = $person['prefix'];
-                  if (!empty($person['firstname'])) $name_parts[] = $person['firstname'];
-                  if (!empty($person['lnprefix'])) $name_parts[] = $person['lnprefix'];
-                  if (!empty($person['lastname'])) $name_parts[] = '<strong>' . $person['lastname'] . '</strong>';
-                  if (!empty($person['suffix'])) $name_parts[] = $person['suffix'];
+                  <div class="person-name">
+                    <?php
+                                                    $name_parts = array();
+                                                    if (!empty($person['prefix'])) $name_parts[] = $person['prefix'];
+                                                    if (!empty($person['firstname'])) $name_parts[] = $person['firstname'];
+                                                    if (!empty($person['lnprefix'])) $name_parts[] = $person['lnprefix'];
+                                                    if (!empty($person['lastname'])) $name_parts[] = '<strong>' . $person['lastname'] . '</strong>';
+                                                    if (!empty($person['suffix'])) $name_parts[] = $person['suffix'];
 
-                  echo implode(' ', $name_parts);
+                                                    echo implode(' ', $name_parts);
 
-                  if (!empty($person['nickname'])) {
-                    echo ' <em>"' . esc_html($person['nickname']) . '"</em>';
-                  }
-                  ?>
+                                                    if (!empty($person['nickname'])) {
+                                                      echo ' <em>"' . esc_html($person['nickname']) . '"</em>';
+                                                    }
+                    ?>
+                  </div>
 
                   <div class="person-status">
                     <?php if ($person['living'] == 1): ?>
@@ -427,28 +445,16 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                   <td class="column-tree">
                     <?php echo esc_html($person['treename']); ?>
                   </td>
-                <?php endif; ?>
-                <td class="column-changed">
+                <?php endif; ?> <td class="column-changed">
                   <?php echo esc_html($person['changedate_formatted']); ?>
                   <?php if (!empty($person['changedby'])): ?>
                     <br><small><?php echo esc_html($person['changedby']); ?></small>
                   <?php endif; ?>
                 </td>
-                <td class="column-actions">
-                  <div class="action-buttons">
-                    <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>" class="button button-small" title="<?php _e('Edit Person', 'heritagepress'); ?>">
-                      <span class="dashicons dashicons-edit"></span>
-                    </a>
-                    <button type="button" class="button button-small delete-person" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-tree="<?php echo esc_attr($person['gedcom']); ?>" title="<?php _e('Delete Person', 'heritagepress'); ?>">
-                      <span class="dashicons dashicons-trash"></span>
-                    </button>
-                  </div>
-                </td>
               </tr>
             <?php endforeach; ?>
-          <?php else: ?>
-            <tr class="no-items">
-              <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '9' : '8'; ?>">
+          <?php else: ?> <tr class="no-items">
+              <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '8' : '7'; ?>">
                 <?php _e('No people found.', 'heritagepress'); ?>
               </td>
             </tr>
@@ -468,9 +474,7 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
             <th scope="col" class="manage-column column-death"><?php _e('Death', 'heritagepress'); ?></th>
             <?php if (count($trees_result) > 1): ?>
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
-            <?php endif; ?>
-            <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>
-            <th scope="col" class="manage-column column-actions"><?php _e('Actions', 'heritagepress'); ?></th>
+            <?php endif; ?> <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>
           </tr>
         </tfoot>
       </table>
@@ -565,4 +569,29 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
       }
     });
   });
+
+  // Global delete function called from row actions
+  function deletePerson(personID, gedcom) {
+    if (!personID || !gedcom) {
+      alert('Invalid person ID or tree');
+      return;
+    }
+
+    // Show loading state
+    const deleteLinks = document.querySelectorAll(`a[onclick*="${personID}"]`);
+    deleteLinks.forEach(link => {
+      link.style.opacity = '0.5';
+      link.style.pointerEvents = 'none';
+    });
+
+    // Create and submit delete form
+    var form = jQuery('<form method="post">')
+      .append(jQuery('<input type="hidden" name="action" value="delete_person">'))
+      .append(jQuery('<input type="hidden" name="personID" value="' + personID + '">'))
+      .append(jQuery('<input type="hidden" name="gedcom" value="' + gedcom + '">'))
+      .append('<?php echo wp_nonce_field('heritagepress_delete_person', '_wpnonce', true, false); ?>');
+
+    jQuery('body').append(form);
+    form.submit();
+  }
 </script>

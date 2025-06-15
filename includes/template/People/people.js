@@ -10,8 +10,10 @@
   window.HeritagePressPeople = {
     /**
      * Initialize people management
-     */ init: function () {
+     */
+    init: function () {
       this.bindEvents();
+      this.initAdvancedSearch();
       this.initBulkActions();
       this.initPersonForms();
       this.initPersonIDHandling();
@@ -22,6 +24,12 @@
      */
     bindEvents: function () {
       var self = this;
+
+      // Advanced search toggle
+      $(document).on("click", "#toggle-advanced", function (e) {
+        e.preventDefault();
+        self.toggleAdvancedSearch();
+      });
 
       // Select all checkboxes
       $(document).on(
@@ -69,10 +77,39 @@
         e.preventDefault();
         self.switchTab($(this));
       });
-    }
+    },
+
+    /**
+     * Initialize advanced search functionality
+     */
+    initAdvancedSearch: function () {
+      // Show advanced options if any are selected
+      var hasAdvancedSelected =
+        $(
+          'input[name="exactmatch"]:checked, input[name="living"]:checked, input[name="private"]:checked, input[name="noparents"]:checked, input[name="nospouse"]:checked, input[name="nokids"]:checked'
+        ).length > 0;
+
+      if (hasAdvancedSelected) {
+        $("#advanced-options").show();
+        $("#toggle-advanced .dashicons")
+          .removeClass("dashicons-arrow-down-alt2")
+          .addClass("dashicons-arrow-up-alt2");
+      }
+    },
+
+    /**
+     * Toggle advanced search options
+     */
+    toggleAdvancedSearch: function () {
+      $("#advanced-options").slideToggle();
+      $("#toggle-advanced .dashicons").toggleClass(
+        "dashicons-arrow-down-alt2 dashicons-arrow-up-alt2"
+      );
+    },
+
     /**
      * Initialize bulk actions
-     */,
+     */
     initBulkActions: function () {
       // Sync bulk action selectors
       $(document).on("change", "#bulk-action-selector-top", function () {
@@ -221,10 +258,11 @@
           }, 1000);
         }
       });
-    },
+    }
     /**
      * Generate a new Person ID
-     */ generatePersonID: function () {
+     */,
+    generatePersonID: function () {
       var gedcom = $("#gedcom").val();
       if (!gedcom) {
         this.showMessage("Please select a tree first.", "warning");
@@ -538,10 +576,11 @@
         e.preventDefault();
         self.printReport();
       });
-    },
+    }
     /**
      * Export report functionality
-     */ exportReport: function () {
+     */,
+    exportReport: function () {
       var reportType = $("#report").val();
       var tree = $("#tree").val();
 
@@ -645,10 +684,11 @@
       }
 
       $("#utility-modal").data("utility", utility).show();
-    },
+    }
     /**
      * Run utility
-     */ runUtility: function () {
+     */,
+    runUtility: function () {
       if (!$("#confirm-backup").is(":checked")) {
         this.showMessage(
           "Please confirm that you have created a backup before proceeding.",
