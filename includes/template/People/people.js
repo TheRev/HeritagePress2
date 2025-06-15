@@ -5,35 +5,49 @@
 
 (function ($) {
   "use strict";
-
   // Main People object
   window.HeritagePressPeople = {
+    initialized: false,
+
     /**
      * Initialize people management
      */
     init: function () {
+      // Prevent double initialization
+      if (this.initialized) {
+        return;
+      }
+
       this.bindEvents();
       this.initAdvancedSearch();
       this.initBulkActions();
       this.initPersonForms();
       this.initPersonIDHandling();
-    },
 
+      this.initialized = true;
+    }
     /**
      * Bind event handlers
-     */
+     */,
     bindEvents: function () {
       var self = this;
 
-      // Advanced search toggle
-      $(document).on("click", "#toggle-advanced", function (e) {
+      // Unbind existing events to prevent duplicates
+      $(document).off("click.hp-people", "#toggle-advanced");
+      $(document).off("change.hp-people", "#cb-select-all-1, #cb-select-all-2");
+      $(document).off("change.hp-people", 'input[name="selected_people[]"]'); // Advanced search toggle
+      $(document).on("click.hp-people", "#toggle-advanced", function (e) {
         e.preventDefault();
-        self.toggleAdvancedSearch();
-      });
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-      // Select all checkboxes
+        // Small delay to prevent double-click issues
+        setTimeout(function () {
+          self.toggleAdvancedSearch();
+        }, 10);
+      }); // Select all checkboxes
       $(document).on(
-        "change",
+        "change.hp-people",
         "#cb-select-all-1, #cb-select-all-2",
         function () {
           self.toggleSelectAll($(this));
@@ -41,9 +55,13 @@
       );
 
       // Individual checkbox handling
-      $(document).on("change", 'input[name="selected_people[]"]', function () {
-        self.updateSelectAll();
-      });
+      $(document).on(
+        "change.hp-people",
+        'input[name="selected_people[]"]',
+        function () {
+          self.updateSelectAll();
+        }
+      );
 
       // Delete person button
       $(document).on("click", ".delete-person", function (e) {
@@ -95,16 +113,29 @@
           .removeClass("dashicons-arrow-down-alt2")
           .addClass("dashicons-arrow-up-alt2");
       }
-    },
-
+    }
     /**
      * Toggle advanced search options
-     */
+     */,
     toggleAdvancedSearch: function () {
-      $("#advanced-options").slideToggle();
-      $("#toggle-advanced .dashicons").toggleClass(
-        "dashicons-arrow-down-alt2 dashicons-arrow-up-alt2"
-      );
+      console.log("Toggle advanced search called");
+      var $options = $("#advanced-options");
+      var $button = $("#toggle-advanced .dashicons");
+
+      // Use explicit show/hide instead of slideToggle to prevent conflicts
+      if ($options.is(":visible")) {
+        console.log("Hiding advanced options");
+        $options.slideUp(300);
+        $button
+          .removeClass("dashicons-arrow-up-alt2")
+          .addClass("dashicons-arrow-down-alt2");
+      } else {
+        console.log("Showing advanced options");
+        $options.slideDown(300);
+        $button
+          .removeClass("dashicons-arrow-down-alt2")
+          .addClass("dashicons-arrow-up-alt2");
+      }
     },
 
     /**
@@ -258,11 +289,10 @@
           }, 1000);
         }
       });
-    }
+    },
     /**
      * Generate a new Person ID
-     */,
-    generatePersonID: function () {
+     */ generatePersonID: function () {
       var gedcom = $("#gedcom").val();
       if (!gedcom) {
         this.showMessage("Please select a tree first.", "warning");
@@ -576,11 +606,10 @@
         e.preventDefault();
         self.printReport();
       });
-    }
+    },
     /**
      * Export report functionality
-     */,
-    exportReport: function () {
+     */ exportReport: function () {
       var reportType = $("#report").val();
       var tree = $("#tree").val();
 
@@ -684,11 +713,10 @@
       }
 
       $("#utility-modal").data("utility", utility).show();
-    }
+    },
     /**
      * Run utility
-     */,
-    runUtility: function () {
+     */ runUtility: function () {
       if (!$("#confirm-backup").is(":checked")) {
         this.showMessage(
           "Please confirm that you have created a backup before proceeding.",

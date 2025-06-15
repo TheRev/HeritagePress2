@@ -9,6 +9,9 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+// Include date utilities
+require_once __DIR__ . '/../../class-hp-date-utils.php';
+
 global $wpdb;
 
 // Get available trees
@@ -29,7 +32,12 @@ $report_types = array(
   'duplicate_names' => __('Possible Duplicates', 'heritagepress'),
   'age_statistics' => __('Age Statistics', 'heritagepress'),
   'surname_list' => __('Surname List', 'heritagepress'),
-  'orphans' => __('Orphaned Records', 'heritagepress')
+  'orphans' => __('Orphaned Records', 'heritagepress'),
+  // Enhanced date-based reports
+  'birth_years' => __('Birth Year Distribution', 'heritagepress'),
+  'comprehensive_dates' => __('Comprehensive Date Statistics', 'heritagepress'),
+  'date_quality' => __('Date Quality Report', 'heritagepress'),
+  'century_breakdown' => __('Century Breakdown', 'heritagepress')
 );
 
 $report_data = array();
@@ -69,6 +77,22 @@ if (!empty($selected_tree) || $report_type === 'statistics') {
 
     case 'orphans':
       $report_data = generate_orphans_report($wpdb, $people_table, $selected_tree);
+      break;
+
+    case 'birth_years':
+      $report_data = generate_birth_years_report($wpdb, $people_table, $selected_tree);
+      break;
+
+    case 'comprehensive_dates':
+      $report_data = generate_comprehensive_dates_report($wpdb, $people_table, $selected_tree);
+      break;
+
+    case 'date_quality':
+      $report_data = generate_date_quality_report($wpdb, $people_table, $selected_tree);
+      break;
+
+    case 'century_breakdown':
+      $report_data = generate_century_breakdown_report($wpdb, $people_table, $selected_tree);
       break;
   }
 }
@@ -174,20 +198,8 @@ function generate_duplicate_names_report($wpdb, $people_table, $selected_tree)
 
 function generate_age_statistics_report($wpdb, $people_table, $selected_tree)
 {
-  $where_clause = $selected_tree ? $wpdb->prepare("WHERE gedcom = %s", $selected_tree) : "";
-
-  // This is a simplified version - full implementation would need better date parsing
-  $query = "SELECT
-            AVG(YEAR(STR_TO_DATE(deathdate, '%d %M %Y')) - YEAR(STR_TO_DATE(birthdate, '%d %M %Y'))) as avg_age,
-            MIN(YEAR(STR_TO_DATE(deathdate, '%d %M %Y')) - YEAR(STR_TO_DATE(birthdate, '%d %M %Y'))) as min_age,
-            MAX(YEAR(STR_TO_DATE(deathdate, '%d %M %Y')) - YEAR(STR_TO_DATE(birthdate, '%d %M %Y'))) as max_age,
-            COUNT(*) as total_with_both_dates
-            FROM $people_table
-            $where_clause
-            AND birthdate != '' AND deathdate != ''
-            AND birthdate IS NOT NULL AND deathdate IS NOT NULL";
-
-  return $wpdb->get_results($query, ARRAY_A);
+  // Use the new HP_Date_Utils class for accurate age calculations
+  return HP_Date_Utils::get_age_statistics($wpdb, $people_table, $selected_tree);
 }
 
 function generate_surname_list_report($wpdb, $people_table, $selected_tree)
@@ -217,6 +229,73 @@ function generate_orphans_report($wpdb, $people_table, $selected_tree)
             LIMIT 50";
 
   return $wpdb->get_results($query, ARRAY_A);
+}
+
+// Enhanced date-based report functions
+function generate_birth_years_report($wpdb, $people_table, $selected_tree)
+{
+  return HP_Date_Utils::get_birth_year_distribution($wpdb, $people_table, $selected_tree);
+}
+
+function generate_comprehensive_dates_report($wpdb, $people_table, $selected_tree)
+{
+  return HP_Date_Utils::get_comprehensive_date_statistics($wpdb, $people_table, $selected_tree);
+}
+
+function generate_date_quality_report($wpdb, $people_table, $selected_tree)
+{
+  $where_clause = $selected_tree ? $wpdb->prepare("WHERE gedcom = %s", $selected_tree) : "";
+
+  // Count records with various date quality indicators
+  $stats = [
+    'total_records' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}"),
+    'with_birth_dates' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "(birthdatetr IS NOT NULL AND birthdatetr != '' AND birthdatetr != '0000-00-00')"),
+    'with_death_dates' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "(deathdatetr IS NOT NULL AND deathdatetr != '' AND deathdatetr != '0000-00-00')"),
+    'uncertain_birth' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "birthdate LIKE '%ABT%' OR birthdate LIKE '%BEF%' OR birthdate LIKE '%AFT%' OR birthdate LIKE '%EST%'"),
+    'uncertain_death' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "deathdate LIKE '%ABT%' OR deathdate LIKE '%BEF%' OR deathdate LIKE '%AFT%' OR deathdate LIKE '%EST%'"),
+    'partial_birth' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "birthdatetr LIKE '%-00-%' OR birthdatetr LIKE '%-00-00'"),
+    'both_dates' => $wpdb->get_var("SELECT COUNT(*) FROM {$people_table} {$where_clause}" .
+      ($where_clause ? " AND " : " WHERE ") .
+      "(birthdatetr IS NOT NULL AND birthdatetr != '' AND birthdatetr != '0000-00-00') AND " .
+      "(deathdatetr IS NOT NULL AND deathdatetr != '' AND deathdatetr != '0000-00-00')")
+  ];
+
+  return $stats;
+}
+
+function generate_century_breakdown_report($wpdb, $people_table, $selected_tree)
+{
+  $where_clause = $selected_tree ? $wpdb->prepare("WHERE gedcom = %s", $selected_tree) : "";
+
+  $query = "SELECT
+              CASE
+                WHEN LEFT(birthdatetr, 4) BETWEEN '1500' AND '1599' THEN '16th Century (1500-1599)'
+                WHEN LEFT(birthdatetr, 4) BETWEEN '1600' AND '1699' THEN '17th Century (1600-1699)'
+                WHEN LEFT(birthdatetr, 4) BETWEEN '1700' AND '1799' THEN '18th Century (1700-1799)'
+                WHEN LEFT(birthdatetr, 4) BETWEEN '1800' AND '1899' THEN '19th Century (1800-1899)'
+                WHEN LEFT(birthdatetr, 4) BETWEEN '1900' AND '1999' THEN '20th Century (1900-1999)'
+                WHEN LEFT(birthdatetr, 4) BETWEEN '2000' AND '2099' THEN '21st Century (2000-2099)'
+                ELSE 'Other/Unknown'
+              END as century,
+              COUNT(*) as count
+            FROM {$people_table}
+            {$where_clause}" .
+    ($where_clause ? " AND " : " WHERE ") .
+    "birthdatetr IS NOT NULL AND birthdatetr != '' AND birthdatetr != '0000-00-00'
+            GROUP BY century
+            ORDER BY century";
+
+  return $wpdb->get_results($query, 'ARRAY_A');
 }
 ?>
 

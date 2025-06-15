@@ -73,6 +73,41 @@
   outline: 2px solid transparent;
 }
 
+/* Search Buttons Container */
+.search-field .button,
+.search-field input[type="submit"] {
+  margin-right: 10px;
+  margin-bottom: 0;
+}
+
+.search-field .button:last-child,
+.search-field input[type="submit"]:last-child {
+  margin-right: 0;
+}
+
+/* When search field contains buttons, arrange them horizontally */
+.search-field:has(.button),
+.search-field:has(input[type="submit"]) {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Fallback for browsers that don't support :has() */
+.search-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-width: auto;
+}
+
+.search-buttons .button,
+.search-buttons input[type="submit"] {
+  margin: 0;
+  white-space: nowrap;
+}
+
 /* Advanced Search Toggle */
 .advanced-search-toggle {
   margin-bottom: 15px;
@@ -132,7 +167,16 @@
   margin: 0;
   border-collapse: collapse;
   width: 100%;
-  table-layout: auto; /* Allow columns to resize based on content */
+  table-layout: auto !important; /* Override WordPress fixed layout - Allow columns to resize based on content */
+}
+
+/* Override WordPress core list table fixed layout */
+.wp-list-table.people-table {
+  table-layout: auto !important;
+}
+
+.wp-list-table.fixed.people-table {
+  table-layout: auto !important;
 }
 
 .people-table th,
@@ -151,15 +195,29 @@
 }
 
 .people-table .column-cb {
-  width: 2.2em;
-  padding: 8px 0 8px 8px;
-  min-width: 2.2em;
+  width: 1% !important;
+  padding: 8px 6px !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Ensure checkboxes are properly aligned */
+.people-table .column-cb input[type="checkbox"] {
+  margin: 0;
+  vertical-align: middle;
 }
 
 .people-table .column-personid {
-  width: 100px;
-  min-width: 90px;
-  max-width: 120px;
+  width: 1% !important; /* Force minimal width, let content determine actual size */
+  min-width: 50px; /* Fallback for older browsers */
+  min-width: max-content !important; /* Better browser support than fit-content */
+  max-width: none !important; /* Don't restrict the maximum width */
+  white-space: nowrap;
+  text-align: left;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Name Column Styling */
@@ -318,15 +376,192 @@
   align-items: center;
   text-decoration: none;
   color: inherit;
+  transition: all 0.2s ease;
+}
+
+.manage-column.sortable:hover a {
+  color: #2271b1;
 }
 
 .sorting-indicator {
   margin-left: 8px;
-  opacity: 0.5;
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+}
+
+.manage-column.sortable .sorting-indicator {
+  opacity: 0.3;
+}
+
+.manage-column.sortable:hover .sorting-indicator {
+  opacity: 0.7;
 }
 
 .manage-column.sorted .sorting-indicator {
   opacity: 1;
+  color: #2271b1;
+}
+
+/* Enhanced column styling */
+.manage-column.sorted {
+  background-color: #f6f7f7;
+}
+
+.manage-column.sorted a {
+  color: #2271b1;
+  font-weight: 600;
+}
+
+/* Enhanced visual feedback for table interactions */
+
+/* Sort state indicator for the entire row */
+.people-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.people-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Enhanced sort header styling */
+.manage-column.sorted a span:first-child {
+  position: relative;
+}
+
+.manage-column.sorted a span:first-child::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #2271b1;
+  border-radius: 1px;
+}
+
+/* Better visual hierarchy for dates */
+.column-birth,
+.column-death {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.column-birth strong,
+.column-death strong {
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.column-birth em,
+.column-death em {
+  color: #646970;
+  font-style: italic;
+}
+
+.column-birth small,
+.column-death small {
+  color: #646970;
+  font-size: 11px;
+}
+
+/* Sort direction indicators with better visibility */
+.sorting-indicator.dashicons-arrow-up-alt2 {
+  color: #2271b1;
+  animation: sortUp 0.3s ease;
+}
+
+.sorting-indicator.dashicons-arrow-down-alt2 {
+  color: #2271b1;
+  animation: sortDown 0.3s ease;
+}
+
+.sorting-indicator.dashicons-sort {
+  color: #8c8f94;
+}
+
+@keyframes sortUp {
+  from {
+    transform: translateY(2px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sortDown {
+  from {
+    transform: translateY(-2px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Enhanced JavaScript interaction styles */
+.sorting-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.sorting-loading-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 10001;
+  font-size: 14px;
+}
+
+.row-hover {
+  background-color: #f8f9fa !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.date-highlight {
+  background-color: #fff5d7 !important;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+/* Date range filter visual feedback */
+.date-range-picker.has-filter {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  background-color: #f0f8ff;
+}
+
+.date-range-picker.has-filter:focus {
+  border-color: #135e96;
+  box-shadow: 0 0 0 1px #135e96;
+}
+
+/* Keyboard focus improvements */
+.manage-column a:focus {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Loading state for sort indicators */
+.sorting-indicator.dashicons-update {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Design */
@@ -357,6 +592,19 @@
     min-width: auto;
   }
 
+  /* Keep search buttons horizontal even on mobile */
+  .search-buttons {
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .search-buttons .button,
+  .search-buttons input[type="submit"] {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
   .option-row {
     flex-direction: column;
     gap: 10px;
@@ -367,12 +615,12 @@
   .people-table .column-tree,
   .people-table .column-changed {
     display: none;
-  }
-
-  /* Make essential columns more compact */
+  } /* Make essential columns more compact */
   .people-table .column-personid {
-    width: 80px;
-    min-width: 70px;
+    width: 1% !important;
+    min-width: 50px; /* Fallback for older browsers */
+    min-width: max-content !important;
+    max-width: none !important;
   }
 
   .people-table .column-name {

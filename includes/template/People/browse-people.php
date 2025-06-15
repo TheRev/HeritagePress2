@@ -9,6 +9,13 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+// Include date utilities for enhanced date filtering
+require_once __DIR__ . '/../../class-hp-date-utils.php';
+
+// Enqueue enhanced browse people scripts and styles
+wp_enqueue_script('jquery-ui-tooltip');
+wp_enqueue_script('heritagepress-browse-people-enhanced', plugin_dir_url(__FILE__) . '../../../public/js/browse-people-enhanced.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
+
 global $wpdb;
 
 // Table references
@@ -28,7 +35,10 @@ $search_params = array(
   'noparents' => isset($_GET['noparents']) ? sanitize_text_field($_GET['noparents']) : '',
   'nospouse' => isset($_GET['nospouse']) ? sanitize_text_field($_GET['nospouse']) : '',
   'order' => isset($_GET['order']) ? sanitize_text_field($_GET['order']) : 'name',
-  'page' => isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1
+  'page' => isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1,
+  // Enhanced date filtering
+  'birth_date_range' => isset($_GET['birth_date_range']) ? sanitize_text_field($_GET['birth_date_range']) : '',
+  'death_date_range' => isset($_GET['death_date_range']) ? sanitize_text_field($_GET['death_date_range']) : ''
 );
 
 // Pagination settings
@@ -178,13 +188,31 @@ function get_sort_link($field, $current_order)
 
   if ($current_order === $field) {
     $params['order'] = $field . 'up';
-    $icon = ' <span class="dashicons dashicons-arrow-down-alt2"></span>';
+  } elseif ($current_order === $field . 'up') {
+    $params['order'] = $field;
   } else {
     $params['order'] = $field;
-    $icon = ' <span class="dashicons dashicons-arrow-up-alt2"></span>';
   }
 
-  return admin_url('admin.php?' . http_build_query($params)) . $icon;
+  return admin_url('admin.php?' . http_build_query($params));
+}
+
+function get_column_class($field, $current_order)
+{
+  if ($current_order === $field || $current_order === $field . 'up') {
+    return 'manage-column column-' . $field . ' sorted';
+  }
+  return 'manage-column column-' . $field . ' sortable';
+}
+
+function get_sort_indicator($field, $current_order)
+{
+  if ($current_order === $field) {
+    return '<span class="sorting-indicator dashicons dashicons-arrow-up-alt2" title="Sorted ascending - click to sort descending"></span>';
+  } elseif ($current_order === $field . 'up') {
+    return '<span class="sorting-indicator dashicons dashicons-arrow-down-alt2" title="Sorted descending - click to sort ascending"></span>';
+  }
+  return '<span class="sorting-indicator dashicons dashicons-sort" title="Click to sort"></span>';
 }
 
 $id_sort_link = get_sort_link('id', $search_params['order']);
@@ -192,6 +220,20 @@ $name_sort_link = get_sort_link('name', $search_params['order']);
 $birth_sort_link = get_sort_link('birth', $search_params['order']);
 $death_sort_link = get_sort_link('death', $search_params['order']);
 $change_sort_link = get_sort_link('change', $search_params['order']);
+
+// Get column classes for sort state indication
+$id_column_class = get_column_class('id', $search_params['order']);
+$name_column_class = get_column_class('name', $search_params['order']);
+$birth_column_class = get_column_class('birth', $search_params['order']);
+$death_column_class = get_column_class('death', $search_params['order']);
+$change_column_class = get_column_class('change', $search_params['order']);
+
+// Get sort indicators
+$id_sort_indicator = get_sort_indicator('id', $search_params['order']);
+$name_sort_indicator = get_sort_indicator('name', $search_params['order']);
+$birth_sort_indicator = get_sort_indicator('birth', $search_params['order']);
+$death_sort_indicator = get_sort_indicator('death', $search_params['order']);
+$change_sort_indicator = get_sort_indicator('change', $search_params['order']);
 ?>
 
 <div class="people-browse-section">
@@ -214,12 +256,11 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
             <?php foreach ($trees_result as $tree_row): ?>
               <option value="<?php echo esc_attr($tree_row['gedcom']); ?>" <?php selected($search_params['tree'], $tree_row['gedcom']); ?>>
                 <?php echo esc_html($tree_row['treename']); ?> (<?php echo number_format($tree_counts[$tree_row['gedcom']]); ?>)
-              </option>
-            <?php endforeach; ?>
+              </option> <?php endforeach; ?>
           </select>
         </div>
 
-        <div class="search-field">
+        <div class="search-field search-buttons">
           <input type="submit" class="button button-primary" value="<?php _e('Search', 'heritagepress'); ?>" />
           <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=browse'); ?>" class="button"><?php _e('Clear', 'heritagepress'); ?></a>
         </div>
@@ -263,6 +304,14 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
             <input type="checkbox" name="nokids" value="yes" <?php checked($search_params['nokids'], 'yes'); ?> />
             <?php _e('No children', 'heritagepress'); ?>
           </label>
+        </div>
+
+        <div class="option-row date-range-options">
+          <label for="birth_date_range"><?php _e('Birth Date Range:', 'heritagepress'); ?></label>
+          <input type="text" id="birth_date_range" name="birth_date_range" value="<?php echo esc_attr($search_params['birth_date_range']); ?>" class="date-range-picker" placeholder="<?php _e('YYYY-MM-DD to YYYY-MM-DD', 'heritagepress'); ?>" />
+
+          <label for="death_date_range"><?php _e('Death Date Range:', 'heritagepress'); ?></label>
+          <input type="text" id="death_date_range" name="death_date_range" value="<?php echo esc_attr($search_params['death_date_range']); ?>" class="date-range-picker" placeholder="<?php _e('YYYY-MM-DD to YYYY-MM-DD', 'heritagepress'); ?>" />
         </div>
       </div>
     </form>
@@ -317,48 +366,59 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
               <label class="screen-reader-text" for="cb-select-all-1"><?php _e('Select All', 'heritagepress'); ?></label>
               <input id="cb-select-all-1" type="checkbox" />
             </td>
-            <th scope="col" class="manage-column column-personid sortable">
-              <a href="<?php echo esc_url($id_sort_link); ?>">
-                <span><?php _e('Person ID', 'heritagepress'); ?></span>
-                <span class="sorting-indicator"></span>
-              </a>
-            </th>
             <th scope="col" class="manage-column column-photo"><?php _e('Photo', 'heritagepress'); ?></th>
-            <th scope="col" class="manage-column column-name sortable">
-              <a href="<?php echo esc_url($name_sort_link); ?>">
-                <span><?php _e('Name', 'heritagepress'); ?></span>
-                <span class="sorting-indicator"></span>
-              </a>
-            </th>
-            <th scope="col" class="manage-column column-birth sortable">
-              <a href="<?php echo esc_url($birth_sort_link); ?>">
-                <span><?php _e('Birth', 'heritagepress'); ?></span>
-                <span class="sorting-indicator"></span>
-              </a>
-            </th>
-            <th scope="col" class="manage-column column-death sortable">
-              <a href="<?php echo esc_url($death_sort_link); ?>">
-                <span><?php _e('Death', 'heritagepress'); ?></span>
-                <span class="sorting-indicator"></span>
-              </a>
-            </th>
             <?php if (count($trees_result) > 1): ?>
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
-            <?php endif; ?> <th scope="col" class="manage-column column-changed sortable">
+            <?php endif; ?>
+            <th scope="col" class="<?php echo esc_attr($id_column_class); ?>">
+              <a href="<?php echo esc_url($id_sort_link); ?>">
+                <span><?php _e('Person ID', 'heritagepress'); ?></span>
+                <?php echo $id_sort_indicator; ?>
+              </a>
+            </th>
+            <th scope="col" class="<?php echo esc_attr($name_column_class); ?>">
+              <a href="<?php echo esc_url($name_sort_link); ?>">
+                <span><?php _e('Name', 'heritagepress'); ?></span>
+                <?php echo $name_sort_indicator; ?>
+              </a>
+            </th>
+            <th scope="col" class="<?php echo esc_attr($birth_column_class); ?>">
+              <a href="<?php echo esc_url($birth_sort_link); ?>">
+                <span><?php _e('Birth', 'heritagepress'); ?></span>
+                <?php echo $birth_sort_indicator; ?>
+              </a>
+            </th>
+            <th scope="col" class="<?php echo esc_attr($death_column_class); ?>">
+              <a href="<?php echo esc_url($death_sort_link); ?>">
+                <span><?php _e('Death', 'heritagepress'); ?></span>
+                <?php echo $death_sort_indicator; ?>
+              </a>
+            </th>
+            <th scope="col" class="<?php echo esc_attr($change_column_class); ?>">
               <a href="<?php echo esc_url($change_sort_link); ?>">
                 <span><?php _e('Last Changed', 'heritagepress'); ?></span>
-                <span class="sorting-indicator"></span>
+                <?php echo $change_sort_indicator; ?>
               </a>
             </th>
           </tr>
         </thead>
 
         <tbody id="the-list">
-          <?php if (!empty($people_results)): ?> <?php foreach ($people_results as $person): ?>
-              <tr id="person-<?php echo esc_attr($person['ID']); ?>" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-gedcom="<?php echo esc_attr($person['gedcom']); ?>">
+          <?php if (!empty($people_results)): ?> <?php foreach ($people_results as $person): ?> <tr id="person-<?php echo esc_attr($person['ID']); ?>" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-gedcom="<?php echo esc_attr($person['gedcom']); ?>">
                 <th scope="row" class="check-column">
                   <input type="checkbox" name="selected_people[]" value="<?php echo esc_attr($person['ID']); ?>" />
                 </th>
+                <td class="column-photo">
+                  <!-- Photo placeholder - will be enhanced with actual photo display -->
+                  <div class="person-photo-placeholder">
+                    <span class="dashicons dashicons-admin-users"></span>
+                  </div>
+                </td>
+                <?php if (count($trees_result) > 1): ?>
+                  <td class="column-tree">
+                    <?php echo esc_html($person['treename']); ?>
+                  </td>
+                <?php endif; ?>
                 <td class="column-personid">
                   <strong>
                     <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>" class="row-title">
@@ -380,12 +440,6 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                         title="<?php _e('Delete this person', 'heritagepress'); ?>"
                         class="delete-link"><?php _e('Delete', 'heritagepress'); ?></a>
                     </span>
-                  </div>
-                </td>
-                <td class="column-photo">
-                  <!-- Photo placeholder - will be enhanced with actual photo display -->
-                  <div class="person-photo-placeholder">
-                    <span class="dashicons dashicons-admin-users"></span>
                   </div>
                 </td>
                 <td class="column-name">
@@ -416,10 +470,11 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                   </div>
                 </td>
                 <td class="column-birth">
-                  <?php if (!empty($person['birthdate'])): ?>
-                    <strong><?php echo esc_html($person['birthdate']); ?></strong>
-                  <?php elseif (!empty($person['altbirthdate'])): ?>
-                    <strong><?php echo esc_html($person['altbirthdate']); ?></strong> <em>(chr.)</em>
+                  <?php
+                                                    $birth_display = HP_Date_Utils::format_display_date($person, 'birth');
+                                                    if (!empty($birth_display)):
+                  ?>
+                    <strong><?php echo $birth_display; ?></strong>
                   <?php endif; ?>
 
                   <?php if (!empty($person['birthplace'])): ?>
@@ -429,23 +484,19 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
                   <?php endif; ?>
                 </td>
                 <td class="column-death">
-                  <?php if (!empty($person['deathdate'])): ?>
-                    <strong><?php echo esc_html($person['deathdate']); ?></strong>
-                  <?php elseif (!empty($person['burialdate'])): ?>
-                    <strong><?php echo esc_html($person['burialdate']); ?></strong> <em>(bur.)</em>
+                  <?php
+                                                    $death_display = HP_Date_Utils::format_display_date($person, 'death');
+                                                    if (!empty($death_display)):
+                  ?>
+                    <strong><?php echo $death_display; ?></strong>
                   <?php endif; ?>
 
                   <?php if (!empty($person['deathplace'])): ?>
                     <br><small><?php echo esc_html($person['deathplace']); ?></small>
                   <?php elseif (!empty($person['burialplace'])): ?>
-                    <br><small><?php echo esc_html($person['burialplace']); ?></small>
-                  <?php endif; ?>
+                    <br><small><?php echo esc_html($person['burialplace']); ?></small> <?php endif; ?>
                 </td>
-                <?php if (count($trees_result) > 1): ?>
-                  <td class="column-tree">
-                    <?php echo esc_html($person['treename']); ?>
-                  </td>
-                <?php endif; ?> <td class="column-changed">
+                <td class="column-changed">
                   <?php echo esc_html($person['changedate_formatted']); ?>
                   <?php if (!empty($person['changedby'])): ?>
                     <br><small><?php echo esc_html($person['changedby']); ?></small>
@@ -467,14 +518,15 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
               <label class="screen-reader-text" for="cb-select-all-2"><?php _e('Select All', 'heritagepress'); ?></label>
               <input id="cb-select-all-2" type="checkbox" />
             </td>
-            <th scope="col" class="manage-column column-personid"><?php _e('Person ID', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-photo"><?php _e('Photo', 'heritagepress'); ?></th>
+            <?php if (count($trees_result) > 1): ?>
+              <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
+            <?php endif; ?>
+            <th scope="col" class="manage-column column-personid"><?php _e('Person ID', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-name"><?php _e('Name', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-birth"><?php _e('Birth', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-death"><?php _e('Death', 'heritagepress'); ?></th>
-            <?php if (count($trees_result) > 1): ?>
-              <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
-            <?php endif; ?> <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>
           </tr>
         </tfoot>
       </table>
@@ -504,28 +556,17 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
 
 <script type="text/javascript">
   jQuery(document).ready(function($) {
-    // Toggle advanced search options
-    $('#toggle-advanced').on('click', function(e) {
-      e.preventDefault();
-      $('#advanced-options').slideToggle();
-      $(this).find('.dashicons').toggleClass('dashicons-arrow-down-alt2 dashicons-arrow-up-alt2');
-    });
+    console.log('Browse people page ready');
 
-    // Select all checkboxes
-    $('#cb-select-all-1, #cb-select-all-2').on('change', function() {
-      var checked = $(this).is(':checked');
-      $('input[name="selected_people[]"]').prop('checked', checked);
-      $('#cb-select-all-1, #cb-select-all-2').prop('checked', checked);
-    });
+    // Initialize HeritagePress People functionality
+    if (typeof HeritagePressPeople !== 'undefined') {
+      console.log('Initializing HeritagePressPeople');
+      HeritagePressPeople.init();
+    } else {
+      console.log('HeritagePressPeople not found');
+    }
 
-    // Individual checkbox handling
-    $('input[name="selected_people[]"]').on('change', function() {
-      var total = $('input[name="selected_people[]"]').length;
-      var checked = $('input[name="selected_people[]"]:checked').length;
-      $('#cb-select-all-1, #cb-select-all-2').prop('checked', total === checked);
-    });
-
-    // Bulk action validation
+    // Bulk action validation (keep this as it's specific to this page)
     $('#bulk-action-form').on('submit', function(e) {
       var action = $('select[name="action"]').val();
       if (action === '-1') {
@@ -548,25 +589,6 @@ $change_sort_link = get_sort_link('change', $search_params['order']);
       }
 
       return true;
-    });
-
-    // Individual delete button
-    $('.delete-person').on('click', function(e) {
-      e.preventDefault();
-      if (confirm('<?php _e('Are you sure you want to delete this person? This action cannot be undone.', 'heritagepress'); ?>')) {
-        var personId = $(this).data('person-id');
-        var tree = $(this).data('tree');
-
-        // Create and submit delete form
-        var form = $('<form method="post">')
-          .append($('<input type="hidden" name="action" value="delete_person">'))
-          .append($('<input type="hidden" name="personID" value="' + personId + '">'))
-          .append($('<input type="hidden" name="gedcom" value="' + tree + '">'))
-          .append('<?php echo wp_nonce_field('heritagepress_delete_person', '_wpnonce', true, false); ?>');
-
-        $('body').append(form);
-        form.submit();
-      }
     });
   });
 

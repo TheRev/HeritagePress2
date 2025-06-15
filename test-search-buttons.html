@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Search Buttons Test - HeritagePress</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+      }
+
+      /* Copy the relevant CSS from people.css */
+      .search-controls {
+        display: flex;
+        gap: 15px;
+        align-items: end;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+      }
+
+      .search-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+      }
+
+      .search-field label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #1d2327;
+      }
+
+      .search-field input[type="text"],
+      .search-field select {
+        padding: 6px 8px;
+        border: 1px solid #8c8f94;
+        border-radius: 3px;
+        font-size: 13px;
+      }
+
+      /* Search Buttons Container */
+      .search-field .button,
+      .search-field input[type="submit"] {
+        margin-right: 10px;
+        margin-bottom: 0;
+      }
+
+      .search-field .button:last-child,
+      .search-field input[type="submit"]:last-child {
+        margin-right: 0;
+      }
+
+      /* When search field contains buttons, arrange them horizontally */
+      .search-field:has(.button),
+      .search-field:has(input[type="submit"]) {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Fallback for browsers that don't support :has() */
+      .search-buttons {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        min-width: auto;
+      }
+
+      .search-buttons .button,
+      .search-buttons input[type="submit"] {
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      /* WordPress button styles */
+      .button {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 13px;
+        line-height: 2.15384615;
+        min-height: 30px;
+        margin: 0;
+        padding: 0 10px;
+        cursor: pointer;
+        border-width: 1px;
+        border-style: solid;
+        -webkit-appearance: none;
+        border-radius: 3px;
+        white-space: nowrap;
+        box-sizing: border-box;
+        background: #f6f7f7;
+        border-color: #dcdcde;
+        color: #50575e;
+      }
+
+      .button-primary {
+        background: #2271b1;
+        border-color: #2271b1;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Search Buttons Layout Test</h1>
+
+    <div class="test-section">
+      <h2>Before Fix (Stacked)</h2>
+      <p>This shows how buttons would look with flex-direction: column:</p>
+      <div class="search-controls">
+        <div class="search-field">
+          <label>Search</label>
+          <input type="text" placeholder="Enter search term..." />
+        </div>
+
+        <div class="search-field" style="flex-direction: column">
+          <input type="submit" class="button button-primary" value="Search" />
+          <a href="#" class="button">Clear</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>After Fix (Side by Side)</h2>
+      <p>This shows how buttons look with the new search-buttons class:</p>
+      <div class="search-controls">
+        <div class="search-field">
+          <label>Search</label>
+          <input type="text" placeholder="Enter search term..." />
+        </div>
+
+        <div class="search-field search-buttons">
+          <input type="submit" class="button button-primary" value="Search" />
+          <a href="#" class="button">Clear</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Full Example</h2>
+      <p>Complete search form layout:</p>
+      <div class="search-controls">
+        <div class="search-field">
+          <label>Name</label>
+          <input type="text" placeholder="First or last name" />
+        </div>
+
+        <div class="search-field">
+          <label>Tree</label>
+          <select>
+            <option>All Trees</option>
+            <option>Family Tree</option>
+            <option>Research Tree</option>
+          </select>
+        </div>
+
+        <div class="search-field search-buttons">
+          <input type="submit" class="button button-primary" value="Search" />
+          <a href="#" class="button">Clear</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

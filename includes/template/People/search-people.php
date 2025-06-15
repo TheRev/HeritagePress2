@@ -9,6 +9,9 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+// Include date utilities for enhanced date searching
+require_once __DIR__ . '/../../class-hp-date-utils.php';
+
 global $wpdb;
 
 // Get available trees
@@ -107,13 +110,12 @@ if ($has_search) {
   }
 
   $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
-
-  // Get search results
+  // Get search results - use sortable date fields for better chronological ordering
   $search_query = "SELECT $people_table.*, $trees_table.treename
                    FROM $people_table
                    INNER JOIN $trees_table ON $people_table.gedcom = $trees_table.gedcom
                    $where_clause
-                   ORDER BY $people_table.lastname, $people_table.firstname
+                   ORDER BY $people_table.birthdatetr, $people_table.lastname, $people_table.firstname
                    LIMIT 100";
 
   $search_results = $wpdb->get_results($search_query, ARRAY_A);
@@ -334,16 +336,22 @@ if ($has_search) {
                     </div>
                   </td>
                   <td>
-                    <?php if (!empty($person['birthdate'])): ?>
-                      <strong><?php echo esc_html($person['birthdate']); ?></strong>
+                    <?php
+                    $birth_display = HP_Date_Utils::format_display_date($person, 'birth');
+                    if (!empty($birth_display)):
+                    ?>
+                      <strong><?php echo $birth_display; ?></strong>
                     <?php endif; ?>
                     <?php if (!empty($person['birthplace'])): ?>
                       <br><small><?php echo esc_html($person['birthplace']); ?></small>
                     <?php endif; ?>
                   </td>
                   <td>
-                    <?php if (!empty($person['deathdate'])): ?>
-                      <strong><?php echo esc_html($person['deathdate']); ?></strong>
+                    <?php
+                    $death_display = HP_Date_Utils::format_display_date($person, 'death');
+                    if (!empty($death_display)):
+                    ?>
+                      <strong><?php echo $death_display; ?></strong>
                     <?php endif; ?>
                     <?php if (!empty($person['deathplace'])): ?>
                       <br><small><?php echo esc_html($person['deathplace']); ?></small>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Advanced Search Toggle Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ccc;
+      }
+      #toggle-advanced {
+        background: #0073aa;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+      #advanced-options {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin-top: 10px;
+        background: #f9f9f9;
+      }
+      .dashicons {
+        font-family: dashicons;
+        display: inline-block;
+        line-height: 1;
+        font-weight: normal;
+        font-style: normal;
+        speak: none;
+        text-decoration: inherit;
+        text-transform: none;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+        vertical-align: top;
+        text-align: center;
+        transition: color 0.1s ease-in;
+      }
+      .dashicons-arrow-down-alt2::before {
+        content: "\f346";
+      }
+      .dashicons-arrow-up-alt2::before {
+        content: "\f342";
+      }
+
+      #debug-log {
+        background: #f0f0f0;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        height: 200px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Advanced Search Toggle Test</h1>
+
+    <div class="test-section">
+      <h2>Test Button</h2>
+      <button type="button" id="toggle-advanced">
+        Advanced Options
+        <span class="dashicons dashicons-arrow-down-alt2"></span>
+      </button>
+
+      <div id="advanced-options" style="display: none">
+        <h3>Advanced Options Content</h3>
+        <p>
+          This is the content that should toggle when the button is clicked.
+        </p>
+        <p>
+          It should stay open when clicked once, and close when clicked again.
+        </p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Debug Log</h2>
+      <div id="debug-log"></div>
+      <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+      function log(message) {
+        const time = new Date().toLocaleTimeString();
+        const debugLog = document.getElementById("debug-log");
+        debugLog.innerHTML += time + ": " + message + "\n";
+        debugLog.scrollTop = debugLog.scrollHeight;
+        console.log(message);
+      }
+
+      // Simulate HeritagePress People object
+      window.HeritagePressPeople = {
+        initialized: false,
+
+        init: function () {
+          log("HeritagePressPeople.init() called");
+
+          if (this.initialized) {
+            log("Already initialized, skipping");
+            return;
+          }
+
+          this.bindEvents();
+          this.initialized = true;
+          log("Initialization complete");
+        },
+
+        bindEvents: function () {
+          var self = this;
+          log("Binding events");
+
+          // Unbind existing events to prevent duplicates
+          $(document).off("click.hp-people", "#toggle-advanced");
+          log("Unbound existing events");
+
+          // Advanced search toggle
+          $(document).on("click.hp-people", "#toggle-advanced", function (e) {
+            log("Toggle button clicked");
+            e.preventDefault();
+            e.stopPropagation();
+            self.toggleAdvancedSearch();
+          });
+
+          log("Events bound successfully");
+        },
+
+        toggleAdvancedSearch: function () {
+          log("toggleAdvancedSearch() called");
+          var $options = $("#advanced-options");
+          var $button = $("#toggle-advanced .dashicons");
+
+          log("Current visibility: " + $options.is(":visible"));
+
+          $options.slideToggle(300, function () {
+            log(
+              "Slide toggle complete, now visible: " + $options.is(":visible")
+            );
+          });
+
+          $button.toggleClass(
+            "dashicons-arrow-down-alt2 dashicons-arrow-up-alt2"
+          );
+          log("Button arrow toggled");
+        },
+      };
+
+      function clearLog() {
+        document.getElementById("debug-log").innerHTML = "";
+      }
+
+      // Initialize when page loads
+      jQuery(document).ready(function ($) {
+        log("Page ready");
+
+        // Test single initialization
+        HeritagePressPeople.init();
+
+        // Test double initialization (should be prevented)
+        setTimeout(function () {
+          log("--- Testing double initialization ---");
+          HeritagePressPeople.init();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

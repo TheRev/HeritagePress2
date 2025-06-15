@@ -147,11 +147,16 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_person') {
       <!-- Birth Information -->
       <div class="form-section">
         <h4><?php _e('Birth Information', 'heritagepress'); ?></h4>
-
         <div class="form-row">
           <div class="form-field">
-            <label for="birthdate"><?php _e('Birth Date:', 'heritagepress'); ?></label>
-            <input type="text" id="birthdate" name="birthdate" value="<?php echo esc_attr($person_data['birthdate']); ?>" placeholder="<?php _e('DD MMM YYYY or partial dates', 'heritagepress'); ?>">
+            <?php echo HP_Date_Validator::render_date_field([
+              'id' => 'birthdate',
+              'name' => 'birthdate',
+              'value' => $person_data['birthdate'],
+              'label' => __('Birth Date:', 'heritagepress'),
+              'placeholder' => __('DD MMM YYYY or partial dates', 'heritagepress'),
+              'help_text' => __('Enter birth date in genealogy format. Examples: "2 OCT 1822", "OCT 1822", "ABT 1820", "BEF 1828"', 'heritagepress')
+            ]); ?>
           </div>
           <div class="form-field">
             <label for="birthplace"><?php _e('Birth Place:', 'heritagepress'); ?></label>
@@ -161,24 +166,35 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_person') {
 
         <div class="form-row">
           <div class="form-field">
-            <label for="altbirthdate"><?php _e('Alt. Birth Date:', 'heritagepress'); ?></label>
-            <input type="text" id="altbirthdate" name="altbirthdate" value="<?php echo esc_attr($person_data['altbirthdate']); ?>" placeholder="<?php _e('Christening date, etc.', 'heritagepress'); ?>">
+            <?php echo HP_Date_Validator::render_date_field([
+              'id' => 'altbirthdate',
+              'name' => 'altbirthdate',
+              'value' => $person_data['altbirthdate'],
+              'label' => __('Alt. Birth Date:', 'heritagepress'),
+              'placeholder' => __('Christening date, etc.', 'heritagepress'),
+              'help_text' => __('Alternative date such as christening or baptism date', 'heritagepress'),
+              'show_examples' => false
+            ]); ?>
           </div>
           <div class="form-field">
             <label for="altbirthplace"><?php _e('Alt. Birth Place:', 'heritagepress'); ?></label>
             <input type="text" id="altbirthplace" name="altbirthplace" value="<?php echo esc_attr($person_data['altbirthplace']); ?>">
           </div>
         </div>
-      </div>
-
-      <!-- Death Information -->
+      </div> <!-- Death Information -->
       <div class="form-section">
         <h4><?php _e('Death Information', 'heritagepress'); ?></h4>
 
         <div class="form-row">
           <div class="form-field">
-            <label for="deathdate"><?php _e('Death Date:', 'heritagepress'); ?></label>
-            <input type="text" id="deathdate" name="deathdate" value="<?php echo esc_attr($person_data['deathdate']); ?>" placeholder="<?php _e('DD MMM YYYY or partial dates', 'heritagepress'); ?>">
+            <?php echo HP_Date_Validator::render_date_field([
+              'id' => 'deathdate',
+              'name' => 'deathdate',
+              'value' => $person_data['deathdate'],
+              'label' => __('Death Date:', 'heritagepress'),
+              'placeholder' => __('DD MMM YYYY or partial dates', 'heritagepress'),
+              'show_examples' => false
+            ]); ?>
           </div>
           <div class="form-field">
             <label for="deathplace"><?php _e('Death Place:', 'heritagepress'); ?></label>
@@ -188,8 +204,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_person') {
 
         <div class="form-row">
           <div class="form-field">
-            <label for="burialdate"><?php _e('Burial Date:', 'heritagepress'); ?></label>
-            <input type="text" id="burialdate" name="burialdate" value="<?php echo esc_attr($person_data['burialdate']); ?>">
+            <?php echo HP_Date_Validator::render_date_field([
+              'id' => 'burialdate',
+              'name' => 'burialdate',
+              'value' => $person_data['burialdate'],
+              'label' => __('Burial Date:', 'heritagepress'),
+              'placeholder' => __('DD MMM YYYY or partial dates', 'heritagepress'),
+              'show_examples' => false
+            ]); ?>
           </div>
           <div class="form-field">
             <label for="burialplace"><?php _e('Burial Place:', 'heritagepress'); ?></label>

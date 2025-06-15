@@ -1,0 +1,312 @@
+/**
+ * HeritagePress Date Validator Styles
+ */
+
+.hp-date-field-wrapper {
+  margin-bottom: 1.5em;
+}
+
+.hp-date-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  color: #333;
+}
+
+.hp-date-label .required {
+  color: #e74c3c;
+  margin-left: 3px;
+}
+
+.hp-date-input-wrapper {
+  position: relative;
+}
+
+.hp-date-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.hp-date-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Validation States */
+.hp-date-input.hp-date-validating {
+  border-color: #f39c12;
+  background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="%23f39c12" stroke-width="2" stroke-dasharray="9.42" stroke-dashoffset="9.42"><animateTransform attributeName="transform" type="rotate" values="0 8 8;360 8 8" dur="1s" repeatCount="indefinite"/></circle></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px 16px;
+}
+
+.hp-date-input.hp-date-valid {
+  border-color: #27ae60;
+  background-color: #f8fff8;
+}
+
+.hp-date-input.hp-date-invalid {
+  border-color: #e74c3c;
+  background-color: #fff8f8;
+}
+
+.hp-date-input.hp-date-warning {
+  border-color: #f39c12;
+  background-color: #fffdf8;
+}
+
+/* Feedback Container */
+.hp-date-feedback {
+  margin-top: 0.5em;
+  display: none;
+  animation: slideDown 0.3s ease;
+}
+
+.hp-date-feedback.hp-date-validating {
+  display: block;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status Messages */
+.hp-date-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hp-date-status.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.hp-date-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.hp-date-status.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+/* Icons */
+.hp-icon-check::before {
+  content: "✓";
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.hp-icon-times::before {
+  content: "✗";
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.hp-icon-warning::before {
+  content: "⚠";
+  color: #f39c12;
+}
+
+/* Formatted and Precision Info */
+.hp-formatted {
+  font-style: italic;
+  color: #666;
+}
+
+.hp-precision {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+/* Suggestions */
+.hp-date-suggestions {
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 0.5em;
+}
+
+.hp-suggestions-title {
+  font-weight: 600;
+  color: #1565c0;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.hp-suggestion {
+  color: #1976d2;
+  font-size: 13px;
+  margin-bottom: 3px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.hp-suggestion::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #42a5f5;
+}
+
+/* Warnings */
+.hp-date-warnings {
+  background-color: #fffbf0;
+  border: 1px solid #ffecb3;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 0.5em;
+}
+
+.hp-warnings-title {
+  font-weight: 600;
+  color: #ef6c00;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.hp-warning {
+  color: #f57c00;
+  font-size: 13px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Help Text */
+.hp-date-help {
+  font-size: 12px;
+  color: #666;
+  margin-top: 0.5em;
+  line-height: 1.4;
+}
+
+/* Examples */
+.hp-date-examples {
+  margin-top: 0.75em;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #495057;
+}
+
+.hp-date-examples strong {
+  color: #343a40;
+  margin-right: 8px;
+}
+
+.hp-date-example {
+  display: inline-block;
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+
+.hp-date-example:hover {
+  background-color: #3498db;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hp-date-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .hp-date-examples {
+    font-size: 12px;
+  }
+
+  .hp-date-example {
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+}
+
+/* Admin Styles */
+.wp-admin .hp-date-field-wrapper {
+  max-width: 400px;
+}
+
+.wp-admin .hp-date-input {
+  max-width: 300px;
+}
+
+/* Integration with WordPress Admin */
+.wp-admin .hp-date-status.success {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #bee5eb;
+}
+
+.wp-admin .hp-date-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* Table Integration */
+.hp-browse-table .hp-date-field-wrapper {
+  margin: 0;
+}
+
+.hp-browse-table .hp-date-input {
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.hp-browse-table .hp-date-feedback {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  min-width: 250px;
+}
+
+/* Loading Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

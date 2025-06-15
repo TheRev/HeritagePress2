@@ -32,14 +32,27 @@ class HP_Admin
    * Admin notices array
    */
   private $admin_notices = array();
-
   /**
    * Constructor
    */
   public function __construct()
   {
+    $this->load_date_system();
     $this->setup_admin_pages();
     $this->init_hooks();
+  }
+  /**
+   * Load the date parsing and validation system
+   */
+  private function load_date_system()
+  {
+    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-parser.php';
+    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-validator.php';
+    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-config.php';
+
+    // Initialize date validation and configuration
+    HP_Date_Validator::init();
+    HP_Date_Config::init();
   }
 
   /**
@@ -1043,7 +1056,6 @@ class HP_Admin
       $this->handle_bulk_people_actions();
     }
   }
-
   /**
    * Handle adding a new person
    */
@@ -1075,15 +1087,31 @@ class HP_Admin
       'nickname' => sanitize_text_field($_POST['nickname']),
       'nameorder' => sanitize_text_field($_POST['nameorder']),
       'sex' => sanitize_text_field($_POST['sex']),
-      'birthdate' => sanitize_text_field($_POST['birthdate']),
       'birthplace' => sanitize_text_field($_POST['birthplace']),
-      'deathdate' => sanitize_text_field($_POST['deathdate']),
       'deathplace' => sanitize_text_field($_POST['deathplace']),
+      'altbirthtype' => sanitize_text_field($_POST['altbirthtype'] ?? ''),
+      'altbirthdate' => sanitize_text_field($_POST['altbirthdate'] ?? ''),
+      'altbirthplace' => sanitize_text_field($_POST['altbirthplace'] ?? ''),
+      'burialdate' => sanitize_text_field($_POST['burialdate'] ?? ''),
+      'burialplace' => sanitize_text_field($_POST['burialplace'] ?? ''),
       'living' => isset($_POST['living']) ? 1 : 0,
       'private' => isset($_POST['private']) ? 1 : 0,
       'changedate' => current_time('mysql'),
       'changedby' => wp_get_current_user()->user_login
     );
+
+    // Process dates with dual storage using the date validator
+    $date_fields = ['birthdate', 'deathdate', 'altbirthdate', 'burialdate'];
+
+    foreach ($date_fields as $field) {
+      if (isset($_POST[$field])) {
+        $display_date = sanitize_text_field($_POST[$field]);
+        $sortable_date = HP_Date_Parser::to_sortable($display_date);
+
+        $person_data[$field] = $display_date;
+        $person_data[$field . 'tr'] = $sortable_date ?: '0000-00-00';
+      }
+    }
 
     $result = $wpdb->insert($people_table, $person_data);
 
@@ -1103,7 +1131,6 @@ class HP_Admin
       );
     }
   }
-
   /**
    * Handle updating an existing person
    */
@@ -1135,15 +1162,31 @@ class HP_Admin
       'nickname' => sanitize_text_field($_POST['nickname']),
       'nameorder' => sanitize_text_field($_POST['nameorder']),
       'sex' => sanitize_text_field($_POST['sex']),
-      'birthdate' => sanitize_text_field($_POST['birthdate']),
       'birthplace' => sanitize_text_field($_POST['birthplace']),
-      'deathdate' => sanitize_text_field($_POST['deathdate']),
       'deathplace' => sanitize_text_field($_POST['deathplace']),
+      'altbirthtype' => sanitize_text_field($_POST['altbirthtype'] ?? ''),
+      'altbirthdate' => sanitize_text_field($_POST['altbirthdate'] ?? ''),
+      'altbirthplace' => sanitize_text_field($_POST['altbirthplace'] ?? ''),
+      'burialdate' => sanitize_text_field($_POST['burialdate'] ?? ''),
+      'burialplace' => sanitize_text_field($_POST['burialplace'] ?? ''),
       'living' => isset($_POST['living']) ? 1 : 0,
       'private' => isset($_POST['private']) ? 1 : 0,
       'changedate' => current_time('mysql'),
       'changedby' => wp_get_current_user()->user_login
     );
+
+    // Process dates with dual storage using the date validator
+    $date_fields = ['birthdate', 'deathdate', 'altbirthdate', 'burialdate'];
+
+    foreach ($date_fields as $field) {
+      if (isset($_POST[$field])) {
+        $display_date = sanitize_text_field($_POST[$field]);
+        $sortable_date = HP_Date_Parser::to_sortable($display_date);
+
+        $person_data[$field] = $display_date;
+        $person_data[$field . 'tr'] = $sortable_date ?: '0000-00-00';
+      }
+    }
 
     $result = $wpdb->update(
       $people_table,
@@ -1286,10 +1329,7 @@ class HP_Admin
             $updated++;
           }
         }
-
-        add_settings_error(
-          'heritagepress_people',
-          'bulk_private',
+        $this->add_admin_notice(
           sprintf(_n('%d person marked as private.', '%d people marked as private.', $updated, 'heritagepress'), $updated),
           'success'
         );
@@ -1307,10 +1347,7 @@ class HP_Admin
             $updated++;
           }
         }
-
-        add_settings_error(
-          'heritagepress_people',
-          'bulk_public',
+        $this->add_admin_notice(
           sprintf(_n('%d person marked as public.', '%d people marked as public.', $updated, 'heritagepress'), $updated),
           'success'
         );
