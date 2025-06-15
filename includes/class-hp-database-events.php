@@ -95,10 +95,9 @@ class HP_Database_Events
 
     return true;
   }
-
   /**
    * Get events table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Database structures for HeritagePress events tables
    */
   private function get_table_structures()
   {

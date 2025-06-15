@@ -2,7 +2,9 @@
 
 /**
  * HeritagePress Enhanced GEDCOM 5.5.1 Importer Class
- * 
+ *
+ * LEGACY VERSION - THIS CLASS IS RENAMED TO AVOID CONFLICTS
+ *
  * Comprehensive GEDCOM parser with multi-program support
  * - Family Tree Maker, RootsMagic, Legacy, Standard 5.5.1
  * - Professional genealogy processing with HeritagePress database integration
@@ -14,13 +16,14 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-class HP_GEDCOM_Importer
+// Rename this class to avoid conflicts with the adapter class
+class HP_GEDCOM_Importer_Original
 {
   /**
    * GEDCOM file path
    */
   private $file_path;
-  
+
   /**
    * Target tree ID for import
    */
@@ -50,7 +53,7 @@ class HP_GEDCOM_Importer
    * Import processing options
    */
   private $options = array();
-  
+
   /**
    * Detected source program information
    */
@@ -59,7 +62,7 @@ class HP_GEDCOM_Importer
     'version' => '',
     'type' => 'generic'
   );
-  
+
   /**
    * Media structure information
    */
@@ -70,7 +73,7 @@ class HP_GEDCOM_Importer
     'found_files' => 0,
     'missing_files' => 0
   );
-  
+
   /**
    * Import statistics
    */
@@ -84,7 +87,7 @@ class HP_GEDCOM_Importer
     'citations' => 0,
     'events' => 0
   );
-  
+
   /**
    * WordPress uploads directory for media
    */
@@ -1801,269 +1804,393 @@ class HP_GEDCOM_Importer
   }
 
   /**
-   * Enhanced program detection for multi-GEDCOM support
+   * Detect the source program that generated the GEDCOM
+   *
+   * @param string $header_content The GEDCOM header content
+   * @return array The detected program information
    */
-  private function detect_source_program($content) {
-    $program_info = array(
+  private function detect_source_program($header_content)
+  {
+    $program = [
       'name' => 'Unknown',
       'version' => '',
       'type' => 'generic'
-    );
-    
-    // Family Tree Maker detection
-    if (preg_match('/1 SOUR.*Family Tree Maker|FTM/i', $content)) {
-      $program_info['name'] = 'Family Tree Maker';
-      $program_info['type'] = 'ftm';
-      if (preg_match('/1 VERS (.+)/i', $content, $matches)) {
-        $program_info['version'] = trim($matches[1]);
+    ];
+
+    // Extract SOUR line from header
+    if (preg_match('/1 SOUR (.*?)(?:\r\n|\r|\n|$)/', $header_content, $matches)) {
+      $source = $matches[1];
+
+      // Process source program name
+      if (stripos($source, 'FTM') !== false || stripos($source, 'Family Tree Maker') !== false) {
+        $program['name'] = 'Family Tree Maker';
+        $program['type'] = 'ftm';
+      } elseif (stripos($source, 'RootsMagic') !== false) {
+        $program['name'] = 'RootsMagic';
+        $program['type'] = 'rootsmagic';
+      } elseif (stripos($source, 'Legacy') !== false) {
+        $program['name'] = 'Legacy Family Tree';
+        $program['type'] = 'legacy';
+      } elseif (stripos($source, 'Ancestry') !== false) {
+        $program['name'] = 'Ancestry.com';
+        $program['type'] = 'ancestry';
+      } elseif (stripos($source, 'PAF') !== false) {
+        $program['name'] = 'Personal Ancestral File';
+        $program['type'] = 'paf';
+      } elseif (stripos($source, 'GRAMPS') !== false) {
+        $program['name'] = 'GRAMPS';
+        $program['type'] = 'gramps';
+      } else {
+        $program['name'] = $source;
+      }
+
+      // Extract version if available
+      if (preg_match('/2 VERS (.*?)(?:\r\n|\r|\n|$)/', $header_content, $matches)) {
+        $program['version'] = $matches[1];
       }
     }
-    // RootsMagic detection  
-    elseif (preg_match('/1 SOUR.*RootsMagic/i', $content)) {
-      $program_info['name'] = 'RootsMagic';
-      $program_info['type'] = 'rootsmagic';
-      if (preg_match('/1 VERS (.+)/i', $content, $matches)) {
-        $program_info['version'] = trim($matches[1]);
+
+    // Additional detection from program-specific tags
+    if ($program['type'] == 'generic') {
+      // Check for FTM specific tags (_FREL, _MREL)
+      if (strpos($header_content, '_FREL') !== false || strpos($header_content, '_MREL') !== false) {
+        $program['name'] = 'Family Tree Maker';
+        $program['type'] = 'ftm';
+      }
+
+      // Check for RootsMagic specific tags (_UID with GUID format)
+      elseif (preg_match('/_UID [A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/', $header_content)) {
+        $program['name'] = 'RootsMagic';
+        $program['type'] = 'rootsmagic';
       }
     }
-    // Legacy Family Tree detection
-    elseif (preg_match('/1 SOUR.*Legacy/i', $content)) {
-      $program_info['name'] = 'Legacy Family Tree';
-      $program_info['type'] = 'legacy';
-      if (preg_match('/1 VERS (.+)/i', $content, $matches)) {
-        $program_info['version'] = trim($matches[1]);
-      }
-    }
-    // Ancestral Quest detection
-    elseif (preg_match('/1 SOUR.*Ancestral Quest/i', $content)) {
-      $program_info['name'] = 'Ancestral Quest';
-      $program_info['type'] = 'ancestralquest';
-    }
-    // Generic 5.5.1 or other programs
-    else {
-      if (preg_match('/1 SOUR (.+)/i', $content, $matches)) {
-        $program_info['name'] = trim($matches[1]);
-        $program_info['type'] = 'generic';
-      }
-    }
-    
-    return $program_info;
+
+    $this->source_program = $program;
+    return $program;
   }
-  
+
   /**
-   * Detect media structure based on program type
+   * Detect character set and encoding from GEDCOM header
+   *
+   * @param string $header_content The GEDCOM header content
+   * @return string The character set
    */
-  private function detect_media_structure($content) {
-    $structure = array(
+  private function detect_character_set($header_content)
+  {
+    $char_set = 'UTF-8';
+
+    // Extract CHAR line from header
+    if (preg_match('/1 CHAR (.*?)(?:\r\n|\r|\n|$)/', $header_content, $matches)) {
+      $detected = strtoupper(trim($matches[1]));
+
+      switch ($detected) {
+        case 'ANSEL':
+          $char_set = 'ANSEL';
+          $this->convert_ansel = true;
+          break;
+        case 'ASCII':
+          $char_set = 'ASCII';
+          break;
+        case 'UTF8':
+        case 'UTF-8':
+          $char_set = 'UTF-8';
+          break;
+        case 'UNICODE':
+          $char_set = 'UTF-16';
+          break;
+        default:
+          $char_set = 'UTF-8'; // Default to UTF-8
+      }
+    }
+
+    $this->char_set = $char_set;
+    return $char_set;
+  }
+
+  /**
+   * Analyze media file paths in GEDCOM based on detected source program
+   *
+   * @param string $gedcom_content The complete GEDCOM content
+   * @return array Media structure information
+   */
+  private function analyze_media_structure($gedcom_content)
+  {
+    $media_structure = [
       'base_folder' => 'media',
       'path_pattern' => '',
+      'file_references' => [],
+      'media_types' => [],
       'total_files' => 0,
       'found_files' => 0,
-      'missing_files' => 0,
-      'file_list' => array()
-    );
-    
+      'missing_files' => 0
+    ];
+
     // Extract all FILE references
-    preg_match_all('/1 FILE (.+)/i', $content, $matches);
-    $structure['total_files'] = count($matches[1]);
-    
-    switch($this->source_program['type']) {
-      case 'ftm':
-        // Family Tree Maker: C:\Users\...\Family Tree Maker\Media\file.jpg
-        $structure['base_folder'] = 'Media';
-        $structure['path_pattern'] = '/.*[\\\\\/]?(?:Family Tree Maker[\\\\\/])?Media[\\\\\/](.+)/i';
-        break;
-        
-      case 'rootsmagic':
-        // RootsMagic: media\file.jpg or just file.jpg
-        $structure['base_folder'] = 'media';
-        $structure['path_pattern'] = '/(?:media[\\\\\/])?(.+)/i';
-        break;
-        
-      case 'legacy':
-        // Legacy: Pictures\file.jpg
-        $structure['base_folder'] = 'Pictures';
-        $structure['path_pattern'] = '/(?:Pictures[\\\\\/])?(.+)/i';
-        break;
-        
-      default:
-        // Generic GEDCOM: various patterns, use filename
-        $structure['base_folder'] = 'media';
-        $structure['path_pattern'] = '/(?:.*[\\\\\/])?(.+)/i';
+    preg_match_all('/2 FILE (.+)(?:\r\n|\r|\n|$)/', $gedcom_content, $matches);
+
+    if (!empty($matches[1])) {
+      $media_structure['total_files'] = count($matches[1]);
+      $media_structure['file_references'] = $matches[1];
+
+      // Sample first few paths to detect pattern
+      $sample_paths = array_slice($matches[1], 0, min(10, count($matches[1])));
+
+      // Set path pattern based on program type
+      switch ($this->source_program['type']) {
+        case 'ftm':
+          // FTM typically uses: C:\Users\...\Family Tree Maker\Media\file.jpg
+          $media_structure['base_folder'] = 'Media';
+          $media_structure['path_pattern'] = '/Family Tree Maker[\\/]Media[\\/](.+)/';
+          break;
+
+        case 'rootsmagic':
+          // RM typically uses: media\file.jpg or just file.jpg
+          $media_structure['base_folder'] = 'media';
+          $media_structure['path_pattern'] = '/(?:media[\\/])?(.+)/';
+          break;
+
+        case 'legacy':
+          // Legacy typically uses: Pictures\file.jpg
+          $media_structure['base_folder'] = 'Pictures';
+          $media_structure['path_pattern'] = '/(?:Pictures[\\/])?(.+)/';
+          break;
+
+        default:
+          // Generic pattern for standard GEDCOM files
+          $media_structure['base_folder'] = 'media';
+          $media_structure['path_pattern'] = '/(?:.*[\\/])?([^\\/:*?"<>|]+\.[a-zA-Z0-9]+)$/';
+      }
+
+      // Detect media types
+      foreach ($sample_paths as $path) {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!isset($media_structure['media_types'][$ext])) {
+          $media_structure['media_types'][$ext] = 0;
+        }
+        $media_structure['media_types'][$ext]++;
+      }
     }
-    
-    // Process file list
-    foreach($matches[1] as $file_path) {
-      $structure['file_list'][] = trim($file_path);
-    }
-    
-    return $structure;
+
+    $this->media_structure = $media_structure;
+    return $media_structure;
   }
-  
+
   /**
-   * Resolve media file path in WordPress uploads
+   * Resolve media file path based on program-specific patterns
+   *
+   * @param string $gedcom_path The path as specified in the GEDCOM
+   * @param string $wp_media_base The WordPress media base directory
+   * @return string|false The resolved file path or false if not found
    */
-  private function resolve_media_file($gedcom_path) {
-    if (empty($gedcom_path)) {
-      return false;
+  private function resolve_media_file($gedcom_path, $wp_media_base)
+  {
+    // Normalize slashes for cross-platform compatibility
+    $gedcom_path = str_replace('\\', '/', $gedcom_path);
+
+    // Extract just the filename/relative path based on program type
+    $relative_path = '';
+    if (preg_match($this->media_structure['path_pattern'], $gedcom_path, $matches)) {
+      $relative_path = isset($matches[1]) ? $matches[1] : basename($gedcom_path);
+    } else {
+      $relative_path = basename($gedcom_path);
     }
-    
-    // Extract relative path based on program pattern
-    preg_match($this->media_structure['path_pattern'], $gedcom_path, $matches);
-    $relative_path = isset($matches[1]) ? $matches[1] : basename($gedcom_path);
-    
-    // Possible locations to check
-    $search_paths = array(
-      // Direct in WordPress media base
-      $this->wp_media_base . '/' . $relative_path,
-      // In program-specific folder
-      $this->wp_media_base . '/' . $this->media_structure['base_folder'] . '/' . $relative_path,
-      // Just filename in base
-      $this->wp_media_base . '/' . basename($relative_path),
-      // In generic media folder
-      $this->wp_media_base . '/media/' . basename($relative_path)
-    );
-    
-    foreach($search_paths as $path) {
+
+    // Try a series of potential locations in priority order
+    $potential_paths = [
+      // 1. Direct path in WordPress media folder
+      $wp_media_base . '/' . $relative_path,
+
+      // 2. In program-specific base folder
+      $wp_media_base . '/' . $this->media_structure['base_folder'] . '/' . $relative_path,
+
+      // 3. Using just filename in media folder
+      $wp_media_base . '/media/' . basename($relative_path),
+
+      // 4. Using just filename in root upload folder
+      $wp_media_base . '/' . basename($relative_path)
+    ];
+
+    // Check each potential path
+    foreach ($potential_paths as $path) {
       if (file_exists($path)) {
+        $this->media_structure['found_files']++;
         return $path;
       }
     }
-    
+
+    $this->media_structure['missing_files']++;
     return false;
   }
-  
+
   /**
-   * Enhanced validation with program-specific checks
+   * Process media record (OBJE) with program-specific enhancements
+   *
+   * @param array $record The GEDCOM media record
+   * @return array Processed media data
    */
-  public function validate_gedcom($file_path) {
-    if (!file_exists($file_path)) {
-      return array(
-        'valid' => false,
-        'errors' => array('File does not exist')
-      );
-    }
-    
-    // Read first part of file for analysis
-    $handle = fopen($file_path, 'r');
-    $header_content = '';
-    $line_count = 0;
-    
-    while (($line = fgets($handle)) !== false && $line_count < 100) {
-      $header_content .= $line;
-      $line_count++;
-    }
-    fclose($handle);
-    
-    $errors = array();
-    $warnings = array();
-    
-    // Basic GEDCOM validation
-    if (!preg_match('/0 HEAD/', $header_content)) {
-      $errors[] = 'Invalid GEDCOM: Missing HEAD record';
-    }
-    
-    if (!preg_match('/1 GEDC/', $header_content)) {
-      $errors[] = 'Invalid GEDCOM: Missing GEDC record';
-    }
-    
-    // Version check
-    if (preg_match('/2 VERS ([0-9.]+)/', $header_content, $matches)) {
-      $version = $matches[1];
-      if (version_compare($version, '5.5', '<')) {
-        $warnings[] = "GEDCOM version $version detected. 5.5.1 recommended.";
-      }
-    }
-    
-    // Detect program and set structure info
-    $this->source_program = $this->detect_source_program($header_content);
-    $this->media_structure = $this->detect_media_structure($header_content);
-    
-    // Get full file statistics
-    $this->statistics = $this->calculate_statistics($file_path);
-    
-    return array(
-      'valid' => empty($errors),
-      'errors' => $errors,
-      'warnings' => $warnings,
-      'program' => $this->source_program,
-      'media_info' => $this->media_structure,
-      'statistics' => $this->statistics
-    );
-  }
-  
-  /**
-   * Calculate comprehensive import statistics
-   */
-  private function calculate_statistics($file_path) {
-    $stats = array(
-      'individuals' => 0,
-      'families' => 0,
-      'sources' => 0,
-      'repositories' => 0,
-      'notes' => 0,
-      'media_objects' => 0,
-      'citations' => 0,
-      'events' => 0,
-      'file_size' => filesize($file_path),
-      'estimated_time' => 0
-    );
-    
-    $handle = fopen($file_path, 'r');
-    if ($handle) {
-      while (($line = fgets($handle)) !== false) {
-        $line = trim($line);
-        
-        // Count record types
-        if (preg_match('/^0 @.+@ INDI/', $line)) {
-          $stats['individuals']++;
-        } elseif (preg_match('/^0 @.+@ FAM/', $line)) {
-          $stats['families']++;
-        } elseif (preg_match('/^0 @.+@ SOUR/', $line)) {
-          $stats['sources']++;
-        } elseif (preg_match('/^0 @.+@ REPO/', $line)) {
-          $stats['repositories']++;
-        } elseif (preg_match('/^0 @.+@ NOTE/', $line)) {
-          $stats['notes']++;
-        } elseif (preg_match('/^0 @.+@ OBJE/', $line)) {
-          $stats['media_objects']++;
-        } elseif (preg_match('/^[12] (BIRT|DEAT|MARR|DIV|RESI|OCCU|EDUC|RELI|NATU|EMIG|IMMI|CENS|PROB|WILL|GRAD|BAPM|BARM|BASM|BLES|CHRA|CONF|FCOM|ORDN|NATI|CAST|DSCR|IDNO|NATI|NCHI|NMR|FACT)/', $line)) {
-          $stats['events']++;
+  private function process_media_record($record)
+  {
+    global $wpdb;
+
+    $media_data = [
+      'mediaID' => $record['id'] ?? '',
+      'mediatypeID' => 0,  // Default to photo
+      'gedcom' => $this->tree_id,
+      'form' => '',
+      'title' => '',
+      'description' => '',
+      'path' => '',
+      'thumbpath' => '',
+      'changedate' => date('Y-m-d H:i:s'),
+      'status' => '',
+      'plot' => '',
+      'linkid' => '',
+      'notes' => '',
+      'owner' => '',
+      'alwayson' => 0,
+      'map' => '',
+      'latitude' => '',
+      'longitude' => '',
+      'zoom' => 0,
+      'width' => 0,
+      'height' => 0,
+      'is_primary' => 0
+    ];
+
+    // Extract file path
+    if (!empty($record['FILE'])) {
+      $media_data['path'] = $record['FILE'];
+
+      // Resolve actual file path
+      $resolved_path = $this->resolve_media_file($record['FILE'], $this->wp_media_base);
+      if ($resolved_path) {
+        // Store the WordPress relative path
+        $media_data['path'] = str_replace($this->wp_media_base, '', $resolved_path);
+
+        // Get image dimensions if it's an image
+        $ext = strtolower(pathinfo($resolved_path, PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+          if (function_exists('getimagesize')) {
+            $size = @getimagesize($resolved_path);
+            if ($size) {
+              $media_data['width'] = $size[0];
+              $media_data['height'] = $size[1];
+            }
+          }
         }
       }
-      fclose($handle);
     }
-    
-    // Estimate processing time (rough calculation)
-    $total_records = $stats['individuals'] + $stats['families'] + $stats['sources'];
-    $stats['estimated_time'] = ceil($total_records / 100); // seconds
-    
-    return $stats;
+
+    // Extract title and form
+    if (!empty($record['TITL'])) {
+      $media_data['title'] = $record['TITL'];
+    }
+
+    if (!empty($record['FORM'])) {
+      $media_data['form'] = $record['FORM'];
+
+      // Determine media type based on form/extension
+      if (
+        stripos($record['FORM'], 'photo') !== false ||
+        stripos($record['FORM'], 'jpg') !== false ||
+        stripos($record['FORM'], 'jpeg') !== false ||
+        stripos($record['FORM'], 'png') !== false ||
+        stripos($record['FORM'], 'gif') !== false
+      ) {
+        $media_data['mediatypeID'] = 1; // Photo
+      } elseif (
+        stripos($record['FORM'], 'document') !== false ||
+        stripos($record['FORM'], 'pdf') !== false ||
+        stripos($record['FORM'], 'doc') !== false ||
+        stripos($record['FORM'], 'txt') !== false
+      ) {
+        $media_data['mediatypeID'] = 2; // Document
+      } else {
+        // Check extension from path
+        $ext = strtolower(pathinfo($media_data['path'], PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+          $media_data['mediatypeID'] = 1; // Photo
+        } elseif (in_array($ext, ['pdf', 'doc', 'docx', 'txt', 'rtf'])) {
+          $media_data['mediatypeID'] = 2; // Document
+        } elseif (in_array($ext, ['mp3', 'wav', 'm4a', 'ogg'])) {
+          $media_data['mediatypeID'] = 3; // Audio
+        } elseif (in_array($ext, ['mp4', 'mov', 'avi', 'wmv'])) {
+          $media_data['mediatypeID'] = 4; // Video
+        } else {
+          $media_data['mediatypeID'] = 5; // Other
+        }
+      }
+    }
+
+    // Program-specific enhancements
+    switch ($this->source_program['type']) {
+      case 'ftm':
+        // Handle FTM's _PRIM tag for primary photo
+        if (!empty($record['_PRIM']) && $record['_PRIM'] == 'Y') {
+          $media_data['is_primary'] = 1;
+        }
+        break;
+
+      case 'rootsmagic':
+        // Handle RootsMagic's _UID tag for tracking
+        if (!empty($record['_UID'])) {
+          $media_data['notes'] = 'UID: ' . $record['_UID'];
+        }
+        break;
+    }
+
+    // Store the media record
+    $table_name = $wpdb->prefix . 'hp_media';
+    $wpdb->insert($table_name, $media_data);
+
+    // Return the processed media data
+    return $media_data;
   }
-  
+
   /**
-   * Setup WordPress media directory
+   * Process media links (connections to individuals, families, etc)
+   *
+   * @param string $entity_id The ID of the entity (person, family)
+   * @param string $entity_type The type of entity (I, F, S)
+   * @param array $media_links Array of media link information
+   * @return int Number of links created
    */
-  private function setup_media_directory() {
-    $upload_dir = wp_upload_dir();
-    $this->wp_media_base = $upload_dir['basedir'] . '/heritagepress-media';
-    
-    // Create directory if it doesn't exist
-    if (!file_exists($this->wp_media_base)) {
-      wp_mkdir_p($this->wp_media_base);
+  private function process_media_links($entity_id, $entity_type, $media_links)
+  {
+    global $wpdb;
+    $count = 0;
+
+    // Skip if no media links
+    if (empty($media_links)) {
+      return 0;
     }
-    
-    // Create .htaccess for security
-    $htaccess_file = $this->wp_media_base . '/.htaccess';
-    if (!file_exists($htaccess_file)) {
-      $htaccess_content = "# HeritagePress Media Protection\n";
-      $htaccess_content .= "Options -Indexes\n";
-      $htaccess_content .= "<Files *.php>\n";
-      $htaccess_content .= "Order Allow,Deny\n";
-      $htaccess_content .= "Deny from all\n";
-      $htaccess_content .= "</Files>\n";
-      
-      file_put_contents($htaccess_file, $htaccess_content);
+
+    foreach ($media_links as $link) {
+      $media_id = isset($link['id']) ? $link['id'] : '';
+
+      // Skip if no media ID
+      if (empty($media_id)) {
+        continue;
+      }
+
+      // Create link record
+      $link_data = [
+        'medialinkID' => '',
+        'gedcom' => $this->tree_id,
+        'mediaID' => $media_id,
+        'linktype' => $entity_type,
+        'linkID' => $entity_id,
+        'extras' => '',
+        'description' => isset($link['description']) ? $link['description'] : '',
+        'ordernum' => $count,
+        'defphoto' => isset($link['is_primary']) && $link['is_primary'] ? 1 : 0
+      ];
+
+      $table_name = $wpdb->prefix . 'hp_medialinks';
+      $wpdb->insert($table_name, $link_data);
+      $count++;
     }
+
+    return $count;
   }
 }

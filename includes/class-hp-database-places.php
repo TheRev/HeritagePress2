@@ -95,10 +95,9 @@ class HP_Database_Places
 
     return true;
   }
-
   /**
    * Get places table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Database structures for HeritagePress places tables
    */
   private function get_table_structures()
   {

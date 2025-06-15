@@ -95,10 +95,9 @@ class HP_Database_Media
 
     return true;
   }
-
   /**
    * Get media table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Database structures for HeritagePress media tables
    */
   private function get_table_structures()
   {

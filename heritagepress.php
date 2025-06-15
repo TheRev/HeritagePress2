@@ -75,23 +75,27 @@ class HeritagePress
   }
   /**
    * Include required files
-   */
-  private function includes()
+   */  private function includes()
   {    // Core database and model classes
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-person-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-family-manager.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-importer.php';
+
+    // Load the modular GEDCOM importer controller first
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
+
+    // Load the simple adapter that provides the HP_GEDCOM_Importer class
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-adapter.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/hp-gedcom-settings.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/hp-gedcom-ajax.php';
 
     // Admin interface
     if (is_admin()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
-    }
-
-    // Public interface
+    }    // Public interface
     if (!is_admin() || wp_doing_ajax()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'public/class-hp-public.php';
-    }
+    }    // Old reference to adapter removed since we load it earlier
   }
   /**
    * Initialize plugin

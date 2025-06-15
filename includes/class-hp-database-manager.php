@@ -142,9 +142,7 @@ class HP_Database_Manager
       require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-dna.php');
       require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-research.php');
       require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-system.php');
-      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-utility.php');
-
-      // Create instances of each modular class
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-utility.php');      // Create instances of each modular class
       $modules = [
         'Core' => new HP_Database_Core(),
         'Events' => new HP_Database_Events(),
@@ -170,6 +168,9 @@ class HP_Database_Manager
         }
       }
 
+      // Create import jobs table for background processing
+      $this->create_import_jobs_table();
+
       if ($created_modules === $total_modules) {
         error_log("HeritagePress: All {$total_modules} table modules created successfully");
         update_option('heritagepress_db_version', self::DB_VERSION);
@@ -187,11 +188,71 @@ class HP_Database_Manager
     }
   }
   /**
+   * Create import jobs table for background processing
+   */
+  private function create_import_jobs_table()
+  {
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    $table_name = $this->table_prefix . 'import_jobs';
+
+    $sql = "CREATE TABLE `$table_name` (
+      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `job_id` varchar(36) NOT NULL,
+      `user_id` bigint(20) unsigned NOT NULL,
+      `file_path` text NOT NULL,
+      `import_options` longtext,
+      `status` varchar(20) NOT NULL DEFAULT 'queued',
+      `progress` decimal(5,2) NOT NULL DEFAULT 0.00,
+      `total_records` int(11) NOT NULL DEFAULT 0,
+      `processed_records` int(11) NOT NULL DEFAULT 0,
+      `errors` longtext,
+      `log` longtext,
+      `created_at` datetime NOT NULL,
+      `updated_at` datetime NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `job_id` (`job_id`),
+      KEY `user_id` (`user_id`),
+      KEY `status` (`status`),
+      KEY `created_at` (`created_at`)
+    ) {$this->charset_collate};";
+
+    $result = dbDelta($sql);
+
+    if ($this->wpdb->last_error) {
+      error_log("HeritagePress: Failed to create import_jobs table: " . $this->wpdb->last_error);
+      return false;
+    }
+
+    error_log("HeritagePress: Import jobs table created successfully");
+    return true;
+  }
+
+  /**
+   * Ensure import jobs table exists (for backward compatibility)
+   */
+  public function ensure_import_jobs_table()
+  {
+    $table_name = $this->table_prefix . 'import_jobs';
+
+    // Check if table exists
+    $table_exists = $this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name;
+
+    if (!$table_exists) {
+      error_log("HeritagePress: Import jobs table missing, creating...");
+      return $this->create_import_jobs_table();
+    }
+
+    return true;
+  }
+
+  /**
    * Create tables from genealogy SQL dump file
    */
   private function create_tables_from_sql_dump()
   {    // Try multiple possible locations for the SQL dump
-    $possible_paths = [      $this->sql_dump_path,
+    $possible_paths = [
+      $this->sql_dump_path,
       HERITAGEPRESS_PLUGIN_DIR . 'genealogy.sql',
       ABSPATH . 'BACKUPS/genealogy.sql',
       ABSPATH . '../BACKUPS/genealogy.sql'
@@ -442,5 +503,76 @@ class HP_Database_Manager
 
     delete_option('heritagepress_db_version');
     error_log('HeritagePress: All tables dropped successfully');
+  }
+
+  /**
+   * Get counts of records in all HeritagePress tables
+   *
+   * @return array Table counts indexed by table name
+   */
+  public function get_table_counts()
+  {
+    $counts = array();
+    $tables = $this->get_table_names();
+
+    foreach ($tables as $table_name) {
+      $table = $this->wpdb->prefix . 'hp_' . $table_name;
+      $sql = "SELECT COUNT(*) FROM $table";
+      $count = $this->wpdb->get_var($sql);
+      $counts[$table_name] = intval($count);
+    }
+
+    return $counts;
+  }
+
+  /**
+   * Get statistics about tables including creation date and last modified
+   *
+   * @return array Table statistics
+   */
+  public function get_table_stats()
+  {
+    $stats = array();
+    $tables = $this->get_table_names();
+
+    foreach ($tables as $table_name) {
+      $table = $this->wpdb->prefix . 'hp_' . $table_name;
+      $sql = "SHOW TABLE STATUS LIKE '$table'";
+      $result = $this->wpdb->get_row($sql);
+
+      if ($result) {
+        $stats[$table_name] = array(
+          'rows' => $result->Rows,
+          'data_length' => $result->Data_length,
+          'index_length' => $result->Index_length,
+          'created' => $result->Create_time,
+          'updated' => $result->Update_time,
+        );
+      }
+    }
+
+    return $stats;
+  }
+
+  /**
+   * Get list of all HeritagePress table names without prefix
+   *
+   * @return array Table names without prefix
+   */
+  private function get_table_names()
+  {
+    return array(
+      'people',
+      'families',
+      'events',
+      'places',
+      'sources',
+      'citations',
+      'media',
+      'repositories',
+      'notes',
+      'trees',
+      'settings',
+    );
   }
 }
