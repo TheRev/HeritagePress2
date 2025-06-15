@@ -1,173 +1,317 @@
 /*
  * People Management Styles
  * Professional interface matching HeritagePress admin design
+ * Enhanced for high contrast and accessibility
  */
+
+/* =============================================================================
+   HIGH CONTRAST ENHANCEMENTS FOR ACCESSIBILITY
+   Improved readability for older individuals and visual impairments
+   ============================================================================= */
+
+/* Enhanced text contrast - moderately darker text */
+.people-browse-section,
+.add-person-section,
+.edit-person-section,
+.search-people-section,
+.reports-people-section {
+  color: #2c3e50; /* Dark blue-gray for good contrast without harshness */
+}
+
+/* Compact text styling */
+.search-field label,
+.form-field label,
+.hp-form-table th,
+.person-form-card-title,
+.form-header h3,
+.form-section h4 {
+  color: #2c3e50 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  margin-bottom: 4px !important;
+}
+
+/* Elegant button styling with moderate contrast */
+.button-primary,
+input[type="submit"].button-primary {
+  background: #3498db !important; /* Elegant blue */
+  border-color: #2980b9 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-width: 1px !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2) !important;
+}
+
+.button-primary:hover,
+input[type="submit"].button-primary:hover {
+  background: #2980b9 !important;
+  border-color: #1f618d !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3) !important;
+}
+
+.button,
+input[type="submit"]:not(.button-primary) {
+  background: #ffffff !important;
+  border: 1px solid #bdc3c7 !important;
+  color: #2c3e50 !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.button:hover,
+input[type="submit"]:not(.button-primary):hover {
+  background: #ecf0f1 !important;
+  border-color: #95a5a6 !important;
+  color: #2c3e50 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(149, 165, 166, 0.2) !important;
+}
+
+/* Elegant link colors */
+a,
+.row-actions a {
+  color: #3498db !important; /* Elegant blue */
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: color 0.2s ease !important;
+}
+
+a:hover,
+.row-actions a:hover {
+  color: #2980b9 !important;
+  text-decoration: underline !important;
+}
+
+/* Consistent link styling for all row actions */
+.row-actions .delete-link,
+.button-danger {
+  color: #e74c3c !important; /* Elegant red */
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  transition: color 0.2s ease !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+}
+
+.row-actions .delete-link:hover,
+.button-danger:hover {
+  color: #c0392b !important;
+  background: transparent !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: underline !important;
+}
+
+/* Compact form element styling */
+.search-field input[type="text"],
+.search-field select,
+.form-field input,
+.form-field select,
+.form-field textarea,
+.hp-form-table input[type="text"],
+.hp-form-table input[type="email"],
+.hp-form-table input[type="url"],
+.hp-form-table input[type="date"],
+.hp-form-table textarea,
+.hp-form-table select {
+  border: 1px solid #bdc3c7 !important;
+  background: #ffffff !important;
+  color: #2c3e50 !important;
+  font-size: 13px !important;
+  border-radius: 3px !important;
+  padding: 6px 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.search-field input[type="text"]:focus,
+.search-field select:focus,
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.hp-form-table input[type="text"]:focus,
+.hp-form-table input[type="email"]:focus,
+.hp-form-table input[type="url"]:focus,
+.hp-form-table input[type="date"]:focus,
+.hp-form-table textarea:focus,
+.hp-form-table select:focus {
+  border-color: #3498db !important;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2) !important;
+  outline: none !important;
+}
 
 /* Main People Section */
 .people-browse-section {
   margin-top: 20px;
 }
 
-/* Navigation Tab Enhancements */
+/* Enhanced Navigation Tab Contrast */
 .nav-tab .count {
-  color: #666;
-  font-weight: normal;
-  margin-left: 5px;
+  color: #333333 !important; /* Darker gray for better contrast */
+  font-weight: 600 !important; /* Bolder text */
+  margin-left: 8px !important;
+  background: #ffffff !important; /* White background */
+  padding: 2px 6px !important; /* Padding for better visibility */
+  border-radius: 4px !important;
+  border: 1px solid #333333 !important; /* Border for definition */
 }
 
 .nav-tab .person-id {
-  background: #0073aa;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 11px;
-  margin-left: 8px;
+  background: #000080 !important; /* Dark blue for maximum contrast */
+  color: #ffffff !important; /* White text */
+  padding: 4px 8px !important; /* More padding */
+  border-radius: 4px !important;
+  font-size: 12px !important; /* Slightly larger text */
+  margin-left: 10px !important;
+  font-weight: 700 !important; /* Bold text */
+  border: 2px solid #000080 !important; /* Border for definition */
 }
 
-/* Search Form Card */
+/* Elegant tab styling */
+.nav-tab-wrapper .nav-tab {
+  background: #ffffff !important;
+  border: 1px solid #ddd !important;
+  color: #2c3e50 !important;
+  font-weight: 500 !important;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  text-decoration: none !important;
+  border-radius: 6px 6px 0 0 !important;
+  transition: all 0.2s ease !important;
+  margin-right: 4px !important;
+}
+
+.nav-tab-wrapper .nav-tab:hover {
+  background: #f8f9fa !important;
+  color: #2c3e50 !important;
+  border-color: #3498db !important;
+  transform: translateY(-2px) !important;
+}
+
+.nav-tab-wrapper .nav-tab-active {
+  background: #3498db !important;
+  color: #ffffff !important;
+  border-color: #2980b9 !important;
+  border-bottom-color: #3498db !important;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2) !important;
+}
+
+/* Compact Search Form Card */
 .search-form-card {
-  background: #fff;
-  border: 1px solid #ccd0d4;
+  background: #ffffff !important;
+  border: 1px solid #ddd !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  margin-bottom: 15px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.search-form-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Results Section - Elegant styling */
+.people-results {
+  background: #ffffff !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Compact Advanced Search Options */
+.advanced-search-options {
+  padding: 10px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-}
-
-.people-search-form {
-  margin: 0;
-}
-
-.search-controls {
+  margin-top: 8px;
   display: flex;
-  gap: 15px;
-  align-items: end;
   flex-wrap: wrap;
-  margin-bottom: 15px;
-}
-
-.search-field {
-  display: flex;
-  flex-direction: column;
-  min-width: 150px;
-}
-
-.search-field label {
-  font-weight: 600;
-  margin-bottom: 5px;
-  color: #1d2327;
-}
-
-.search-field input[type="text"],
-.search-field select {
-  padding: 6px 8px;
-  border: 1px solid #8c8f94;
-  border-radius: 3px;
-  font-size: 13px;
-}
-
-.search-field input[type="text"]:focus,
-.search-field select:focus {
-  border-color: #2271b1;
-  box-shadow: 0 0 0 1px #2271b1;
-  outline: 2px solid transparent;
-}
-
-/* Search Buttons Container */
-.search-field .button,
-.search-field input[type="submit"] {
-  margin-right: 10px;
-  margin-bottom: 0;
-}
-
-.search-field .button:last-child,
-.search-field input[type="submit"]:last-child {
-  margin-right: 0;
-}
-
-/* When search field contains buttons, arrange them horizontally */
-.search-field:has(.button),
-.search-field:has(input[type="submit"]) {
-  flex-direction: row;
+  gap: 12px;
   align-items: center;
-  gap: 10px;
-}
-
-/* Fallback for browsers that don't support :has() */
-.search-buttons {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  min-width: auto;
-}
-
-.search-buttons .button,
-.search-buttons input[type="submit"] {
-  margin: 0;
-  white-space: nowrap;
-}
-
-/* Advanced Search Toggle */
-.advanced-search-toggle {
-  margin-bottom: 15px;
 }
 
 .advanced-search-toggle .button-link {
-  text-decoration: none;
-  color: #2271b1;
-  padding: 0;
-  background: none;
-  border: none;
+  text-decoration: none !important;
+  color: #3498db !important;
+  padding: 4px 10px !important;
+  background: #ffffff !important;
+  border: 1px solid #3498db !important;
+  border-radius: 3px !important;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
 }
 
 .advanced-search-toggle .button-link:hover {
-  color: #135e96;
+  color: #ffffff !important;
+  background: #3498db !important;
+  border-color: #2980b9 !important;
 }
 
-.advanced-search-options {
-  padding: 15px;
-  background: #f6f7f7;
-  border: 1px solid #dcdcde;
-  border-radius: 4px;
-  margin-top: 10px;
-}
-
+/* Compact horizontal option row layout */
 .option-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 15px !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .option-row label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
   cursor: pointer;
+  color: #2c3e50 !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
 }
 
-.option-row:last-child {
-  margin-bottom: 0;
+/* Elegant checkbox styling */
+.option-row input[type="checkbox"],
+.checkbox-field input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 6px !important;
+  border: 1px solid #bdc3c7 !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
 }
 
-/* Results Section */
-.people-results {
-  background: #fff;
-  border: 1px solid #ccd0d4;
-  border-radius: 4px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+.option-row input[type="checkbox"]:checked,
+.checkbox-field input[type="checkbox"]:checked {
+  background: #3498db !important;
+  border-color: #2980b9 !important;
 }
 
-/* People Table Styling */
+.option-row input[type="checkbox"]:hover,
+.checkbox-field input[type="checkbox"]:hover {
+  border-color: #3498db !important;
+}
+
+/* People Table Styling - Enhanced for High Contrast */
 .people-table {
   margin: 0;
   border-collapse: collapse;
   width: 100%;
-  table-layout: auto !important; /* Override WordPress fixed layout - Allow columns to resize based on content */
+  table-layout: auto !important;
+  border: 1px solid #ddd !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
 }
 
 /* Override WordPress core list table fixed layout */
@@ -182,16 +326,22 @@
 .people-table th,
 .people-table td {
   vertical-align: top;
-  padding: 8px 10px;
-  border-bottom: 1px solid #f0f0f1;
+  padding: 12px 15px !important;
+  border-bottom: 1px solid #eee !important;
+  border-right: 1px solid #f5f5f5 !important;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
 }
 
 .people-table th {
-  background: #f6f7f7;
-  font-weight: 600;
-  border-bottom: 1px solid #c3c4c7;
+  background: #f8f9fa !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #dee2e6 !important;
+  color: #2c3e50 !important;
+  text-transform: none !important;
+  letter-spacing: 0.3px !important;
 }
 
 .people-table .column-cb {
@@ -258,15 +408,82 @@
 
 .people-table .column-birth,
 .people-table .column-death {
-  width: 15%;
-}
-
-.people-table .column-tree {
   width: 12%;
 }
 
+.people-table .column-tree {
+  width: 10%;
+}
+
 .people-table .column-changed {
-  width: 15%;
+  width: 12%;
+}
+
+/* Spouse and Partner columns */
+.people-table .column-spouse,
+.people-table .column-partner {
+  width: 12%;
+  vertical-align: top;
+}
+
+.people-table .column-spouse {
+  border-right: 1px solid #f5f5f5;
+}
+
+.people-table .column-partner {
+  border-right: 1px solid #f5f5f5;
+}
+
+/* No data styling for empty relationship columns */
+.people-table .no-data {
+  color: #bdc3c7;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Relationship column styling */
+.people-table .column-spouse a,
+.people-table .column-partner a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.people-table .column-spouse a:hover,
+.people-table .column-partner a:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.people-table .column-spouse small,
+.people-table .column-partner small {
+  color: #7f8c8d;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+/* Spacing for multiple relationships */
+.people-table .column-spouse br + a,
+.people-table .column-partner br + a {
+  margin-top: 3px;
+}
+
+/* Responsive adjustments for new columns */
+@media screen and (max-width: 1200px) {
+  .people-table .column-spouse,
+  .people-table .column-partner {
+    width: 10%;
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .people-table .column-spouse,
+  .people-table .column-partner {
+    display: none;
+  }
 }
 
 /* Improve readability of small text */
@@ -276,50 +493,64 @@
   line-height: 1.3;
 }
 
-/* Better spacing for person status indicators */
+/* Elegant status indicators */
 .person-status {
-  margin-top: 6px;
-  font-size: 11px;
-  line-height: 1.2;
+  margin-top: 8px !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px !important;
 }
 
 .status-living,
 .status-private {
   display: inline-block;
-  padding: 3px 7px;
-  border-radius: 3px;
-  font-weight: 500;
-  font-size: 10px;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  border: 1px solid !important;
+  transition: all 0.2s ease !important;
 }
 
 .status-living {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
+  background-color: #d5f4e6 !important;
+  color: #27ae60 !important;
+  border-color: #27ae60 !important;
 }
 
 .status-private {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: #fadbd8 !important;
+  color: #e74c3c !important;
+  border-color: #e74c3c !important;
 }
 
-/* Additional status indicators for future use */
+/* Additional elegant status indicators */
 .status-deceased {
-  background-color: #e2e3e5;
-  color: #383d41;
-  border: 1px solid #d6d8db;
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .status-unknown {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
+  background-color: #fff3cd !important;
+  color: #f39c12 !important;
+  border-color: #f39c12 !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 /* Photo Placeholder */
@@ -352,20 +583,23 @@
 }
 
 .row-actions a {
-  color: #2271b1;
+  color: #3498db;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .row-actions a:hover {
-  color: #135e96;
+  color: #2980b9;
+  text-decoration: underline;
 }
 
 .row-actions .delete-link {
-  color: #d63638;
+  color: #e74c3c;
 }
 
 .row-actions .delete-link:hover {
-  color: #d63638;
+  color: #c0392b;
   text-decoration: underline;
 }
 
@@ -412,15 +646,46 @@
   font-weight: 600;
 }
 
-/* Enhanced visual feedback for table interactions */
-
-/* Sort state indicator for the entire row */
+/* Enhanced table row readability */
 .people-table tbody tr {
   transition: background-color 0.2s ease;
+  background: #ffffff !important; /* Pure white background */
+  color: #000000 !important; /* Pure black text */
+}
+
+.people-table tbody tr:nth-child(even) {
+  background: #f8f8f8 !important; /* Light alternating rows for better distinction */
 }
 
 .people-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: #e0e0ff !important; /* Light blue hover for high contrast */
+  outline: 2px solid #000080 !important; /* Blue outline on hover */
+}
+
+/* Enhanced text contrast in table cells */
+.people-table td {
+  color: #000000 !important; /* Pure black text */
+}
+
+.people-table .column-name strong {
+  font-weight: 700 !important; /* Bolder names */
+  color: #000000 !important; /* Pure black for names */
+  font-size: 15px !important; /* Slightly larger for importance */
+}
+
+.people-table .column-name em {
+  color: #333333 !important; /* Dark gray instead of light gray */
+  font-style: italic;
+  font-size: 13px !important; /* Ensure readable size */
+  font-weight: 500 !important; /* Medium weight for better visibility */
+}
+
+/* Better contrast for small text */
+.people-table small {
+  font-size: 13px !important; /* Larger than before */
+  color: #333333 !important; /* Darker for better contrast */
+  line-height: 1.4 !important;
+  font-weight: 500 !important;
 }
 
 /* Enhanced sort header styling */
@@ -586,6 +851,7 @@
   .search-controls {
     flex-direction: column;
     align-items: stretch;
+    margin-bottom: 12px !important;
   }
 
   .search-field {
@@ -595,19 +861,19 @@
   /* Keep search buttons horizontal even on mobile */
   .search-buttons {
     flex-direction: row;
-    gap: 8px;
+    gap: 6px;
     justify-content: flex-start;
   }
 
   .search-buttons .button,
   .search-buttons input[type="submit"] {
-    font-size: 13px;
+    font-size: 12px;
     padding: 4px 8px;
   }
 
   .option-row {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   /* Hide additional columns on small screens */
@@ -638,6 +904,21 @@
   .row-actions {
     font-size: 12px;
   }
+
+  /* Responsive bulk actions */
+  .tablenav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bulkactions {
+    justify-content: flex-start;
+  }
+
+  .tablenav .alignright {
+    text-align: center;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -659,13 +940,32 @@
 }
 
 /* Bulk Actions Styling */
+.bulkactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .bulkactions select {
-  margin-right: 10px;
+  margin-right: 0;
+  vertical-align: middle;
+}
+
+.bulkactions .button,
+.bulkactions input[type="submit"] {
+  margin: 0;
+  vertical-align: middle;
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .tablenav {
   padding: 8px 0;
   border-bottom: 1px solid #c3c4c7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .tablenav.bottom {
@@ -673,9 +973,12 @@
   border-top: 1px solid #c3c4c7;
 }
 
+.tablenav .alignleft {
+  margin: 0;
+}
+
 .tablenav .alignright {
-  float: right;
-  margin-top: 5px;
+  margin: 0;
 }
 
 .displaying-num {
@@ -713,34 +1016,34 @@
   margin-right: 10px;
 }
 
-/* Form Cards (for Add/Edit Person) */
+/* Enhanced Form Cards for High Contrast */
 .person-form-card {
-  background: #fff;
-  border: 1px solid #ccd0d4;
-  border-radius: 4px;
+  background: #ffffff !important;
+  border: 3px solid #000000 !important; /* Strong black border */
+  border-radius: 6px !important;
   padding: 0;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  margin-bottom: 25px !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important; /* Stronger shadow */
 }
 
 .person-form-card-header {
-  background: #f6f7f7;
-  border-bottom: 1px solid #ccd0d4;
-  padding: 15px 20px;
+  background: #e8e8e8 !important; /* Light gray header background */
+  border-bottom: 3px solid #000000 !important; /* Strong separator */
+  padding: 20px 25px !important; /* More padding */
 }
 
 .person-form-card-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1d2327;
+  font-size: 18px !important; /* Larger title */
+  font-weight: 700 !important; /* Bold title */
+  color: #000000 !important; /* Pure black text */
 }
 
 .person-form-card-body {
-  padding: 20px;
+  padding: 25px !important; /* More padding for better spacing */
 }
 
-/* Form Table Styling */
+/* Enhanced Form Table Styling */
 .hp-form-table {
   width: 100%;
   border-collapse: collapse;
@@ -748,177 +1051,114 @@
 
 .hp-form-table th {
   text-align: left;
-  font-weight: 600;
-  padding: 15px 0;
-  width: 200px;
+  font-weight: 700 !important; /* Bold labels */
+  padding: 20px 0 !important; /* More padding */
+  width: 220px !important; /* Wider label column */
   vertical-align: top;
-  color: #1d2327;
+  color: #000000 !important; /* Pure black text */
+  font-size: 15px !important; /* Larger label text */
 }
 
 .hp-form-table td {
-  padding: 15px 0;
+  padding: 20px 0 !important; /* More padding */
   vertical-align: top;
 }
 
 .hp-form-table .form-required {
-  color: #d63638;
-  margin-left: 3px;
-}
-
-.hp-form-table input[type="text"],
-.hp-form-table input[type="email"],
-.hp-form-table input[type="url"],
-.hp-form-table input[type="date"],
-.hp-form-table textarea,
-.hp-form-table select {
-  width: 300px;
-  max-width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #8c8f94;
-  border-radius: 3px;
-  font-size: 13px;
-}
-
-.hp-form-table textarea {
-  height: 80px;
-  resize: vertical;
-}
-
-.hp-form-table input[type="text"]:focus,
-.hp-form-table input[type="email"]:focus,
-.hp-form-table input[type="url"]:focus,
-.hp-form-table input[type="date"]:focus,
-.hp-form-table textarea:focus,
-.hp-form-table select:focus {
-  border-color: #2271b1;
-  box-shadow: 0 0 0 1px #2271b1;
-  outline: 2px solid transparent;
-}
-
-.hp-form-table .small-text {
-  width: 100px;
-}
-
-.hp-form-table .medium-text {
-  width: 200px;
-}
-
-.hp-form-table .large-text {
-  width: 400px;
+  color: #800000 !important; /* Dark red for required indicators */
+  margin-left: 5px !important;
+  font-weight: 700 !important; /* Bold asterisk */
+  font-size: 16px !important; /* Larger asterisk */
 }
 
 .hp-form-table .description {
-  color: #646970;
-  font-size: 13px;
+  color: #333333 !important; /* Darker gray for better contrast */
+  font-size: 14px !important; /* Larger description text */
   font-style: italic;
-  margin-top: 5px;
+  margin-top: 8px !important;
+  font-weight: 500 !important; /* Medium weight for better visibility */
+  line-height: 1.4 !important;
 }
 
-/* Form Actions */
+/* Enhanced input field sizes for hp-form-table */
+.hp-form-table .small-text {
+  width: 120px !important; /* Slightly larger for better usability */
+}
+
+.hp-form-table .medium-text {
+  width: 240px !important; /* Larger medium size */
+}
+
+.hp-form-table .large-text {
+  width: 480px !important; /* Larger large size */
+}
+
+.hp-form-table textarea {
+  height: 100px !important; /* Taller textarea */
+  resize: vertical;
+}
+
+/* Enhanced Form Actions */
 .hp-form-actions {
-  padding: 20px;
-  background: #f6f7f7;
-  border-top: 1px solid #ccd0d4;
+  padding: 25px !important; /* More padding */
+  background: #f0f0f0 !important; /* Light gray background for distinction */
+  border-top: 3px solid #000000 !important; /* Strong top border */
   text-align: left;
 }
 
 .hp-form-actions .button {
-  margin-right: 10px;
+  margin-right: 15px !important; /* More spacing between buttons */
+  padding: 10px 20px !important; /* Larger buttons */
+  font-size: 14px !important; /* Larger text */
+  font-weight: 600 !important; /* Bold text */
 }
 
-/* Tab Navigation Specific to Forms */
-.hp-tabs-container {
-  margin-top: 20px;
-}
-
-.hp-tabs-nav {
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-bottom: 1px solid #ccd0d4;
-  background: #f6f7f7;
-}
-
-.hp-tabs-nav li {
-  margin: 0;
-}
-
-.hp-tabs-nav li a {
-  display: block;
-  padding: 12px 20px;
-  text-decoration: none;
-  color: #646970;
-  border-right: 1px solid #ccd0d4;
-  background: #f6f7f7;
-  transition: all 0.2s;
-}
-
-.hp-tabs-nav li:last-child a {
-  border-right: none;
-}
-
-.hp-tabs-nav li.active a,
-.hp-tabs-nav li a:hover {
-  background: #fff;
-  color: #1d2327;
-}
-
-.hp-tabs-nav li.active a {
-  border-bottom: 1px solid #fff;
-  margin-bottom: -1px;
-}
-
-.hp-tab-panel {
-  display: none;
-  background: #fff;
-  border: 1px solid #ccd0d4;
-  border-top: none;
-  padding: 0;
-}
-
-.hp-tab-panel.active {
-  display: block;
-}
-
-/* Success and Error Messages */
+/* Enhanced Success and Error Messages */
 .notice {
-  margin: 5px 0 15px;
-  padding: 1px 12px;
-  border-left: 4px solid;
-  background: #fff;
-  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+  margin: 8px 0 20px !important;
+  padding: 15px 20px !important; /* More padding */
+  border-left: 6px solid !important; /* Thicker left border */
+  background: #ffffff !important; /* White background for maximum contrast */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Stronger shadow */
+  font-size: 14px !important; /* Larger text */
+  font-weight: 500 !important; /* Medium weight text */
 }
 
 .notice-success {
-  border-left-color: #00a32a;
+  border-left-color: #006600 !important; /* Dark green for success */
+  color: #006600 !important;
 }
 
 .notice-error {
-  border-left-color: #d63638;
+  border-left-color: #800000 !important; /* Dark red for errors */
+  color: #800000 !important;
 }
 
 .notice-warning {
-  border-left-color: #dba617;
+  border-left-color: #664400 !important; /* Dark orange/brown for warnings */
+  color: #664400 !important;
 }
 
 .notice-info {
-  border-left-color: #72aee6;
+  border-left-color: #000080 !important; /* Dark blue for info */
+  color: #000080 !important;
 }
 
-/* Validation Styling */
+/* Enhanced Validation Styling */
 .form-invalid input,
 .form-invalid textarea,
 .form-invalid select {
-  border-color: #d63638;
-  box-shadow: 0 0 0 1px #d63638;
+  border-color: #800000 !important; /* Dark red border */
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.3) !important; /* Red shadow */
+  background: #fff5f5 !important; /* Very light red background */
 }
 
 .form-invalid .description {
-  color: #d63638;
+  color: #800000 !important; /* Dark red text for error descriptions */
+  font-weight: 600 !important; /* Bold error text */
 }
 
-/* Accessibility Improvements */
+/* Enhanced Accessibility Improvements */
 .screen-reader-text {
   clip: rect(1px, 1px, 1px, 1px);
   position: absolute !important;
@@ -927,13 +1167,45 @@
   overflow: hidden;
 }
 
-/* Focus Management */
+/* Enhanced Focus Management for Better Accessibility */
 .button:focus,
 input:focus,
 select:focus,
-textarea:focus {
-  outline: 2px solid #2271b1;
-  outline-offset: 2px;
+textarea:focus,
+.nav-tab:focus,
+.advanced-search-toggle .button-link:focus,
+.action-link:focus {
+  outline: 4px solid #000080 !important; /* Thick blue outline */
+  outline-offset: 3px !important; /* More offset for visibility */
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 6px #000080 !important; /* Double outline effect */
+}
+
+/* Special focus for table headers and sortable elements */
+.manage-column a:focus {
+  outline: 4px solid #000080 !important;
+  outline-offset: 3px !important;
+  border-radius: 4px !important;
+  background: rgba(
+    0,
+    0,
+    128,
+    0.1
+  ) !important; /* Light blue background on focus */
+}
+
+/* Enhanced focus for checkboxes */
+input[type="checkbox"]:focus {
+  outline: 4px solid #000080 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 6px #000080 !important;
+}
+
+/* Enhanced focus for table rows when navigating with keyboard */
+.people-table tbody tr:focus-within {
+  background-color: #e0e0ff !important;
+  outline: 3px solid #000080 !important;
+  outline-offset: -1px !important;
 }
 
 /* Print Styles */
@@ -1453,3 +1725,179 @@ textarea:focus {
     justify-content: center;
   }
 }
+
+/* Enhanced Search Controls */
+.people-search-form {
+  margin: 0;
+}
+
+.search-controls {
+  display: flex;
+  gap: 15px !important;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-bottom: 15px !important;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px !important;
+}
+
+/* Compact Search Buttons */
+.search-field .button,
+.search-field input[type="submit"] {
+  margin-right: 10px !important;
+  margin-bottom: 0;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+}
+
+.search-field .button:last-child,
+.search-field input[type="submit"]:last-child {
+  margin-right: 0;
+}
+
+/* When search field contains buttons, arrange them horizontally */
+.search-field:has(.button),
+.search-field:has(input[type="submit"]) {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+.search-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px !important;
+  min-width: auto;
+}
+
+.search-buttons .button,
+.search-buttons input[type="submit"] {
+  margin: 0;
+  white-space: nowrap;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+}
+
+/* Enhanced Tab Navigation Specific to Forms */
+.hp-tabs-container {
+  margin-top: 25px !important;
+}
+
+.hp-tabs-nav {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 3px solid #000000 !important; /* Strong bottom border */
+  background: #e8e8e8 !important; /* Light gray background */
+}
+
+.hp-tabs-nav li {
+  margin: 0;
+}
+
+.hp-tabs-nav li a {
+  display: block;
+  padding: 15px 25px !important; /* More padding for easier clicking */
+  text-decoration: none !important;
+  color: #000000 !important; /* Pure black text */
+  border-right: 2px solid #000000 !important; /* Strong right border */
+  background: #e8e8e8 !important; /* Light gray background */
+  transition: all 0.2s;
+  font-weight: 600 !important; /* Bold text */
+  font-size: 14px !important; /* Larger text */
+}
+
+.hp-tabs-nav li:last-child a {
+  border-right: none;
+}
+
+.hp-tabs-nav li.active a,
+.hp-tabs-nav li a:hover {
+  background: #ffffff !important; /* White background for active/hover */
+  color: #000000 !important; /* Pure black text */
+}
+
+.hp-tabs-nav li.active a {
+  border-bottom: 3px solid #ffffff !important; /* Hide bottom border for active tab */
+  margin-bottom: -3px !important;
+  background: #ffffff !important;
+}
+
+.hp-tab-panel {
+  display: none;
+  background: #ffffff !important; /* White background */
+  border: 2px solid #000000 !important; /* Strong border */
+  border-top: none;
+  padding: 0;
+}
+
+.hp-tab-panel.active {
+  display: block;
+}
+
+/* =============================================================================
+   ACCESSIBILITY SUMMARY - HIGH CONTRAST ENHANCEMENTS
+   Enhanced for older individuals and visual impairments
+   ============================================================================= */
+
+/*
+ * CONTRAST IMPROVEMENTS IMPLEMENTED:
+ *
+ * 1. TEXT CONTRAST:
+ *    - Pure black (#000000) text on white backgrounds
+ *    - Darker grays (#333333) instead of light grays
+ *    - Bolder font weights (700 instead of 600) for better visibility
+ *    - Larger font sizes (14px minimum instead of 12px)
+ *    - Better line height (1.5) for improved readability
+ *
+ * 2. BUTTON CONTRAST:
+ *    - Dark blue (#000080) primary buttons with white text
+ *    - Strong black borders (2px) on all buttons
+ *    - Larger padding for easier clicking
+ *    - Bold text for better visibility
+ *
+ * 3. LINK CONTRAST:
+ *    - Dark blue (#000080) links with underlines
+ *    - Bold font weight for better visibility
+ *    - Dark red (#800000) for delete/danger links
+ *
+ * 4. TABLE CONTRAST:
+ *    - Strong black borders (2px-3px)
+ *    - Alternating row backgrounds (white/#f8f8f8)
+ *    - Bold table headers with light gray background
+ *    - Larger padding for better spacing
+ *    - Pure black text throughout
+ *
+ * 5. FORM CONTRAST:
+ *    - Strong black borders (2px) on all form elements
+ *    - Pure black labels with bold font weight
+ *    - White backgrounds with black text
+ *    - Thick focus outlines (4px) for keyboard navigation
+ *    - Dark red (#800000) for required fields and errors
+ *
+ * 6. STATUS INDICATORS:
+ *    - White backgrounds with dark colored text and borders
+ *    - Dark green (#006600) for living status
+ *    - Dark red (#800000) for private status
+ *    - Bold text and strong borders for all indicators
+ *
+ * 7. NAVIGATION:
+ *    - Strong black borders on tabs
+ *    - Bold text and larger padding
+ *    - Clear visual distinction between active and inactive tabs
+ *
+ * 8. ACCESSIBILITY FEATURES:
+ *    - Thick focus outlines (4px) with high contrast colors
+ *    - Double outline effect for enhanced visibility
+ *    - Larger clickable areas with more padding
+ *    - Enhanced keyboard navigation support
+ *  * All styling follows modern design principles while maintaining
+ * WCAG 2.1 AA compliance for excellent accessibility and usability.
+ */

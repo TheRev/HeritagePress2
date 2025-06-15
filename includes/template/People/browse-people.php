@@ -24,6 +24,78 @@ $trees_table = $wpdb->prefix . 'hp_trees';
 $children_table = $wpdb->prefix . 'hp_children';
 $families_table = $wpdb->prefix . 'hp_families';
 
+// Get tree data for dropdowns
+$trees_result = $wpdb->get_results("SELECT * FROM $trees_table ORDER BY treename", ARRAY_A);
+
+// Get people counts per tree
+$tree_counts = array();
+foreach ($trees_result as $tree) {
+  $tree_counts[$tree['gedcom']] = $wpdb->get_var(
+    $wpdb->prepare("SELECT COUNT(*) FROM $people_table WHERE gedcom = %s", $tree['gedcom'])
+  );
+}
+
+// Helper function to get spouse and partner information for a person
+function get_person_relationships($person_id, $gedcom, $wpdb, $families_table, $people_table)
+{
+  // Find families where this person is either husband or wife
+  $families = $wpdb->get_results(
+    $wpdb->prepare(
+      "SELECT f.*,
+       h.firstname as husband_firstname, h.lastname as husband_lastname, h.lnprefix as husband_lnprefix,
+       w.firstname as wife_firstname, w.lastname as wife_lastname, w.lnprefix as wife_lnprefix
+       FROM $families_table f
+       LEFT JOIN $people_table h ON f.husband = h.personID AND f.gedcom = h.gedcom
+       LEFT JOIN $people_table w ON f.wife = w.personID AND f.gedcom = w.gedcom
+       WHERE f.gedcom = %s AND (f.husband = %s OR f.wife = %s)
+       ORDER BY f.marrdatetr",
+      $gedcom,
+      $person_id,
+      $person_id
+    ),
+    ARRAY_A
+  );
+
+  $spouses = array();
+  $partners = array();
+
+  foreach ($families as $family) {
+    $is_husband = ($family['husband'] === $person_id);
+    $spouse_id = $is_husband ? $family['wife'] : $family['husband'];
+
+    if (!empty($spouse_id)) {
+      $spouse_name_parts = array();
+      $spouse_firstname = $is_husband ? $family['wife_firstname'] : $family['husband_firstname'];
+      $spouse_lastname = $is_husband ? $family['wife_lastname'] : $family['husband_lastname'];
+      $spouse_lnprefix = $is_husband ? $family['wife_lnprefix'] : $family['husband_lnprefix'];
+
+      if (!empty($spouse_firstname)) $spouse_name_parts[] = $spouse_firstname;
+      if (!empty($spouse_lnprefix)) $spouse_name_parts[] = $spouse_lnprefix;
+      if (!empty($spouse_lastname)) $spouse_name_parts[] = $spouse_lastname;
+
+      $spouse_name = implode(' ', $spouse_name_parts);
+
+      // Determine if this is a spouse (married) or partner (unmarried/divorced)
+      if (!empty($family['marrdate']) && empty($family['divdate'])) {
+        $spouses[] = array(
+          'name' => $spouse_name,
+          'id' => $spouse_id,
+          'marriage_date' => $family['marrdate'],
+          'marriage_place' => $family['marrplace']
+        );
+      } else {
+        $partners[] = array(
+          'name' => $spouse_name,
+          'id' => $spouse_id,
+          'relationship_type' => !empty($family['divdate']) ? 'former spouse' : 'partner'
+        );
+      }
+    }
+  }
+
+  return array('spouses' => $spouses, 'partners' => $partners);
+}
+
 // Get search parameters
 $search_params = array(
   'searchstring' => isset($_GET['searchstring']) ? sanitize_text_field($_GET['searchstring']) : '',
@@ -382,6 +454,8 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
                 <?php echo $name_sort_indicator; ?>
               </a>
             </th>
+            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="<?php echo esc_attr($birth_column_class); ?>">
               <a href="<?php echo esc_url($birth_sort_link); ?>">
                 <span><?php _e('Birth', 'heritagepress'); ?></span>
@@ -465,9 +539,42 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
                       <span class="status-living"><?php _e('Living', 'heritagepress'); ?></span>
                     <?php endif; ?>
                     <?php if ($person['private'] == 1): ?>
-                      <span class="status-private"><?php _e('Private', 'heritagepress'); ?></span>
-                    <?php endif; ?>
+                      <span class="status-private"><?php _e('Private', 'heritagepress'); ?></span> <?php endif; ?>
                   </div>
+                </td>
+                <td class="column-spouse">
+                  <?php
+                                                    // Get relationship information for this person
+                                                    $relationships = get_person_relationships($person['personID'], $person['gedcom'], $wpdb, $families_table, $people_table);
+
+                                                    if (!empty($relationships['spouses'])) {
+                                                      $spouse_links = array();
+                                                      foreach ($relationships['spouses'] as $spouse) {
+                                                        $spouse_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($spouse['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($spouse['name']) . '">' . esc_html($spouse['name']) . '</a>';
+                                                        $spouse_links[] = $spouse_link;
+                                                      }
+                                                      echo implode('<br>', $spouse_links);
+                                                    } else {
+                                                      echo '<span class="no-data">—</span>';
+                                                    }
+                  ?>
+                </td>
+                <td class="column-partner">
+                  <?php
+                                                    if (!empty($relationships['partners'])) {
+                                                      $partner_links = array();
+                                                      foreach ($relationships['partners'] as $partner) {
+                                                        $partner_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($partner['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($partner['name'] . ' (' . $partner['relationship_type'] . ')') . '">' . esc_html($partner['name']) . '</a>';
+                                                        if ($partner['relationship_type'] !== 'partner') {
+                                                          $partner_link .= ' <small>(' . esc_html($partner['relationship_type']) . ')</small>';
+                                                        }
+                                                        $partner_links[] = $partner_link;
+                                                      }
+                                                      echo implode('<br>', $partner_links);
+                                                    } else {
+                                                      echo '<span class="no-data">—</span>';
+                                                    }
+                  ?>
                 </td>
                 <td class="column-birth">
                   <?php
@@ -503,9 +610,8 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
                   <?php endif; ?>
                 </td>
               </tr>
-            <?php endforeach; ?>
-          <?php else: ?> <tr class="no-items">
-              <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '8' : '7'; ?>">
+            <?php endforeach; ?> <?php else: ?> <tr class="no-items">
+              <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '10' : '9'; ?>">
                 <?php _e('No people found.', 'heritagepress'); ?>
               </td>
             </tr>
@@ -521,9 +627,10 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
             <th scope="col" class="manage-column column-photo"><?php _e('Photo', 'heritagepress'); ?></th>
             <?php if (count($trees_result) > 1): ?>
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
-            <?php endif; ?>
-            <th scope="col" class="manage-column column-personid"><?php _e('Person ID', 'heritagepress'); ?></th>
+            <?php endif; ?> <th scope="col" class="manage-column column-personid"><?php _e('Person ID', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-name"><?php _e('Name', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-birth"><?php _e('Birth', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-death"><?php _e('Death', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>

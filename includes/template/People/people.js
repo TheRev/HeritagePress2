@@ -4,19 +4,22 @@
  */
 
 (function ($) {
-  "use strict";
-  // Main People object
+  "use strict"; // Main People object
   window.HeritagePressPeople = {
     initialized: false,
-
+    isToggling: false,
     /**
      * Initialize people management
-     */
-    init: function () {
+     */ init: function () {
+      console.log("HeritagePressPeople.init() called");
+
       // Prevent double initialization
       if (this.initialized) {
+        console.log("Already initialized, skipping");
         return;
       }
+
+      console.log("Initializing HeritagePressPeople components...");
 
       this.bindEvents();
       this.initAdvancedSearch();
@@ -25,6 +28,7 @@
       this.initPersonIDHandling();
 
       this.initialized = true;
+      console.log("HeritagePressPeople initialization complete");
     }
     /**
      * Bind event handlers
@@ -32,19 +36,24 @@
     bindEvents: function () {
       var self = this;
 
-      // Unbind existing events to prevent duplicates
+      console.log("Binding events for HeritagePressPeople");
+
+      // Unbind ALL existing events to prevent duplicates
       $(document).off("click.hp-people", "#toggle-advanced");
+      $("#toggle-advanced").off("click");
       $(document).off("change.hp-people", "#cb-select-all-1, #cb-select-all-2");
-      $(document).off("change.hp-people", 'input[name="selected_people[]"]'); // Advanced search toggle
+      $(document).off("change.hp-people", 'input[name="selected_people[]"]');
+
+      // Advanced search toggle - single handler only
       $(document).on("click.hp-people", "#toggle-advanced", function (e) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        // Small delay to prevent double-click issues
-        setTimeout(function () {
-          self.toggleAdvancedSearch();
-        }, 10);
+        console.log("Advanced search toggle clicked (single handler)");
+
+        // Call toggle function directly without setTimeout to avoid conflicts
+        self.toggleAdvancedSearch();
       }); // Select all checkboxes
       $(document).on(
         "change.hp-people",
@@ -98,40 +107,86 @@
     },
 
     /**
-     * Initialize advanced search functionality
-     */
+     * Initialize advanced search functionality     */
     initAdvancedSearch: function () {
+      console.log("Initializing advanced search state");
+
       // Show advanced options if any are selected
       var hasAdvancedSelected =
         $(
           'input[name="exactmatch"]:checked, input[name="living"]:checked, input[name="private"]:checked, input[name="noparents"]:checked, input[name="nospouse"]:checked, input[name="nokids"]:checked'
         ).length > 0;
 
+      console.log("Advanced options already selected:", hasAdvancedSelected);
+
       if (hasAdvancedSelected) {
+        console.log("Showing advanced options on load");
         $("#advanced-options").show();
         $("#toggle-advanced .dashicons")
           .removeClass("dashicons-arrow-down-alt2")
           .addClass("dashicons-arrow-up-alt2");
+      } else {
+        console.log("Hiding advanced options on load");
+        $("#advanced-options").hide();
+        $("#toggle-advanced .dashicons")
+          .removeClass("dashicons-arrow-up-alt2")
+          .addClass("dashicons-arrow-down-alt2");
       }
-    }
+    },
     /**
      * Toggle advanced search options
-     */,
-    toggleAdvancedSearch: function () {
+     */ toggleAdvancedSearch: function () {
       console.log("Toggle advanced search called");
+
+      // Prevent multiple rapid calls
+      if (this.isToggling) {
+        console.log("Already toggling, ignoring call");
+        return;
+      }
+      this.isToggling = true;
+
+      var self = this;
       var $options = $("#advanced-options");
       var $button = $("#toggle-advanced .dashicons");
 
-      // Use explicit show/hide instead of slideToggle to prevent conflicts
-      if ($options.is(":visible")) {
+      console.log("Options element found:", $options.length);
+      console.log("Button element found:", $button.length);
+      console.log("Current options display:", $options.css("display"));
+      console.log("Current options visibility:", $options.is(":visible"));
+
+      if ($options.length === 0) {
+        console.error("Advanced options element not found!");
+        this.isToggling = false;
+        return;
+      }
+
+      if ($button.length === 0) {
+        console.error("Toggle button dashicon not found!");
+        this.isToggling = false;
+        return;
+      }
+
+      // Check current visibility state more reliably
+      var isVisible =
+        $options.is(":visible") && $options.css("display") !== "none";
+
+      console.log("Is currently visible:", isVisible);
+
+      if (isVisible) {
         console.log("Hiding advanced options");
-        $options.slideUp(300);
+        $options.slideUp(300, function () {
+          console.log("Hide animation complete");
+          self.isToggling = false;
+        });
         $button
           .removeClass("dashicons-arrow-up-alt2")
           .addClass("dashicons-arrow-down-alt2");
       } else {
         console.log("Showing advanced options");
-        $options.slideDown(300);
+        $options.css("display", "flex").slideDown(300, function () {
+          console.log("Show animation complete");
+          self.isToggling = false;
+        });
         $button
           .removeClass("dashicons-arrow-down-alt2")
           .addClass("dashicons-arrow-up-alt2");

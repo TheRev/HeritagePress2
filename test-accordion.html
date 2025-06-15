@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Advanced Options Accordion</title>
+    <style>
+      .advanced-search-toggle .button-link {
+        text-decoration: none;
+        color: #3498db;
+        padding: 6px 12px;
+        background: #ffffff;
+        border: 1px solid #3498db;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .advanced-search-toggle .button-link:hover {
+        color: #ffffff;
+        background: #3498db;
+        border-color: #2980b9;
+      }
+
+      .advanced-search-options {
+        padding: 16px;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .option-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .option-row label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        color: #2c3e50;
+        white-space: nowrap;
+        margin: 0;
+      }
+
+      .dashicons {
+        font-family: "dashicons";
+        display: inline-block;
+        line-height: 1;
+        font-weight: normal;
+        font-style: normal;
+        speak: none;
+        text-decoration: inherit;
+        text-transform: none;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .dashicons-arrow-down-alt2:before {
+        content: "\f346";
+      }
+
+      .dashicons-arrow-up-alt2:before {
+        content: "\f342";
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1>Advanced Options Accordion Test</h1>
+
+    <div class="advanced-search-toggle">
+      <button type="button" class="button button-link" id="toggle-advanced">
+        Advanced Options
+        <span class="dashicons dashicons-arrow-down-alt2"></span>
+      </button>
+    </div>
+
+    <div
+      class="advanced-search-options"
+      id="advanced-options"
+      style="display: none"
+    >
+      <div class="option-row">
+        <label>
+          <input type="checkbox" name="exactmatch" value="yes" />
+          Exact match only
+        </label>
+
+        <label>
+          <input type="checkbox" name="living" value="yes" />
+          Living people only
+        </label>
+
+        <label>
+          <input type="checkbox" name="private" value="yes" />
+          Private people only
+        </label>
+      </div>
+
+      <div class="option-row">
+        <label>
+          <input type="checkbox" name="noparents" value="yes" />
+          No parents
+        </label>
+
+        <label>
+          <input type="checkbox" name="nospouse" value="yes" />
+          No spouse
+        </label>
+
+        <label>
+          <input type="checkbox" name="nochildren" value="yes" />
+          No children
+        </label>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        console.log("Document ready");
+
+        $(document).on("click", "#toggle-advanced", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Toggle button clicked");
+
+          var $options = $("#advanced-options");
+          var $button = $("#toggle-advanced .dashicons");
+
+          console.log("Current display:", $options.css("display"));
+          console.log("Is visible:", $options.is(":visible"));
+
+          // Check current visibility state more reliably
+          var isVisible =
+            $options.is(":visible") && $options.css("display") !== "none";
+
+          if (isVisible) {
+            console.log("Hiding advanced options");
+            $options.fadeOut(300, function () {
+              $options.css("display", "none");
+            });
+            $button
+              .removeClass("dashicons-arrow-up-alt2")
+              .addClass("dashicons-arrow-down-alt2");
+          } else {
+            console.log("Showing advanced options");
+            $options.css("display", "flex").hide().fadeIn(300);
+            $button
+              .removeClass("dashicons-arrow-down-alt2")
+              .addClass("dashicons-arrow-up-alt2");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
