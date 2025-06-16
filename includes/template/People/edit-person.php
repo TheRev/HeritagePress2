@@ -50,7 +50,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
 }
 ?>
 
-<div class="edit-person-section">  <!-- Master Expand/Collapse Control -->
+<div class="edit-person-section"> <!-- Master Expand/Collapse Control -->
   <div class="master-toggle-controls">
     <button type="button" id="master-toggle" class="button button-secondary">
       <span class="dashicons dashicons-arrow-right-alt2" id="master-toggle-icon"></span>
@@ -434,11 +434,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
 <script type="text/javascript">
   jQuery(document).ready(function($) {
     // Collapsible Cards Functionality
-    
+
     // Initialize card states from localStorage
     var cardStates = JSON.parse(localStorage.getItem('hp_edit_person_card_states') || '{}');
     var allCollapsedState = false;
-    
+
     // Set initial card states - DEFAULT TO COLLAPSED (ignore localStorage for initial state)
     $('.collapsible-card').each(function() {
       const cardName = $(this).data('card-name');
@@ -449,10 +449,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
       // Reset stored state to collapsed
       cardStates[cardName] = true;
     });
-    
+
     // Save the default collapsed state
     localStorage.setItem('hp_edit_person_card_states', JSON.stringify(cardStates));
-    
+
     // Update master toggle button state
     function updateMasterToggle() {
       const totalCards = $('.collapsible-card').length;
@@ -467,10 +467,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         $('#master-toggle-icon').removeClass('dashicons-arrow-right-alt2').addClass('dashicons-arrow-down-alt2');
       }
     }
-    
+
     // Initial master toggle state
     updateMasterToggle();
-    
+
     // Master toggle functionality
     $('#master-toggle').on('click', function() {
       if (allCollapsedState) {
@@ -478,7 +478,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         $('.collapsible-card').removeClass('collapsed');
         $('.collapsible-content').slideDown(300);
         $('.collapsible-card .toggle-icon').removeClass('dashicons-arrow-right-alt2').addClass('dashicons-arrow-down-alt2');
-        
+
         // Update stored states
         $('.collapsible-card').each(function() {
           const cardName = $(this).data('card-name');
@@ -489,26 +489,26 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         $('.collapsible-card').addClass('collapsed');
         $('.collapsible-content').slideUp(300);
         $('.collapsible-card .toggle-icon').removeClass('dashicons-arrow-down-alt2').addClass('dashicons-arrow-right-alt2');
-        
+
         // Update stored states
         $('.collapsible-card').each(function() {
           const cardName = $(this).data('card-name');
           cardStates[cardName] = true;
         });
       }
-      
+
       // Save states and update master toggle
       localStorage.setItem('hp_edit_person_card_states', JSON.stringify(cardStates));
       setTimeout(updateMasterToggle, 350);
     });
-    
+
     // Individual card toggle functionality
     $('.clickable-header').on('click', function() {
       const card = $(this).closest('.collapsible-card');
       const cardName = card.data('card-name');
       const content = card.find('.collapsible-content');
       const toggleIcon = card.find('.toggle-icon');
-      
+
       if (card.hasClass('collapsed')) {
         // Expand
         card.removeClass('collapsed');
@@ -522,122 +522,122 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         toggleIcon.removeClass('dashicons-arrow-down-alt2').addClass('dashicons-arrow-right-alt2');
         cardStates[cardName] = true;
       }
-      
+
       // Save state and update master toggle
       localStorage.setItem('hp_edit_person_card_states', JSON.stringify(cardStates));
       setTimeout(updateMasterToggle, 350);
     });
 
     // Check Person ID availability
-          $('#check-person-id').on('click', function() {
-            var personID = $('#personID').val().trim();
-            var gedcom = $('#gedcom').val();
-            var originalID = $('input[name="original_personID"]').val();
+    $('#check-person-id').on('click', function() {
+      var personID = $('#personID').val().trim();
+      var gedcom = $('#gedcom').val();
+      var originalID = $('input[name="original_personID"]').val();
 
-            if (!personID) {
-              alert('<?php _e('Please enter a Person ID to check.', 'heritagepress'); ?>');
-              return;
-            }
+      if (!personID) {
+        alert('<?php _e('Please enter a Person ID to check.', 'heritagepress'); ?>');
+        return;
+      }
 
-            if (personID === originalID) {
-              alert('<?php _e('This is the current Person ID for this person.', 'heritagepress'); ?>');
-              return;
-            }
+      if (personID === originalID) {
+        alert('<?php _e('This is the current Person ID for this person.', 'heritagepress'); ?>');
+        return;
+      }
 
-            // AJAX call to check person ID
-            $.post(ajaxurl, {
-              action: 'hp_check_person_id',
-              personID: personID,
-              gedcom: gedcom,
-              _wpnonce: '<?php echo wp_create_nonce('hp_check_person_id'); ?>'
-            }, function(response) {
-              if (response.success) {
-                if (response.data.available) {
-                  alert('<?php _e('Person ID is available.', 'heritagepress'); ?>');
-                } else {
-                  alert('<?php _e('Person ID is already in use. Please choose a different ID.', 'heritagepress'); ?>');
-                }
-              } else {
-                alert('<?php _e('Failed to check Person ID availability.', 'heritagepress'); ?>');
-              }
-            });
-          });
+      // AJAX call to check person ID
+      $.post(ajaxurl, {
+        action: 'hp_check_person_id',
+        personID: personID,
+        gedcom: gedcom,
+        _wpnonce: '<?php echo wp_create_nonce('hp_check_person_id'); ?>'
+      }, function(response) {
+        if (response.success) {
+          if (response.data.available) {
+            alert('<?php _e('Person ID is available.', 'heritagepress'); ?>');
+          } else {
+            alert('<?php _e('Person ID is already in use. Please choose a different ID.', 'heritagepress'); ?>');
+          }
+        } else {
+          alert('<?php _e('Failed to check Person ID availability.', 'heritagepress'); ?>');
+        }
+      });
+    });
 
-          // Form validation
-          $('#edit-person-form').on('submit', function(e) {
-            var firstname = $('#firstname').val().trim();
-            var lastname = $('#lastname').val().trim();
-            var gedcom = $('#gedcom').val();
-            var personID = $('#personID').val().trim();
+    // Form validation
+    $('#edit-person-form').on('submit', function(e) {
+      var firstname = $('#firstname').val().trim();
+      var lastname = $('#lastname').val().trim();
+      var gedcom = $('#gedcom').val();
+      var personID = $('#personID').val().trim();
 
-            if (!firstname || !lastname || !gedcom || !personID) {
-              e.preventDefault();
-              alert('<?php _e('Please fill in all required fields.', 'heritagepress'); ?>');
-              return false;
-            }
-          });
+      if (!firstname || !lastname || !gedcom || !personID) {
+        e.preventDefault();
+        alert('<?php _e('Please fill in all required fields.', 'heritagepress'); ?>');
+        return false;
+      }
+    });
 
-          // Duplicate person functionality
-          $('#duplicate-person').on('click', function() {
-            if (confirm('<?php _e('This will create a copy of this person with a new Person ID. Continue?', 'heritagepress'); ?>')) {
-              var form = $('#edit-person-form');
-              var originalAction = form.attr('action') || '';
+    // Duplicate person functionality
+    $('#duplicate-person').on('click', function() {
+      if (confirm('<?php _e('This will create a copy of this person with a new Person ID. Continue?', 'heritagepress'); ?>')) {
+        var form = $('#edit-person-form');
+        var originalAction = form.attr('action') || '';
 
-              // Change action to add_person and remove the original ID
-              $('input[name="action"]').val('add_person');
-              $('input[name="original_personID"]').remove();
-              $('input[name="original_gedcom"]').remove();
-              $('#personID').val(''); // Clear person ID for duplication
+        // Change action to add_person and remove the original ID
+        $('input[name="action"]').val('add_person');
+        $('input[name="original_personID"]').remove();
+        $('input[name="original_gedcom"]').remove();
+        $('#personID').val(''); // Clear person ID for duplication
 
-              form.submit();
-            }
-          });
+        form.submit();
+      }
+    });
 
-          // Delete person functionality
-          $('#delete-person').on('click', function() {
-            if (confirm('<?php _e('Are you sure you want to delete this person? This action cannot be undone.', 'heritagepress'); ?>')) {
-              var personID = $('input[name="original_personID"]').val();
-              var gedcom = $('input[name="original_gedcom"]').val();
+    // Delete person functionality
+    $('#delete-person').on('click', function() {
+      if (confirm('<?php _e('Are you sure you want to delete this person? This action cannot be undone.', 'heritagepress'); ?>')) {
+        var personID = $('input[name="original_personID"]').val();
+        var gedcom = $('input[name="original_gedcom"]').val();
 
-              // Create and submit delete form
-              var form = $('<form method="post">')
-                .append($('<input type="hidden" name="action" value="delete_person">'))
-                .append($('<input type="hidden" name="personID" value="' + personID + '">'))
-                .append($('<input type="hidden" name="gedcom" value="' + gedcom + '">'))
-                .append('<?php echo wp_nonce_field('heritagepress_delete_person', '_wpnonce', true, false); ?>');
+        // Create and submit delete form
+        var form = $('<form method="post">')
+          .append($('<input type="hidden" name="action" value="delete_person">'))
+          .append($('<input type="hidden" name="personID" value="' + personID + '">'))
+          .append($('<input type="hidden" name="gedcom" value="' + gedcom + '">'))
+          .append('<?php echo wp_nonce_field('heritagepress_delete_person', '_wpnonce', true, false); ?>');
 
-              $('body').append(form);
-              form.submit();
-            }
-          });
+        $('body').append(form);
+        form.submit();
+      }
+    });
 
-          // Auto-check availability when Person ID changes
-          var personIDTimeout;
-          $('#personID').on('input', function() {
-            clearTimeout(personIDTimeout);
-            var personID = $(this).val().trim();
-            var originalID = $('input[name="original_personID"]').val();
+    // Auto-check availability when Person ID changes
+    var personIDTimeout;
+    $('#personID').on('input', function() {
+      clearTimeout(personIDTimeout);
+      var personID = $(this).val().trim();
+      var originalID = $('input[name="original_personID"]').val();
 
-            if (personID && personID !== originalID) {
-              personIDTimeout = setTimeout(function() {
-                $('#check-person-id').click();
-              }, 1000); // Check after 1 second of no typing
-            }
-          });
+      if (personID && personID !== originalID) {
+        personIDTimeout = setTimeout(function() {
+          $('#check-person-id').click();
+        }, 1000); // Check after 1 second of no typing
+      }
+    });
 
-          // Warn about unsaved changes
-          var formChanged = false;
-          $('#edit-person-form input, #edit-person-form select, #edit-person-form textarea').on('change', function() {
-            formChanged = true;
-          });
-          $(window).on('beforeunload', function() {
-            if (formChanged) {
-              return '<?php _e('You have unsaved changes. Are you sure you want to leave?', 'heritagepress'); ?>';
-            }
-          });
+    // Warn about unsaved changes
+    var formChanged = false;
+    $('#edit-person-form input, #edit-person-form select, #edit-person-form textarea').on('change', function() {
+      formChanged = true;
+    });
+    $(window).on('beforeunload', function() {
+      if (formChanged) {
+        return '<?php _e('You have unsaved changes. Are you sure you want to leave?', 'heritagepress'); ?>';
+      }
+    });
 
-          $('#edit-person-form').on('submit', function() {
-            formChanged = false; // Don't warn when actually submitting
-          });
-        });
+    $('#edit-person-form').on('submit', function() {
+      formChanged = false; // Don't warn when actually submitting
+    });
+  });
 </script>
