@@ -24,7 +24,8 @@ if (empty($family_id) || empty($tree)) {
 $families_table = $wpdb->prefix . 'hp_families';
 $family = $wpdb->get_row($wpdb->prepare(
   "SELECT * FROM $families_table WHERE familyID = %s AND gedcom = %s",
-  $family_id, $tree
+  $family_id,
+  $tree
 ), ARRAY_A);
 
 if (!$family) {
@@ -40,14 +41,16 @@ $wife_data = null;
 if (!empty($family['husband'])) {
   $husband_data = $wpdb->get_row($wpdb->prepare(
     "SELECT personID, firstname, lnprefix, lastname, prefix, suffix, title FROM $people_table WHERE personID = %s AND gedcom = %s",
-    $family['husband'], $tree
+    $family['husband'],
+    $tree
   ), ARRAY_A);
 }
 
 if (!empty($family['wife'])) {
   $wife_data = $wpdb->get_row($wpdb->prepare(
     "SELECT personID, firstname, lnprefix, lastname, prefix, suffix, title FROM $people_table WHERE personID = %s AND gedcom = %s",
-    $family['wife'], $tree
+    $family['wife'],
+    $tree
   ), ARRAY_A);
 }
 
@@ -59,7 +62,8 @@ $children = $wpdb->get_results($wpdb->prepare(
    LEFT JOIN $people_table p ON c.personID = p.personID AND c.gedcom = p.gedcom
    WHERE c.familyID = %s AND c.gedcom = %s
    ORDER BY c.ordernum, p.birthdate",
-  $family_id, $tree
+  $family_id,
+  $tree
 ), ARRAY_A);
 
 // Get available trees
@@ -77,13 +81,14 @@ $branches_result = $wpdb->get_results($wpdb->prepare(
 $family_branches = !empty($family['branch']) ? explode(',', $family['branch']) : array();
 
 // Helper function to format person name
-function format_person_name($person_data) {
+function format_person_name($person_data)
+{
   if (empty($person_data) || (empty($person_data['firstname']) && empty($person_data['lastname']))) {
     return '';
   }
-  
+
   $name_parts = array();
-  
+
   if (!empty($person_data['prefix'])) {
     $name_parts[] = $person_data['prefix'];
   }
@@ -102,7 +107,7 @@ function format_person_name($person_data) {
   if (!empty($person_data['title'])) {
     $name_parts[] = $person_data['title'];
   }
-  
+
   return implode(' ', $name_parts);
 }
 
@@ -118,11 +123,11 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <input type="hidden" name="original_familyID" value="<?php echo esc_attr($family['familyID']); ?>">
     <input type="hidden" name="original_gedcom" value="<?php echo esc_attr($family['gedcom']); ?>">
     <input type="hidden" name="family_db_id" value="<?php echo esc_attr($family['ID']); ?>">
-    
+
     <!-- Basic Information -->
     <div class="form-section">
       <h3><?php _e('Basic Information', 'heritagepress'); ?></h3>
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
@@ -138,7 +143,7 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
             </select>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row">
             <label for="branch"><?php _e('Branch:', 'heritagepress'); ?></label>
@@ -148,8 +153,8 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
               <select name="branch[]" id="branch" multiple size="6">
                 <option value="" <?php echo empty($family_branches) ? 'selected' : ''; ?>><?php _e('No Branch', 'heritagepress'); ?></option>
                 <?php foreach ($branches_result as $branch): ?>
-                  <option value="<?php echo esc_attr($branch['branch']); ?>" 
-                          <?php echo in_array($branch['branch'], $family_branches) ? 'selected' : ''; ?>>
+                  <option value="<?php echo esc_attr($branch['branch']); ?>"
+                    <?php echo in_array($branch['branch'], $family_branches) ? 'selected' : ''; ?>>
                     <?php echo esc_html($branch['description']); ?>
                   </option>
                 <?php endforeach; ?>
@@ -158,15 +163,15 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
             <p class="description"><?php _e('Hold Ctrl/Cmd to select multiple branches', 'heritagepress'); ?></p>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row">
             <label for="familyID"><?php _e('Family ID:', 'heritagepress'); ?> <span class="required">*</span></label>
           </th>
           <td>
-            <input type="text" name="familyID" id="familyID" class="regular-text" required 
-                   value="<?php echo esc_attr($family['familyID']); ?>"
-                   onblur="this.value = this.value.toUpperCase(); checkFamilyID();">
+            <input type="text" name="familyID" id="familyID" class="regular-text" required
+              value="<?php echo esc_attr($family['familyID']); ?>"
+              onblur="this.value = this.value.toUpperCase(); checkFamilyID();">
             <input type="button" value="<?php _e('Check Availability', 'heritagepress'); ?>" class="button" onclick="checkFamilyID();">
             <span id="family-id-status" class="status-message"></span>
           </td>
@@ -177,52 +182,52 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <!-- Spouses Section -->
     <div class="form-section">
       <h3><?php _e('Spouses', 'heritagepress'); ?></h3>
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
             <label for="husband"><?php _e('Husband:', 'heritagepress'); ?></label>
           </th>
           <td>
-            <input type="text" name="husband_display" id="husband_display" class="regular-text" readonly 
-                   value="<?php echo esc_attr($husband_display); ?>">
+            <input type="text" name="husband_display" id="husband_display" class="regular-text" readonly
+              value="<?php echo esc_attr($husband_display); ?>">
             <input type="hidden" name="husband" id="husband" value="<?php echo esc_attr($family['husband']); ?>">
-            
+
             <div class="person-actions">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button" 
-                     onclick="findPerson('husband', 'M');">
-              <input type="button" value="<?php _e('Create', 'heritagepress'); ?>" class="button" 
-                     onclick="createPerson('husband', 'M');">
-              <input type="button" value="<?php _e('Edit', 'heritagepress'); ?>" class="button" 
-                     onclick="editPerson('husband');">
-              <input type="button" value="<?php _e('Remove', 'heritagepress'); ?>" class="button" 
-                     onclick="removePerson('husband');">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button"
+                onclick="findPerson('husband', 'M');">
+              <input type="button" value="<?php _e('Create', 'heritagepress'); ?>" class="button"
+                onclick="createPerson('husband', 'M');">
+              <input type="button" value="<?php _e('Edit', 'heritagepress'); ?>" class="button"
+                onclick="editPerson('husband');">
+              <input type="button" value="<?php _e('Remove', 'heritagepress'); ?>" class="button"
+                onclick="removePerson('husband');">
             </div>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row">
             <label for="wife"><?php _e('Wife:', 'heritagepress'); ?></label>
           </th>
           <td>
-            <input type="text" name="wife_display" id="wife_display" class="regular-text" readonly 
-                   value="<?php echo esc_attr($wife_display); ?>">
+            <input type="text" name="wife_display" id="wife_display" class="regular-text" readonly
+              value="<?php echo esc_attr($wife_display); ?>">
             <input type="hidden" name="wife" id="wife" value="<?php echo esc_attr($family['wife']); ?>">
-            
+
             <div class="person-actions">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button" 
-                     onclick="findPerson('wife', 'F');">
-              <input type="button" value="<?php _e('Create', 'heritagepress'); ?>" class="button" 
-                     onclick="createPerson('wife', 'F');">
-              <input type="button" value="<?php _e('Edit', 'heritagepress'); ?>" class="button" 
-                     onclick="editPerson('wife');">
-              <input type="button" value="<?php _e('Remove', 'heritagepress'); ?>" class="button" 
-                     onclick="removePerson('wife');">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button"
+                onclick="findPerson('wife', 'F');">
+              <input type="button" value="<?php _e('Create', 'heritagepress'); ?>" class="button"
+                onclick="createPerson('wife', 'F');">
+              <input type="button" value="<?php _e('Edit', 'heritagepress'); ?>" class="button"
+                onclick="editPerson('wife');">
+              <input type="button" value="<?php _e('Remove', 'heritagepress'); ?>" class="button"
+                onclick="removePerson('wife');">
             </div>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row"><?php _e('Status:', 'heritagepress'); ?></th>
           <td>
@@ -242,9 +247,9 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <!-- Marriage Events -->
     <div class="form-section">
       <h3><?php _e('Marriage Events', 'heritagepress'); ?></h3>
-      
+
       <p class="description"><?php _e('Enter dates in DD MMM YYYY format (e.g., 15 JAN 1850) or other standard formats.', 'heritagepress'); ?></p>
-      
+
       <table class="form-table events-table">
         <thead>
           <tr>
@@ -259,78 +264,78 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
           <tr>
             <td><strong><?php _e('Marriage', 'heritagepress'); ?></strong></td>
             <td>
-              <input type="text" name="marrdate" id="marrdate" class="regular-text" 
-                     value="<?php echo esc_attr($family['marrdate']); ?>"
-                     placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
+              <input type="text" name="marrdate" id="marrdate" class="regular-text"
+                value="<?php echo esc_attr($family['marrdate']); ?>"
+                placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
             </td>
             <td>
-              <input type="text" name="marrplace" id="marrplace" class="regular-text" 
-                     value="<?php echo esc_attr($family['marrplace']); ?>"
-                     placeholder="<?php _e('City, County, State, Country', 'heritagepress'); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findPlace('marrplace');">
+              <input type="text" name="marrplace" id="marrplace" class="regular-text"
+                value="<?php echo esc_attr($family['marrplace']); ?>"
+                placeholder="<?php _e('City, County, State, Country', 'heritagepress'); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findPlace('marrplace');">
             </td>
             <td>
-              <input type="text" name="marrsource" id="marrsource" class="regular-text" 
-                     value="<?php echo esc_attr($family['marrsource']); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findSource('marrsource');">
+              <input type="text" name="marrsource" id="marrsource" class="regular-text"
+                value="<?php echo esc_attr($family['marrsource']); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findSource('marrsource');">
             </td>
           </tr>
-          
+
           <!-- Marriage Type -->
           <tr>
             <td><strong><?php _e('Marriage Type', 'heritagepress'); ?></strong></td>
             <td colspan="3">
               <input type="text" name="marrtype" id="marrtype" class="regular-text" maxlength="50"
-                     value="<?php echo esc_attr($family['marrtype']); ?>"
-                     placeholder="<?php _e('Civil, Religious, Common Law, etc.', 'heritagepress'); ?>">
+                value="<?php echo esc_attr($family['marrtype']); ?>"
+                placeholder="<?php _e('Civil, Religious, Common Law, etc.', 'heritagepress'); ?>">
             </td>
           </tr>
-          
+
           <!-- Divorce -->
           <tr>
             <td><strong><?php _e('Divorce', 'heritagepress'); ?></strong></td>
             <td>
-              <input type="text" name="divdate" id="divdate" class="regular-text" 
-                     value="<?php echo esc_attr($family['divdate']); ?>"
-                     placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
+              <input type="text" name="divdate" id="divdate" class="regular-text"
+                value="<?php echo esc_attr($family['divdate']); ?>"
+                placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
             </td>
             <td>
-              <input type="text" name="divplace" id="divplace" class="regular-text" 
-                     value="<?php echo esc_attr($family['divplace']); ?>"
-                     placeholder="<?php _e('City, County, State, Country', 'heritagepress'); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findPlace('divplace');">
+              <input type="text" name="divplace" id="divplace" class="regular-text"
+                value="<?php echo esc_attr($family['divplace']); ?>"
+                placeholder="<?php _e('City, County, State, Country', 'heritagepress'); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findPlace('divplace');">
             </td>
             <td>
-              <input type="text" name="divsource" id="divsource" class="regular-text" 
-                     value="<?php echo esc_attr($family['divsource']); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findSource('divsource');">
+              <input type="text" name="divsource" id="divsource" class="regular-text"
+                value="<?php echo esc_attr($family['divsource']); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findSource('divsource');">
             </td>
           </tr>
-          
+
           <!-- LDS Sealing -->
           <tr>
             <td><strong><?php _e('LDS Sealing', 'heritagepress'); ?></strong></td>
             <td>
-              <input type="text" name="sealdate" id="sealdate" class="regular-text" 
-                     value="<?php echo esc_attr($family['sealdate']); ?>"
-                     placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
+              <input type="text" name="sealdate" id="sealdate" class="regular-text"
+                value="<?php echo esc_attr($family['sealdate']); ?>"
+                placeholder="<?php _e('DD MMM YYYY', 'heritagepress'); ?>">
             </td>
             <td>
-              <input type="text" name="sealplace" id="sealplace" class="regular-text" 
-                     value="<?php echo esc_attr($family['sealplace']); ?>"
-                     placeholder="<?php _e('Temple Name', 'heritagepress'); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findPlace('sealplace');">
+              <input type="text" name="sealplace" id="sealplace" class="regular-text"
+                value="<?php echo esc_attr($family['sealplace']); ?>"
+                placeholder="<?php _e('Temple Name', 'heritagepress'); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findPlace('sealplace');">
             </td>
             <td>
-              <input type="text" name="sealsource" id="sealsource" class="regular-text" 
-                     value="<?php echo esc_attr($family['sealsource']); ?>">
-              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small" 
-                     onclick="findSource('sealsource');">
+              <input type="text" name="sealsource" id="sealsource" class="regular-text"
+                value="<?php echo esc_attr($family['sealsource']); ?>">
+              <input type="button" value="<?php _e('Find', 'heritagepress'); ?>" class="button button-small"
+                onclick="findSource('sealsource');">
             </td>
           </tr>
         </tbody>
@@ -340,59 +345,59 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <!-- Children Section -->
     <div class="form-section">
       <h3><?php _e('Children', 'heritagepress'); ?></h3>
-      
+
       <?php if (!empty($children)): ?>
-      <div class="children-list">
-        <table class="wp-list-table widefat striped">
-          <thead>
-            <tr>
-              <th><?php _e('Order', 'heritagepress'); ?></th>
-              <th><?php _e('Person ID', 'heritagepress'); ?></th>
-              <th><?php _e('Name', 'heritagepress'); ?></th>
-              <th><?php _e('Birth Date', 'heritagepress'); ?></th>
-              <th><?php _e('Actions', 'heritagepress'); ?></th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($children as $child): ?>
-            <tr>
-              <td>
-                <input type="number" name="child_order[<?php echo esc_attr($child['personID']); ?>]" 
-                       value="<?php echo esc_attr($child['ordernum']); ?>" 
-                       min="1" style="width: 60px;">
-              </td>
-              <td><?php echo esc_html($child['personID']); ?></td>
-              <td><?php echo esc_html(format_person_name($child)); ?></td>
-              <td><?php echo esc_html($child['birthdate']); ?></td>
-              <td>
-                <a href="?page=heritagepress-people&tab=edit&personID=<?php echo urlencode($child['personID']); ?>&tree=<?php echo urlencode($tree); ?>" 
-                   class="button button-small"><?php _e('Edit', 'heritagepress'); ?></a>
-                <button type="button" class="button button-small" 
-                        onclick="removeChild('<?php echo esc_js($child['personID']); ?>');">
-                  <?php _e('Remove', 'heritagepress'); ?>
-                </button>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
+        <div class="children-list">
+          <table class="wp-list-table widefat striped">
+            <thead>
+              <tr>
+                <th><?php _e('Order', 'heritagepress'); ?></th>
+                <th><?php _e('Person ID', 'heritagepress'); ?></th>
+                <th><?php _e('Name', 'heritagepress'); ?></th>
+                <th><?php _e('Birth Date', 'heritagepress'); ?></th>
+                <th><?php _e('Actions', 'heritagepress'); ?></th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($children as $child): ?>
+                <tr>
+                  <td>
+                    <input type="number" name="child_order[<?php echo esc_attr($child['personID']); ?>]"
+                      value="<?php echo esc_attr($child['ordernum']); ?>"
+                      min="1" style="width: 60px;">
+                  </td>
+                  <td><?php echo esc_html($child['personID']); ?></td>
+                  <td><?php echo esc_html(format_person_name($child)); ?></td>
+                  <td><?php echo esc_html($child['birthdate']); ?></td>
+                  <td>
+                    <a href="?page=heritagepress-people&tab=edit&personID=<?php echo urlencode($child['personID']); ?>&tree=<?php echo urlencode($tree); ?>"
+                      class="button button-small"><?php _e('Edit', 'heritagepress'); ?></a>
+                    <button type="button" class="button button-small"
+                      onclick="removeChild('<?php echo esc_js($child['personID']); ?>');">
+                      <?php _e('Remove', 'heritagepress'); ?>
+                    </button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
       <?php else: ?>
-      <p><?php _e('No children assigned to this family.', 'heritagepress'); ?></p>
+        <p><?php _e('No children assigned to this family.', 'heritagepress'); ?></p>
       <?php endif; ?>
-      
+
       <div class="add-child-section">
         <h4><?php _e('Add Child', 'heritagepress'); ?></h4>
         <div class="add-child-form">
-          <input type="text" id="new_child_display" class="regular-text" readonly 
-                 placeholder="<?php _e('Click Find to select child', 'heritagepress'); ?>">
+          <input type="text" id="new_child_display" class="regular-text" readonly
+            placeholder="<?php _e('Click Find to select child', 'heritagepress'); ?>">
           <input type="hidden" id="new_child_id" name="new_child_id">
-          <input type="button" value="<?php _e('Find Child', 'heritagepress'); ?>" class="button" 
-                 onclick="findPerson('new_child', '');">
-          <input type="button" value="<?php _e('Create Child', 'heritagepress'); ?>" class="button" 
-                 onclick="createChild();">
-          <input type="button" value="<?php _e('Add Child', 'heritagepress'); ?>" class="button button-primary" 
-                 onclick="addChild();">
+          <input type="button" value="<?php _e('Find Child', 'heritagepress'); ?>" class="button"
+            onclick="findPerson('new_child', '');">
+          <input type="button" value="<?php _e('Create Child', 'heritagepress'); ?>" class="button"
+            onclick="createChild();">
+          <input type="button" value="<?php _e('Add Child', 'heritagepress'); ?>" class="button button-primary"
+            onclick="addChild();">
         </div>
       </div>
     </div>
@@ -400,7 +405,7 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <!-- Additional Information -->
     <div class="form-section">
       <h3><?php _e('Additional Information', 'heritagepress'); ?></h3>
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
@@ -411,26 +416,27 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
             <p class="description"><?php _e('General notes about this family', 'heritagepress'); ?></p>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row">
             <label for="reference"><?php _e('Reference:', 'heritagepress'); ?></label>
           </th>
           <td>
-            <input type="text" name="reference" id="reference" class="regular-text" 
-                   value="<?php echo esc_attr($family['reference']); ?>">
+            <input type="text" name="reference" id="reference" class="regular-text"
+              value="<?php echo esc_attr($family['reference']); ?>">
             <p class="description"><?php _e('External reference number or identifier', 'heritagepress'); ?></p>
           </td>
         </tr>
-        
+
         <tr>
           <th scope="row"><?php _e('Last Modified:', 'heritagepress'); ?></th>
           <td>
             <p>
-              <?php 
+              <?php
               if (!empty($family['changedby'])) {
-                printf(__('By %s on %s', 'heritagepress'), 
-                  esc_html($family['changedby']), 
+                printf(
+                  __('By %s on %s', 'heritagepress'),
+                  esc_html($family['changedby']),
                   esc_html(date('F j, Y g:i A', strtotime($family['changedate'])))
                 );
               } else {
@@ -446,16 +452,16 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
     <!-- Submit Buttons -->
     <div class="form-section">
       <p class="submit">
-        <input type="submit" name="save_family" class="button button-primary" 
-               value="<?php _e('Update Family', 'heritagepress'); ?>">
-        <input type="submit" name="save_and_continue" class="button" 
-               value="<?php _e('Save & Continue Editing', 'heritagepress'); ?>">
+        <input type="submit" name="save_family" class="button button-primary"
+          value="<?php _e('Update Family', 'heritagepress'); ?>">
+        <input type="submit" name="save_and_continue" class="button"
+          value="<?php _e('Save & Continue Editing', 'heritagepress'); ?>">
         <a href="?page=heritagepress-families&tab=browse" class="button">
           <?php _e('Cancel', 'heritagepress'); ?>
         </a>
-        <input type="submit" name="delete_family" class="button button-link-delete" 
-               value="<?php _e('Delete Family', 'heritagepress'); ?>"
-               onclick="return confirm('<?php _e('Are you sure you want to delete this family? This action cannot be undone.', 'heritagepress'); ?>');">
+        <input type="submit" name="delete_family" class="button button-link-delete"
+          value="<?php _e('Delete Family', 'heritagepress'); ?>"
+          onclick="return confirm('<?php _e('Are you sure you want to delete this family? This action cannot be undone.', 'heritagepress'); ?>');">
       </p>
     </div>
   </form>
@@ -496,58 +502,82 @@ $wife_display = $wife_data ? format_person_name($wife_data) . ' - ' . $wife_data
 </div>
 
 <script type="text/javascript">
-// Include same JavaScript functions as add family page
-var currentPersonField = '';
-var currentPlaceField = '';
-var currentSourceField = '';
+  // Include same JavaScript functions as add family page
+  var currentPersonField = '';
+  var currentPlaceField = '';
+  var currentSourceField = '';
 
-// Form validation
-function validateFamilyForm() {
-  var familyID = document.getElementById('familyID').value.trim();
-  if (!familyID) {
-    alert('<?php _e('Please enter a Family ID.', 'heritagepress'); ?>');
-    document.getElementById('familyID').focus();
-    return false;
-  }
-  
-  return true;
-}
+  // Form validation
+  function validateFamilyForm() {
+    var familyID = document.getElementById('familyID').value.trim();
+    if (!familyID) {
+      alert('<?php _e('Please enter a Family ID.', 'heritagepress'); ?>');
+      document.getElementById('familyID').focus();
+      return false;
+    }
 
-// Check Family ID availability (for changed IDs)
-function checkFamilyID() {
-  var familyID = document.getElementById('familyID').value.trim();
-  var originalID = '<?php echo esc_js($family['familyID']); ?>';
-  var tree = document.getElementById('gedcom').value;
-  var statusEl = document.getElementById('family-id-status');
-  
-  if (!familyID || !tree || familyID === originalID) {
-    statusEl.innerHTML = '';
-    return;
+    return true;
   }
-  
-  statusEl.innerHTML = '<?php _e('Checking...', 'heritagepress'); ?>';
-  
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        if (response.data.available) {
-          statusEl.innerHTML = '<span style="color:green;">✓ <?php _e('Available', 'heritagepress'); ?></span>';
-        } else {
-          statusEl.innerHTML = '<span style="color:red;">✗ <?php _e('Already exists', 'heritagepress'); ?></span>';
+
+  // Check Family ID availability (for changed IDs)
+  function checkFamilyID() {
+    var familyID = document.getElementById('familyID').value.trim();
+    var originalID = '<?php echo esc_js($family['familyID']); ?>';
+    var tree = document.getElementById('gedcom').value;
+    var statusEl = document.getElementById('family-id-status');
+
+    if (!familyID || !tree || familyID === originalID) {
+      statusEl.innerHTML = '';
+      return;
+    }
+
+    statusEl.innerHTML = '<?php _e('Checking...', 'heritagepress'); ?>';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ajaxurl, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          if (response.data.available) {
+            statusEl.innerHTML = '<span style="color:green;">✓ <?php _e('Available', 'heritagepress'); ?></span>';
+          } else {
+            statusEl.innerHTML = '<span style="color:red;">✗ <?php _e('Already exists', 'heritagepress'); ?></span>';
+          }
         }
       }
-    }
-  };
-  xhr.send('action=hp_check_family_id&familyID=' + encodeURIComponent(familyID) + '&tree=' + encodeURIComponent(tree) + '&nonce=<?php echo wp_create_nonce('hp_check_family_id'); ?>');
-}
+    };
+    xhr.send('action=hp_check_family_id&familyID=' + encodeURIComponent(familyID) + '&tree=' + encodeURIComponent(tree) + '&nonce=<?php echo wp_create_nonce('hp_check_family_id'); ?>');
+  }
 
-// Children management
-function removeChild(personID) {
-  if (confirm('<?php _e('Remove this child from the family?', 'heritagepress'); ?>')) {
+  // Children management
+  function removeChild(personID) {
+    if (confirm('<?php _e('Remove this child from the family?', 'heritagepress'); ?>')) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', ajaxurl, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            location.reload();
+          } else {
+            alert('<?php _e('Error removing child.', 'heritagepress'); ?>');
+          }
+        }
+      };
+      xhr.send('action=hp_remove_child&familyID=<?php echo esc_js($family_id); ?>&tree=<?php echo esc_js($tree); ?>&personID=' + encodeURIComponent(personID) + '&nonce=<?php echo wp_create_nonce('hp_remove_child'); ?>');
+    }
+  }
+
+  function addChild() {
+    var childID = document.getElementById('new_child_id').value;
+    if (!childID) {
+      alert('<?php _e('Please select a child first.', 'heritagepress'); ?>');
+      return;
+    }
+
     var xhr = new XMLHttpRequest();
     xhr.open('POST', ajaxurl, true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -557,105 +587,81 @@ function removeChild(personID) {
         if (response.success) {
           location.reload();
         } else {
-          alert('<?php _e('Error removing child.', 'heritagepress'); ?>');
+          alert('<?php _e('Error adding child: ', 'heritagepress'); ?>' + response.data.message);
         }
       }
     };
-    xhr.send('action=hp_remove_child&familyID=<?php echo esc_js($family_id); ?>&tree=<?php echo esc_js($tree); ?>&personID=' + encodeURIComponent(personID) + '&nonce=<?php echo wp_create_nonce('hp_remove_child'); ?>');
+    xhr.send('action=hp_add_child&familyID=<?php echo esc_js($family_id); ?>&tree=<?php echo esc_js($tree); ?>&personID=' + encodeURIComponent(childID) + '&nonce=<?php echo wp_create_nonce('hp_add_child'); ?>');
   }
-}
 
-function addChild() {
-  var childID = document.getElementById('new_child_id').value;
-  if (!childID) {
-    alert('<?php _e('Please select a child first.', 'heritagepress'); ?>');
-    return;
+  function createChild() {
+    var tree = document.getElementById('gedcom').value;
+    var url = '?page=heritagepress-people&tab=add&tree=' + encodeURIComponent(tree) + '&family=' + encodeURIComponent('<?php echo esc_js($family_id); ?>') + '&return_to=families';
+    window.open(url, '_blank');
   }
-  
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        location.reload();
-      } else {
-        alert('<?php _e('Error adding child: ', 'heritagepress'); ?>' + response.data.message);
-      }
+
+  // [Include all other JavaScript functions from add-family.php here - findPerson, selectPerson, etc.]
+  // ... (same functions as in add-family.php)
+
+  // Form submission
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('edit-family-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (!validateFamilyForm()) {
+          e.preventDefault();
+          return false;
+        }
+      });
     }
-  };
-  xhr.send('action=hp_add_child&familyID=<?php echo esc_js($family_id); ?>&tree=<?php echo esc_js($tree); ?>&personID=' + encodeURIComponent(childID) + '&nonce=<?php echo wp_create_nonce('hp_add_child'); ?>');
-}
-
-function createChild() {
-  var tree = document.getElementById('gedcom').value;
-  var url = '?page=heritagepress-people&tab=add&tree=' + encodeURIComponent(tree) + '&family=' + encodeURIComponent('<?php echo esc_js($family_id); ?>') + '&return_to=families';
-  window.open(url, '_blank');
-}
-
-// [Include all other JavaScript functions from add-family.php here - findPerson, selectPerson, etc.]
-// ... (same functions as in add-family.php)
-
-// Form submission
-document.addEventListener('DOMContentLoaded', function() {
-  var form = document.getElementById('edit-family-form');
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      if (!validateFamilyForm()) {
-        e.preventDefault();
-        return false;
-      }
-    });
-  }
-});
+  });
 </script>
 
 <style>
-/* Include same styles as add-family.php */
-.edit-family-container {
-  max-width: 1200px;
-  margin: 20px 0;
-}
+  /* Include same styles as add-family.php */
+  .edit-family-container {
+    max-width: 1200px;
+    margin: 20px 0;
+  }
 
-.form-section {
-  background: #fff;
-  border: 1px solid #c3c4c7;
-  margin-bottom: 20px;
-  padding: 20px;
-}
+  .form-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    margin-bottom: 20px;
+    padding: 20px;
+  }
 
-.form-section h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dcdcde;
-}
+  .form-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dcdcde;
+  }
 
-.children-list {
-  margin-bottom: 20px;
-}
+  .children-list {
+    margin-bottom: 20px;
+  }
 
-.add-child-section {
-  border-top: 1px solid #dcdcde;
-  padding-top: 20px;
-}
+  .add-child-section {
+    border-top: 1px solid #dcdcde;
+    padding-top: 20px;
+  }
 
-.add-child-form {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
+  .add-child-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
-.required {
-  color: #d63384;
-}
+  .required {
+    color: #d63384;
+  }
 
-.status-message {
-  margin-left: 10px;
-  font-weight: 600;
-}
+  .status-message {
+    margin-left: 10px;
+    font-weight: 600;
+  }
 
-/* ... (rest of styles same as add-family.php) */
+  /* ... (rest of styles same as add-family.php) */
 </style>

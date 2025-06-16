@@ -28,7 +28,7 @@ class HP_Family_Reports_Handler
     }
 
     $gedcom = sanitize_text_field($_POST['gedcom']);
-    
+
     if (empty($gedcom)) {
       wp_send_json_error('Tree selection required');
       return;
@@ -48,44 +48,44 @@ class HP_Family_Reports_Handler
 
     // Families with both spouses
     $stats['complete_families'] = $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(*) FROM {$families_table} 
-       WHERE gedcom = %s AND husband IS NOT NULL AND husband != '' 
+      "SELECT COUNT(*) FROM {$families_table}
+       WHERE gedcom = %s AND husband IS NOT NULL AND husband != ''
        AND wife IS NOT NULL AND wife != ''",
       $gedcom
     ));
 
     // Families with only husband
     $stats['husband_only'] = $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(*) FROM {$families_table} 
-       WHERE gedcom = %s AND husband IS NOT NULL AND husband != '' 
+      "SELECT COUNT(*) FROM {$families_table}
+       WHERE gedcom = %s AND husband IS NOT NULL AND husband != ''
        AND (wife IS NULL OR wife = '')",
       $gedcom
     ));
 
     // Families with only wife
     $stats['wife_only'] = $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(*) FROM {$families_table} 
-       WHERE gedcom = %s AND (husband IS NULL OR husband = '') 
+      "SELECT COUNT(*) FROM {$families_table}
+       WHERE gedcom = %s AND (husband IS NULL OR husband = '')
        AND wife IS NOT NULL AND wife != ''",
       $gedcom
     ));
 
     // Families with children
     $stats['families_with_children'] = $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(DISTINCT famc) FROM {$people_table} 
+      "SELECT COUNT(DISTINCT famc) FROM {$people_table}
        WHERE gedcom = %s AND famc IS NOT NULL AND famc != ''",
       $gedcom
     ));
 
     // Average children per family
     $total_children = $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(*) FROM {$people_table} 
+      "SELECT COUNT(*) FROM {$people_table}
        WHERE gedcom = %s AND famc IS NOT NULL AND famc != ''",
       $gedcom
     ));
-    
-    $stats['avg_children'] = $stats['families_with_children'] > 0 
-      ? round($total_children / $stats['families_with_children'], 2) 
+
+    $stats['avg_children'] = $stats['families_with_children'] > 0
+      ? round($total_children / $stats['families_with_children'], 2)
       : 0;
 
     // Living families
@@ -120,7 +120,7 @@ class HP_Family_Reports_Handler
     }
 
     $gedcom = sanitize_text_field($_POST['gedcom']);
-    
+
     if (empty($gedcom)) {
       wp_send_json_error('Tree selection required');
       return;
@@ -131,7 +131,7 @@ class HP_Family_Reports_Handler
 
     // Get families with marriage dates
     $results = $wpdb->get_results($wpdb->prepare(
-      "SELECT familyID, marrdate, divdate FROM {$families_table} 
+      "SELECT familyID, marrdate, divdate FROM {$families_table}
        WHERE gedcom = %s AND marrdate IS NOT NULL AND marrdate != ''
        ORDER BY marrdate",
       $gedcom
@@ -157,7 +157,7 @@ class HP_Family_Reports_Handler
       if (preg_match('/(\d{4})/', $family->marrdate, $matches)) {
         $year = intval($matches[1]);
         $decade = floor($year / 10) * 10;
-        
+
         if (!isset($analysis['by_decade'][$decade])) {
           $analysis['by_decade'][$decade] = 0;
         }
@@ -165,8 +165,10 @@ class HP_Family_Reports_Handler
       }
 
       // Extract month
-      if (preg_match('/^\d{1,2}\s+(\d{1,2})\s+\d{4}/', $family->marrdate, $matches) ||
-          preg_match('/^(\d{1,2})\s+\w+\s+\d{4}/', $family->marrdate, $matches)) {
+      if (
+        preg_match('/^\d{1,2}\s+(\d{1,2})\s+\d{4}/', $family->marrdate, $matches) ||
+        preg_match('/^(\d{1,2})\s+\w+\s+\d{4}/', $family->marrdate, $matches)
+      ) {
         $month = intval($matches[1]);
         if ($month >= 1 && $month <= 12) {
           $analysis['by_month'][$month]++;
@@ -215,7 +217,7 @@ class HP_Family_Reports_Handler
 
     $gedcom = sanitize_text_field($_POST['gedcom']);
     $issue_type = sanitize_text_field($_POST['issue_type']);
-    
+
     if (empty($gedcom)) {
       wp_send_json_error('Tree selection required');
       return;
@@ -230,8 +232,8 @@ class HP_Family_Reports_Handler
     switch ($issue_type) {
       case 'no_spouses':
         $results = $wpdb->get_results($wpdb->prepare(
-          "SELECT familyID FROM {$families_table} 
-           WHERE gedcom = %s AND (husband IS NULL OR husband = '') 
+          "SELECT familyID FROM {$families_table}
+           WHERE gedcom = %s AND (husband IS NULL OR husband = '')
            AND (wife IS NULL OR wife = '')",
           $gedcom
         ));
@@ -245,7 +247,7 @@ class HP_Family_Reports_Handler
 
       case 'no_marriage_date':
         $results = $wpdb->get_results($wpdb->prepare(
-          "SELECT familyID, husband, wife FROM {$families_table} 
+          "SELECT familyID, husband, wife FROM {$families_table}
            WHERE gedcom = %s AND (marrdate IS NULL OR marrdate = '')",
           $gedcom
         ));
@@ -261,24 +263,24 @@ class HP_Family_Reports_Handler
 
       case 'invalid_dates':
         $results = $wpdb->get_results($wpdb->prepare(
-          "SELECT familyID, marrdate, divdate FROM {$families_table} 
-           WHERE gedcom = %s AND (marrdate IS NOT NULL AND marrdate != '') 
+          "SELECT familyID, marrdate, divdate FROM {$families_table}
+           WHERE gedcom = %s AND (marrdate IS NOT NULL AND marrdate != '')
            OR (divdate IS NOT NULL AND divdate != '')",
           $gedcom
         ));
         foreach ($results as $family) {
           $date_issues = array();
-          
+
           // Check marriage date format
           if (!empty($family->marrdate) && !preg_match('/^\d{1,2}\s+\w+\s+\d{4}$/', $family->marrdate)) {
             $date_issues[] = 'Invalid marriage date format: ' . $family->marrdate;
           }
-          
+
           // Check divorce date format
           if (!empty($family->divdate) && !preg_match('/^\d{1,2}\s+\w+\s+\d{4}$/', $family->divdate)) {
             $date_issues[] = 'Invalid divorce date format: ' . $family->divdate;
           }
-          
+
           if (!empty($date_issues)) {
             $issues[] = array(
               'family_id' => $family->familyID,
@@ -310,7 +312,7 @@ class HP_Family_Reports_Handler
 
     $tree1 = sanitize_text_field($_POST['tree1']);
     $tree2 = sanitize_text_field($_POST['tree2']);
-    
+
     if (empty($tree1) || empty($tree2)) {
       wp_send_json_error('Two trees required for comparison');
       return;

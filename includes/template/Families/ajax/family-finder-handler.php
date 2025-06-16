@@ -42,18 +42,18 @@ class HP_Family_Finder_Handler
 
     // Search families by ID, husband/wife names, or description
     $search_like = '%' . $wpdb->esc_like($search_term) . '%';
-    
+
     $sql = "SELECT DISTINCT f.familyID, f.husband, f.wife, f.living, f.private,
                    h.firstname AS husband_first, h.lastname AS husband_last,
                    w.firstname AS wife_first, w.lastname AS wife_last
             FROM {$families_table} f
             LEFT JOIN {$people_table} h ON f.husband = h.personID AND f.gedcom = h.gedcom
             LEFT JOIN {$people_table} w ON f.wife = w.personID AND f.gedcom = w.gedcom
-            WHERE f.gedcom = %s 
+            WHERE f.gedcom = %s
             AND (
               f.familyID LIKE %s
               OR h.firstname LIKE %s
-              OR h.lastname LIKE %s  
+              OR h.lastname LIKE %s
               OR w.firstname LIKE %s
               OR w.lastname LIKE %s
               OR CONCAT(h.firstname, ' ', h.lastname) LIKE %s
@@ -67,8 +67,15 @@ class HP_Family_Finder_Handler
     $results = $wpdb->get_results($wpdb->prepare(
       $sql,
       $gedcom,
-      $search_like, $search_like, $search_like, $search_like, $search_like,
-      $search_like, $search_like, $search_like, $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
       $limit
     ));
 
@@ -138,7 +145,7 @@ class HP_Family_Finder_Handler
 
     // Get family details
     $family = $wpdb->get_row($wpdb->prepare(
-      "SELECT f.*, 
+      "SELECT f.*,
               h.firstname AS husband_first, h.lastname AS husband_last,
               h.birthdate AS husband_birth, h.deathdate AS husband_death,
               w.firstname AS wife_first, w.lastname AS wife_last,

@@ -13,29 +13,29 @@ global $wpdb;
 ?>
 
 <div class="family-utilities-container">
-  
+
   <!-- Merge Families -->
   <div class="utility-section">
     <h3><?php _e('Merge Families', 'heritagepress'); ?></h3>
     <p class="description">
       <?php _e('Merge duplicate family records. The primary family will retain all data, and the duplicate will be removed.', 'heritagepress'); ?>
     </p>
-    
+
     <form method="post" action="" class="merge-families-form">
       <?php wp_nonce_field('heritagepress_merge_families', 'merge_families_nonce'); ?>
       <input type="hidden" name="action" value="merge_families">
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
             <label for="primary_family"><?php _e('Primary Family (Keep):', 'heritagepress'); ?></label>
           </th>
           <td>
-            <input type="text" name="primary_family_display" id="primary_family_display" class="regular-text" readonly 
-                   placeholder="<?php _e('Click Find to select primary family', 'heritagepress'); ?>">
+            <input type="text" name="primary_family_display" id="primary_family_display" class="regular-text" readonly
+              placeholder="<?php _e('Click Find to select primary family', 'heritagepress'); ?>">
             <input type="hidden" name="primary_family" id="primary_family">
-            <input type="button" value="<?php _e('Find Family', 'heritagepress'); ?>" class="button" 
-                   onclick="findFamily('primary_family');">
+            <input type="button" value="<?php _e('Find Family', 'heritagepress'); ?>" class="button"
+              onclick="findFamily('primary_family');">
           </td>
         </tr>
         <tr>
@@ -43,19 +43,19 @@ global $wpdb;
             <label for="duplicate_family"><?php _e('Duplicate Family (Remove):', 'heritagepress'); ?></label>
           </th>
           <td>
-            <input type="text" name="duplicate_family_display" id="duplicate_family_display" class="regular-text" readonly 
-                   placeholder="<?php _e('Click Find to select duplicate family', 'heritagepress'); ?>">
+            <input type="text" name="duplicate_family_display" id="duplicate_family_display" class="regular-text" readonly
+              placeholder="<?php _e('Click Find to select duplicate family', 'heritagepress'); ?>">
             <input type="hidden" name="duplicate_family" id="duplicate_family">
-            <input type="button" value="<?php _e('Find Family', 'heritagepress'); ?>" class="button" 
-                   onclick="findFamily('duplicate_family');">
+            <input type="button" value="<?php _e('Find Family', 'heritagepress'); ?>" class="button"
+              onclick="findFamily('duplicate_family');">
           </td>
         </tr>
       </table>
-      
+
       <p class="submit">
-        <input type="submit" name="merge_families" class="button button-primary" 
-               value="<?php _e('Merge Families', 'heritagepress'); ?>"
-               onclick="return confirm('<?php _e('Are you sure you want to merge these families? This action cannot be undone.', 'heritagepress'); ?>');">
+        <input type="submit" name="merge_families" class="button button-primary"
+          value="<?php _e('Merge Families', 'heritagepress'); ?>"
+          onclick="return confirm('<?php _e('Are you sure you want to merge these families? This action cannot be undone.', 'heritagepress'); ?>');">
       </p>
     </form>
   </div>
@@ -66,11 +66,11 @@ global $wpdb;
     <p class="description">
       <?php _e('Delete multiple families at once. Use with caution.', 'heritagepress'); ?>
     </p>
-    
+
     <form method="post" action="" class="delete-families-form">
       <?php wp_nonce_field('heritagepress_bulk_delete_families', 'bulk_delete_families_nonce'); ?>
       <input type="hidden" name="action" value="bulk_delete_families">
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
@@ -116,17 +116,17 @@ global $wpdb;
           </td>
         </tr>
       </table>
-      
+
       <div id="delete_preview" style="display:none;">
         <h4><?php _e('Families to be deleted:', 'heritagepress'); ?></h4>
         <div id="delete_preview_list"></div>
       </div>
-      
+
       <p class="submit">
         <input type="button" name="preview_delete" class="button" value="<?php _e('Preview Deletion', 'heritagepress'); ?>" onclick="previewDeletion();">
-        <input type="submit" name="confirm_delete" class="button button-primary" 
-               value="<?php _e('Delete Families', 'heritagepress'); ?>" disabled
-               onclick="return confirm('<?php _e('Are you sure you want to delete these families? This action cannot be undone.', 'heritagepress'); ?>');">
+        <input type="submit" name="confirm_delete" class="button button-primary"
+          value="<?php _e('Delete Families', 'heritagepress'); ?>" disabled
+          onclick="return confirm('<?php _e('Are you sure you want to delete these families? This action cannot be undone.', 'heritagepress'); ?>');">
       </p>
     </form>
   </div>
@@ -137,11 +137,11 @@ global $wpdb;
     <p class="description">
       <?php _e('Check for and report data inconsistencies in family records.', 'heritagepress'); ?>
     </p>
-    
+
     <form method="post" action="" class="validate-families-form">
       <?php wp_nonce_field('heritagepress_validate_families', 'validate_families_nonce'); ?>
       <input type="hidden" name="action" value="validate_families">
-      
+
       <table class="form-table">
         <tr>
           <th scope="row"><?php _e('Validation Checks:', 'heritagepress'); ?></th>
@@ -184,13 +184,13 @@ global $wpdb;
           </td>
         </tr>
       </table>
-      
+
       <p class="submit">
-        <input type="submit" name="validate_families" class="button button-primary" 
-               value="<?php _e('Run Validation', 'heritagepress'); ?>">
+        <input type="submit" name="validate_families" class="button button-primary"
+          value="<?php _e('Run Validation', 'heritagepress'); ?>">
       </p>
     </form>
-    
+
     <div id="validation_results" style="display:none;">
       <!-- Validation results will be displayed here -->
     </div>
@@ -202,11 +202,11 @@ global $wpdb;
     <p class="description">
       <?php _e('Renumber all family IDs in a tree to follow a consistent pattern.', 'heritagepress'); ?>
     </p>
-    
+
     <form method="post" action="" class="renumber-families-form">
       <?php wp_nonce_field('heritagepress_renumber_families', 'renumber_families_nonce'); ?>
       <input type="hidden" name="action" value="renumber_families">
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
@@ -248,15 +248,15 @@ global $wpdb;
           </td>
         </tr>
       </table>
-      
+
       <p class="submit">
         <input type="button" name="preview_renumber" class="button" value="<?php _e('Preview Changes', 'heritagepress'); ?>" onclick="previewRenumbering();">
-        <input type="submit" name="confirm_renumber" class="button button-primary" 
-               value="<?php _e('Renumber IDs', 'heritagepress'); ?>" disabled
-               onclick="return confirm('<?php _e('Are you sure you want to renumber all family IDs? This action cannot be undone.', 'heritagepress'); ?>');">
+        <input type="submit" name="confirm_renumber" class="button button-primary"
+          value="<?php _e('Renumber IDs', 'heritagepress'); ?>" disabled
+          onclick="return confirm('<?php _e('Are you sure you want to renumber all family IDs? This action cannot be undone.', 'heritagepress'); ?>');">
       </p>
     </form>
-    
+
     <div id="renumber_preview" style="display:none;">
       <!-- Renumbering preview will be displayed here -->
     </div>
@@ -268,11 +268,11 @@ global $wpdb;
     <p class="description">
       <?php _e('Export family data to various formats for backup or analysis.', 'heritagepress'); ?>
     </p>
-    
+
     <form method="post" action="" class="export-families-form">
       <?php wp_nonce_field('heritagepress_export_families', 'export_families_nonce'); ?>
       <input type="hidden" name="action" value="export_families">
-      
+
       <table class="form-table">
         <tr>
           <th scope="row">
@@ -324,10 +324,10 @@ global $wpdb;
           </td>
         </tr>
       </table>
-      
+
       <p class="submit">
-        <input type="submit" name="export_families" class="button button-primary" 
-               value="<?php _e('Export Families', 'heritagepress'); ?>">
+        <input type="submit" name="export_families" class="button button-primary"
+          value="<?php _e('Export Families', 'heritagepress'); ?>">
       </p>
     </form>
   </div>
@@ -346,221 +346,223 @@ global $wpdb;
 </div>
 
 <script type="text/javascript">
-var currentFamilyField = '';
+  var currentFamilyField = '';
 
-// Family finder functions
-function findFamily(field) {
-  currentFamilyField = field;
-  var modal = document.getElementById('family-finder-modal');
-  var content = document.getElementById('family-finder-content');
-  
-  content.innerHTML = '<?php _e('Loading...', 'heritagepress'); ?>';
-  modal.style.display = 'block';
-  
-  // Load family finder via AJAX
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      content.innerHTML = xhr.responseText;
-    }
-  };
-  xhr.send('action=hp_family_finder&nonce=<?php echo wp_create_nonce('hp_family_finder'); ?>');
-}
+  // Family finder functions
+  function findFamily(field) {
+    currentFamilyField = field;
+    var modal = document.getElementById('family-finder-modal');
+    var content = document.getElementById('family-finder-content');
 
-function selectFamily(familyID, familyDisplay) {
-  document.getElementById(currentFamilyField).value = familyID;
-  document.getElementById(currentFamilyField + '_display').value = familyDisplay;
-  closeFamilyFinder();
-}
+    content.innerHTML = '<?php _e('Loading...', 'heritagepress'); ?>';
+    modal.style.display = 'block';
 
-function closeFamilyFinder() {
-  document.getElementById('family-finder-modal').style.display = 'none';
-}
-
-// Delete options toggle
-function toggleDeleteOptions() {
-  var criteria = document.getElementById('delete_criteria').value;
-  var treeRow = document.getElementById('tree_selection');
-  var branchRow = document.getElementById('branch_selection');
-  
-  treeRow.style.display = 'none';
-  branchRow.style.display = 'none';
-  
-  if (criteria === 'tree') {
-    treeRow.style.display = 'table-row';
-  } else if (criteria === 'branch') {
-    branchRow.style.display = 'table-row';
-    // Load branches for selected tree
-    updateBranchesForDelete();
+    // Load family finder via AJAX
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ajaxurl, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        content.innerHTML = xhr.responseText;
+      }
+    };
+    xhr.send('action=hp_family_finder&nonce=<?php echo wp_create_nonce('hp_family_finder'); ?>');
   }
-}
 
-function updateBranchesForDelete() {
-  // Update branches when tree is selected for deletion
-  var tree = document.getElementById('delete_tree').value;
-  if (!tree) return;
-  
-  var branchSelect = document.getElementById('delete_branch');
-  branchSelect.innerHTML = '<option value=""><?php _e('Loading...', 'heritagepress'); ?></option>';
-  
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        branchSelect.innerHTML = response.data.html;
-      }
-    }
-  };
-  xhr.send('action=hp_get_tree_branches_select&tree=' + encodeURIComponent(tree) + '&nonce=<?php echo wp_create_nonce('hp_get_tree_branches'); ?>');
-}
+  function selectFamily(familyID, familyDisplay) {
+    document.getElementById(currentFamilyField).value = familyID;
+    document.getElementById(currentFamilyField + '_display').value = familyDisplay;
+    closeFamilyFinder();
+  }
 
-// Preview deletion
-function previewDeletion() {
-  var form = document.querySelector('.delete-families-form');
-  var formData = new FormData(form);
-  formData.append('action', 'preview_family_deletion');
-  formData.append('nonce', '<?php echo wp_create_nonce('preview_family_deletion'); ?>');
-  
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        document.getElementById('delete_preview_list').innerHTML = response.data.html;
-        document.getElementById('delete_preview').style.display = 'block';
-        document.querySelector('input[name="confirm_delete"]').disabled = false;
-      } else {
-        alert('<?php _e('Error previewing deletion: ', 'heritagepress'); ?>' + response.data.message);
-      }
-    }
-  };
-  xhr.send(formData);
-}
+  function closeFamilyFinder() {
+    document.getElementById('family-finder-modal').style.display = 'none';
+  }
 
-// Preview renumbering
-function previewRenumbering() {
-  var form = document.querySelector('.renumber-families-form');
-  var formData = new FormData(form);
-  formData.append('action', 'preview_family_renumbering');
-  formData.append('nonce', '<?php echo wp_create_nonce('preview_family_renumbering'); ?>');
-  
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ajaxurl, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        document.getElementById('renumber_preview').innerHTML = response.data.html;
-        document.getElementById('renumber_preview').style.display = 'block';
-        document.querySelector('input[name="confirm_renumber"]').disabled = false;
-      } else {
-        alert('<?php _e('Error previewing renumbering: ', 'heritagepress'); ?>' + response.data.message);
-      }
+  // Delete options toggle
+  function toggleDeleteOptions() {
+    var criteria = document.getElementById('delete_criteria').value;
+    var treeRow = document.getElementById('tree_selection');
+    var branchRow = document.getElementById('branch_selection');
+
+    treeRow.style.display = 'none';
+    branchRow.style.display = 'none';
+
+    if (criteria === 'tree') {
+      treeRow.style.display = 'table-row';
+    } else if (criteria === 'branch') {
+      branchRow.style.display = 'table-row';
+      // Load branches for selected tree
+      updateBranchesForDelete();
     }
-  };
-  xhr.send(formData);
-}
+  }
+
+  function updateBranchesForDelete() {
+    // Update branches when tree is selected for deletion
+    var tree = document.getElementById('delete_tree').value;
+    if (!tree) return;
+
+    var branchSelect = document.getElementById('delete_branch');
+    branchSelect.innerHTML = '<option value=""><?php _e('Loading...', 'heritagepress'); ?></option>';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ajaxurl, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          branchSelect.innerHTML = response.data.html;
+        }
+      }
+    };
+    xhr.send('action=hp_get_tree_branches_select&tree=' + encodeURIComponent(tree) + '&nonce=<?php echo wp_create_nonce('hp_get_tree_branches'); ?>');
+  }
+
+  // Preview deletion
+  function previewDeletion() {
+    var form = document.querySelector('.delete-families-form');
+    var formData = new FormData(form);
+    formData.append('action', 'preview_family_deletion');
+    formData.append('nonce', '<?php echo wp_create_nonce('preview_family_deletion'); ?>');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ajaxurl, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById('delete_preview_list').innerHTML = response.data.html;
+          document.getElementById('delete_preview').style.display = 'block';
+          document.querySelector('input[name="confirm_delete"]').disabled = false;
+        } else {
+          alert('<?php _e('Error previewing deletion: ', 'heritagepress'); ?>' + response.data.message);
+        }
+      }
+    };
+    xhr.send(formData);
+  }
+
+  // Preview renumbering
+  function previewRenumbering() {
+    var form = document.querySelector('.renumber-families-form');
+    var formData = new FormData(form);
+    formData.append('action', 'preview_family_renumbering');
+    formData.append('nonce', '<?php echo wp_create_nonce('preview_family_renumbering'); ?>');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ajaxurl, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById('renumber_preview').innerHTML = response.data.html;
+          document.getElementById('renumber_preview').style.display = 'block';
+          document.querySelector('input[name="confirm_renumber"]').disabled = false;
+        } else {
+          alert('<?php _e('Error previewing renumbering: ', 'heritagepress'); ?>' + response.data.message);
+        }
+      }
+    };
+    xhr.send(formData);
+  }
 </script>
 
 <style>
-.family-utilities-container {
-  max-width: 1200px;
-  margin: 20px 0;
-}
+  .family-utilities-container {
+    max-width: 1200px;
+    margin: 20px 0;
+  }
 
-.utility-section {
-  background: #fff;
-  border: 1px solid #c3c4c7;
-  margin-bottom: 30px;
-  padding: 20px;
-}
+  .utility-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    margin-bottom: 30px;
+    padding: 20px;
+  }
 
-.utility-section h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dcdcde;
-  color: #1d2327;
-}
+  .utility-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dcdcde;
+    color: #1d2327;
+  }
 
-.utility-section .description {
-  margin-bottom: 20px;
-  color: #646970;
-}
+  .utility-section .description {
+    margin-bottom: 20px;
+    color: #646970;
+  }
 
-.form-table th {
-  width: 200px;
-  padding: 15px 10px 15px 0;
-  vertical-align: top;
-}
+  .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+  }
 
-.form-table td {
-  padding: 15px 0;
-  vertical-align: top;
-}
+  .form-table td {
+    padding: 15px 0;
+    vertical-align: top;
+  }
 
-#delete_preview, #renumber_preview {
-  background: #f6f7f7;
-  border: 1px solid #c3c4c7;
-  padding: 15px;
-  margin-top: 20px;
-  border-radius: 4px;
-}
+  #delete_preview,
+  #renumber_preview {
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+  }
 
-#delete_preview h4, #renumber_preview h4 {
-  margin-top: 0;
-  color: #d63384;
-}
+  #delete_preview h4,
+  #renumber_preview h4 {
+    margin-top: 0;
+    color: #d63384;
+  }
 
-#validation_results {
-  background: #f6f7f7;
-  border: 1px solid #c3c4c7;
-  padding: 15px;
-  margin-top: 20px;
-  border-radius: 4px;
-}
+  #validation_results {
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+  }
 
-/* Modal styles (same as other pages) */
-.modal {
-  position: fixed;
-  z-index: 9999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-}
+  /* Modal styles (same as other pages) */
+  .modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
 
-.modal-content {
-  background-color: #fff;
-  margin: 5% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 800px;
-  max-height: 80%;
-  overflow-y: auto;
-  position: relative;
-}
+  .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+  }
 
-.close {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  color: #aaa;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-}
+  .close {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
 
-.close:hover,
-.close:focus {
-  color: #000;
-}
+  .close:hover,
+  .close:focus {
+    color: #000;
+  }
 </style>

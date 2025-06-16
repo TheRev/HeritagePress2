@@ -81,7 +81,8 @@ class HP_Admin
           'reports' => 'Reports',
           'utilities' => 'Utilities'
         )
-      ),      'families' => array(
+      ),
+      'families' => array(
         'title' => 'Families',
         'capability' => 'edit_genealogy',
         'icon' => 'dashicons-networking',
@@ -229,7 +230,8 @@ class HP_Admin
 
     if (file_exists($ajax_dir . 'utilities-handler.php')) {
       require_once $ajax_dir . 'utilities-handler.php';
-    }    if (file_exists($ajax_dir . 'tree-assignment-handler.php')) {
+    }
+    if (file_exists($ajax_dir . 'tree-assignment-handler.php')) {
       require_once $ajax_dir . 'tree-assignment-handler.php';
     }
   }
@@ -475,7 +477,8 @@ class HP_Admin
             'select_action' => __('Please select an action.', 'heritagepress'),
             'loading' => __('Loading...', 'heritagepress'),
             'person_saved' => __('Person saved successfully.', 'heritagepress'),
-            'error_occurred' => __('An error occurred. Please try again.', 'heritagepress'),          )
+            'error_occurred' => __('An error occurred. Please try again.', 'heritagepress'),
+          )
         )
       );
     }
@@ -628,7 +631,8 @@ class HP_Admin
     $tree = isset($_GET['tree']) ? sanitize_text_field($_GET['tree']) : '';
 
     // Handle form submissions
-    $this->handle_people_actions($current_tab);    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/People/people-main.php';
+    $this->handle_people_actions($current_tab);
+    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/People/people-main.php';
   }
 
   /**
@@ -1710,7 +1714,8 @@ class HP_Admin
         }
         $this->add_admin_notice(
           sprintf(_n('%d person marked as public.', '%d people marked as public.', $updated, 'heritagepress'), $updated),
-          'success'        );
+          'success'
+        );
         break;
     }
   }

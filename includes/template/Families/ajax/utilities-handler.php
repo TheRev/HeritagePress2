@@ -53,12 +53,14 @@ class HP_Family_Utilities_Handler
       // Get both families
       $source = $wpdb->get_row($wpdb->prepare(
         "SELECT * FROM {$families_table} WHERE familyID = %s AND gedcom = %s",
-        $source_family, $gedcom
+        $source_family,
+        $gedcom
       ));
 
       $target = $wpdb->get_row($wpdb->prepare(
         "SELECT * FROM {$families_table} WHERE familyID = %s AND gedcom = %s",
-        $target_family, $gedcom
+        $target_family,
+        $gedcom
       ));
 
       if (!$source || !$target) {
@@ -85,7 +87,6 @@ class HP_Family_Utilities_Handler
 
       $wpdb->query('COMMIT');
       wp_send_json_success(array('message' => 'Families merged successfully'));
-
     } catch (Exception $e) {
       $wpdb->query('ROLLBACK');
       wp_send_json_error('Merge failed: ' . $e->getMessage());
@@ -164,7 +165,6 @@ class HP_Family_Utilities_Handler
         'message' => "Successfully deleted {$deleted_count} families",
         'deleted_count' => $deleted_count
       ));
-
     } catch (Exception $e) {
       $wpdb->query('ROLLBACK');
       wp_send_json_error('Delete failed: ' . $e->getMessage());
@@ -188,7 +188,7 @@ class HP_Family_Utilities_Handler
     }
 
     $gedcom = sanitize_text_field($_POST['gedcom']);
-    
+
     if (empty($gedcom)) {
       wp_send_json_error('Tree selection required');
       return;
@@ -202,11 +202,11 @@ class HP_Family_Utilities_Handler
 
     // Check for families with invalid spouse references
     $invalid_spouses = $wpdb->get_results($wpdb->prepare(
-      "SELECT f.familyID, f.husband, f.wife 
+      "SELECT f.familyID, f.husband, f.wife
        FROM {$families_table} f
        LEFT JOIN {$people_table} h ON f.husband = h.personID AND f.gedcom = h.gedcom
        LEFT JOIN {$people_table} w ON f.wife = w.personID AND f.gedcom = w.gedcom
-       WHERE f.gedcom = %s 
+       WHERE f.gedcom = %s
        AND ((f.husband IS NOT NULL AND f.husband != '' AND h.personID IS NULL)
             OR (f.wife IS NOT NULL AND f.wife != '' AND w.personID IS NULL))",
       $gedcom
@@ -217,7 +217,8 @@ class HP_Family_Utilities_Handler
       if (!empty($family->husband)) {
         $husband_exists = $wpdb->get_var($wpdb->prepare(
           "SELECT COUNT(*) FROM {$people_table} WHERE personID = %s AND gedcom = %s",
-          $family->husband, $gedcom
+          $family->husband,
+          $gedcom
         ));
         if (!$husband_exists) {
           $issue .= "Invalid husband reference ({$family->husband}) ";
@@ -226,7 +227,8 @@ class HP_Family_Utilities_Handler
       if (!empty($family->wife)) {
         $wife_exists = $wpdb->get_var($wpdb->prepare(
           "SELECT COUNT(*) FROM {$people_table} WHERE personID = %s AND gedcom = %s",
-          $family->wife, $gedcom
+          $family->wife,
+          $gedcom
         ));
         if (!$wife_exists) {
           $issue .= "Invalid wife reference ({$family->wife}) ";
@@ -237,10 +239,10 @@ class HP_Family_Utilities_Handler
 
     // Check for orphaned children (famc points to non-existent family)
     $orphaned_children = $wpdb->get_results($wpdb->prepare(
-      "SELECT p.personID, p.famc 
+      "SELECT p.personID, p.famc
        FROM {$people_table} p
        LEFT JOIN {$families_table} f ON p.famc = f.familyID AND p.gedcom = f.gedcom
-       WHERE p.gedcom = %s AND p.famc IS NOT NULL AND p.famc != '' 
+       WHERE p.gedcom = %s AND p.famc IS NOT NULL AND p.famc != ''
        AND f.familyID IS NULL",
       $gedcom
     ));
@@ -254,10 +256,10 @@ class HP_Family_Utilities_Handler
 
     // Check for duplicate family IDs (shouldn't happen but let's verify)
     $duplicates = $wpdb->get_results($wpdb->prepare(
-      "SELECT familyID, COUNT(*) as count 
-       FROM {$families_table} 
-       WHERE gedcom = %s 
-       GROUP BY familyID 
+      "SELECT familyID, COUNT(*) as count
+       FROM {$families_table}
+       WHERE gedcom = %s
+       GROUP BY familyID
        HAVING count > 1",
       $gedcom
     ));
@@ -306,8 +308,8 @@ class HP_Family_Utilities_Handler
 
     // Get all families ordered by current ID
     $families = $wpdb->get_results($wpdb->prepare(
-      "SELECT familyID FROM {$families_table} 
-       WHERE gedcom = %s 
+      "SELECT familyID FROM {$families_table}
+       WHERE gedcom = %s
        ORDER BY CAST(SUBSTRING(familyID, 2) AS UNSIGNED)",
       $gedcom
     ));
@@ -318,14 +320,14 @@ class HP_Family_Utilities_Handler
     foreach ($families as $family) {
       $old_id = $family->familyID;
       $new_id = 'F' . $current_number;
-      
+
       if ($old_id !== $new_id) {
         $renumber_plan[] = array(
           'old_id' => $old_id,
           'new_id' => $new_id
         );
       }
-      
+
       $current_number++;
     }
 
@@ -378,7 +380,6 @@ class HP_Family_Utilities_Handler
         'message' => "Successfully renumbered {$updated_count} families",
         'updated_count' => $updated_count
       ));
-
     } catch (Exception $e) {
       $wpdb->query('ROLLBACK');
       wp_send_json_error('Renumbering failed: ' . $e->getMessage());
@@ -418,7 +419,7 @@ class HP_Family_Utilities_Handler
     $privacy_clause = $include_private ? '' : ' AND f.private != 1';
 
     $families = $wpdb->get_results($wpdb->prepare(
-      "SELECT f.*, 
+      "SELECT f.*,
               h.firstname AS husband_first, h.lastname AS husband_last,
               w.firstname AS wife_first, w.lastname AS wife_last
        FROM {$families_table} f
@@ -454,11 +455,11 @@ class HP_Family_Utilities_Handler
   private static function export_families_csv($families)
   {
     $output = "Family ID,Husband ID,Husband Name,Wife ID,Wife Name,Marriage Date,Divorce Date,Marriage Place,Living,Private\n";
-    
+
     foreach ($families as $family) {
       $husband_name = trim(($family->husband_first ?? '') . ' ' . ($family->husband_last ?? ''));
       $wife_name = trim(($family->wife_first ?? '') . ' ' . ($family->wife_last ?? ''));
-      
+
       $output .= sprintf(
         '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
         $family->familyID,
@@ -473,7 +474,7 @@ class HP_Family_Utilities_Handler
         $family->private ? 'Yes' : 'No'
       );
     }
-    
+
     return $output;
   }
 
@@ -485,7 +486,7 @@ class HP_Family_Utilities_Handler
   private static function export_families_xml($families)
   {
     $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<families>\n";
-    
+
     foreach ($families as $family) {
       $xml .= "  <family>\n";
       $xml .= "    <familyID>" . htmlspecialchars($family->familyID) . "</familyID>\n";
@@ -498,7 +499,7 @@ class HP_Family_Utilities_Handler
       $xml .= "    <private>" . ($family->private ? 'true' : 'false') . "</private>\n";
       $xml .= "  </family>\n";
     }
-    
+
     $xml .= "</families>";
     return $xml;
   }

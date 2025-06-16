@@ -42,14 +42,14 @@ class HP_Person_Finder_Handler
 
     // Build search query
     $search_like = '%' . $wpdb->esc_like($search_term) . '%';
-    
+
     $sql = "SELECT personID, firstname, lastname, birthdate, deathdate, sex, living, private
             FROM {$people_table}
-            WHERE gedcom = %s 
+            WHERE gedcom = %s
             AND (
               personID LIKE %s
               OR firstname LIKE %s
-              OR lastname LIKE %s  
+              OR lastname LIKE %s
               OR CONCAT(firstname, ' ', lastname) LIKE %s
               OR CONCAT(lastname, ', ', firstname) LIKE %s
             )";
@@ -66,7 +66,11 @@ class HP_Person_Finder_Handler
     $results = $wpdb->get_results($wpdb->prepare(
       $sql,
       $gedcom,
-      $search_like, $search_like, $search_like, $search_like, $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
+      $search_like,
       $limit
     ));
 
@@ -74,7 +78,7 @@ class HP_Person_Finder_Handler
     foreach ($results as $person) {
       $name = trim($person->firstname . ' ' . $person->lastname);
       $display_name = $name ? $name : '[No Name]';
-      
+
       $extra_info = array();
       if ($person->birthdate) {
         $extra_info[] = 'b. ' . $person->birthdate;
@@ -150,7 +154,7 @@ class HP_Person_Finder_Handler
 
     // Get existing family relationships
     $spouse_families = $wpdb->get_results($wpdb->prepare(
-      "SELECT familyID, husband, wife FROM {$families_table} 
+      "SELECT familyID, husband, wife FROM {$families_table}
        WHERE gedcom = %s AND (husband = %s OR wife = %s)",
       $gedcom,
       $person_id,
@@ -158,7 +162,7 @@ class HP_Person_Finder_Handler
     ));
 
     $child_families = $wpdb->get_results($wpdb->prepare(
-      "SELECT famc FROM {$people_table} 
+      "SELECT famc FROM {$people_table}
        WHERE personID = %s AND gedcom = %s AND famc IS NOT NULL AND famc != ''",
       $person_id,
       $gedcom
@@ -204,17 +208,17 @@ class HP_Person_Finder_Handler
 
     // Check if this husband/wife combination already exists
     if (!empty($husband_id) && !empty($wife_id)) {
-      $sql = "SELECT familyID FROM {$families_table} 
+      $sql = "SELECT familyID FROM {$families_table}
               WHERE gedcom = %s AND husband = %s AND wife = %s";
       $params = array($gedcom, $husband_id, $wife_id);
-      
+
       if (!empty($exclude_family)) {
         $sql .= " AND familyID != %s";
         $params[] = $exclude_family;
       }
 
       $existing = $wpdb->get_var($wpdb->prepare($sql, $params));
-      
+
       if ($existing) {
         $conflicts[] = array(
           'type' => 'duplicate_family',

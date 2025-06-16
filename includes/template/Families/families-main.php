@@ -66,31 +66,31 @@ $total_families = array_sum($tree_counts);
 
   <!-- Tab Navigation -->
   <nav class="nav-tab-wrapper wp-clearfix">
-    <a href="?page=heritagepress-families&tab=browse" 
-       class="nav-tab <?php echo $current_tab === 'browse' ? 'nav-tab-active' : ''; ?>">
-      <?php _e('Browse Families', 'heritagepress'); ?> 
+    <a href="?page=heritagepress-families&tab=browse"
+      class="nav-tab <?php echo $current_tab === 'browse' ? 'nav-tab-active' : ''; ?>">
+      <?php _e('Browse Families', 'heritagepress'); ?>
       <span class="count">(<?php echo number_format($total_families); ?>)</span>
     </a>
-    
-    <a href="?page=heritagepress-families&tab=add" 
-       class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
+
+    <a href="?page=heritagepress-families&tab=add"
+      class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
       <?php _e('Add New Family', 'heritagepress'); ?>
     </a>
-    
+
     <?php if ($is_editing): ?>
-    <a href="?page=heritagepress-families&tab=edit&familyID=<?php echo esc_attr($family_id); ?>&tree=<?php echo esc_attr($tree); ?>" 
-       class="nav-tab <?php echo $current_tab === 'edit' ? 'nav-tab-active' : ''; ?>">
-      <?php _e('Edit Family', 'heritagepress'); ?> (<?php echo esc_html($family_id); ?>)
-    </a>
+      <a href="?page=heritagepress-families&tab=edit&familyID=<?php echo esc_attr($family_id); ?>&tree=<?php echo esc_attr($tree); ?>"
+        class="nav-tab <?php echo $current_tab === 'edit' ? 'nav-tab-active' : ''; ?>">
+        <?php _e('Edit Family', 'heritagepress'); ?> (<?php echo esc_html($family_id); ?>)
+      </a>
     <?php endif; ?>
-    
-    <a href="?page=heritagepress-families&tab=utilities" 
-       class="nav-tab <?php echo $current_tab === 'utilities' ? 'nav-tab-active' : ''; ?>">
+
+    <a href="?page=heritagepress-families&tab=utilities"
+      class="nav-tab <?php echo $current_tab === 'utilities' ? 'nav-tab-active' : ''; ?>">
       <?php _e('Utilities', 'heritagepress'); ?>
     </a>
-    
-    <a href="?page=heritagepress-families&tab=reports" 
-       class="nav-tab <?php echo $current_tab === 'reports' ? 'nav-tab-active' : ''; ?>">
+
+    <a href="?page=heritagepress-families&tab=reports"
+      class="nav-tab <?php echo $current_tab === 'reports' ? 'nav-tab-active' : ''; ?>">
       <?php _e('Reports', 'heritagepress'); ?>
     </a>
   </nav>
@@ -102,23 +102,23 @@ $total_families = array_sum($tree_counts);
       case 'browse':
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/browse-families.php';
         break;
-      
+
       case 'add':
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/add-family.php';
         break;
-      
+
       case 'edit':
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/edit-family.php';
         break;
-      
+
       case 'utilities':
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/utilities-families.php';
         break;
-      
+
       case 'reports':
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/reports-families.php';
         break;
-      
+
       default:
         include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/browse-families.php';
         break;
