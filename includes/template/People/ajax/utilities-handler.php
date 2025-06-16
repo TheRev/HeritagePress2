@@ -92,14 +92,17 @@ class HP_People_Utilities_Handler
   {
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
-
     $where_clause = $tree ? "WHERE gedcom = %s" : "";
     $params = $tree ? array($tree) : array();
 
     $query = "SELECT ID, personID, firstname, lastname, lnprefix
                   FROM {$people_table} {$where_clause}";
 
-    $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    if (empty($params)) {
+      $people = $wpdb->get_results($query);
+    } else {
+      $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    }
 
     $updated = 0;
     foreach ($people as $person) {
@@ -150,7 +153,6 @@ class HP_People_Utilities_Handler
   {
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
-
     $where_clause = $tree ? "WHERE gedcom = %s" : "";
     $params = $tree ? array($tree) : array();
 
@@ -158,7 +160,11 @@ class HP_People_Utilities_Handler
                   FROM {$people_table} {$where_clause}
                   ORDER BY lastname, firstname";
 
-    $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    if (empty($params)) {
+      $people = $wpdb->get_results($query);
+    } else {
+      $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    }
 
     $duplicates = array();
     $checked = array();
@@ -263,14 +269,17 @@ class HP_People_Utilities_Handler
   {
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
-
     $where_clause = $tree ? "WHERE gedcom = %s" : "";
     $params = $tree ? array($tree) : array();
 
     $query = "SELECT ID, personID, birthdate, deathdate
                   FROM {$people_table} {$where_clause}";
 
-    $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    if (empty($params)) {
+      $people = $wpdb->get_results($query);
+    } else {
+      $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    }
 
     $fixed = 0;
     $issues = array();
@@ -459,14 +468,17 @@ class HP_People_Utilities_Handler
   {
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
-
     $where_clause = $tree ? "WHERE gedcom = %s" : "";
     $params = $tree ? array($tree) : array();
 
     $query = "SELECT personID, firstname, lastname, birthdate, deathdate
                   FROM {$people_table} {$where_clause}";
 
-    $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    if (empty($params)) {
+      $people = $wpdb->get_results($query);
+    } else {
+      $people = $wpdb->get_results($wpdb->prepare($query, $params));
+    }
 
     $issues = array();
 

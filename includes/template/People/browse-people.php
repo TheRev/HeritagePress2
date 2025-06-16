@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Include date utilities for enhanced date filtering
-require_once __DIR__ . '/../../class-hp-date-utils.php';
+require_once __DIR__ . '/../../helpers/class-hp-date-utils.php';
 
 // Enqueue enhanced browse people scripts and styles
 wp_enqueue_script('jquery-ui-tooltip');

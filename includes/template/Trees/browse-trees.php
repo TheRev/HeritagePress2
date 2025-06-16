@@ -79,10 +79,10 @@ $trees_query = "
   ORDER BY t.treename
 ";
 
-$trees = $wpdb->get_results($wpdb->prepare($trees_query, $where_params), ARRAY_A);
-
 if (empty($where_params)) {
   $trees = $wpdb->get_results($trees_query, ARRAY_A);
+} else {
+  $trees = $wpdb->get_results($wpdb->prepare($trees_query, $where_params), ARRAY_A);
 }
 
 ?>

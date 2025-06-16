@@ -349,7 +349,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         </h3>
       </div>
       <div class="person-form-card-body collapsible-content">
-        <table class="hp-form-table">          <tr>
+        <table class="hp-form-table">
+          <tr>
             <th><label for="notes"><?php _e('Notes:', 'heritagepress'); ?></label></th>
             <td>
               <textarea id="notes" name="notes" class="large-text" rows="4"><?php echo esc_textarea(isset($person_data['notes']) ? $person_data['notes'] : ''); ?></textarea>

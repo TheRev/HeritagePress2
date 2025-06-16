@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 global $wpdb;
 
 // Include date utilities and validation
-require_once __DIR__ . '/../../class-hp-date-utils.php';
+require_once __DIR__ . '/../../helpers/class-hp-date-utils.php';
 
 // Table references
 $trees_table = $wpdb->prefix . 'hp_trees';

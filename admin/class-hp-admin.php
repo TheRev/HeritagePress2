@@ -81,17 +81,16 @@ class HP_Admin
           'reports' => 'Reports',
           'utilities' => 'Utilities'
         )
-      ),
-      'families' => array(
+      ),      'families' => array(
         'title' => 'Families',
         'capability' => 'edit_genealogy',
         'icon' => 'dashicons-networking',
         'tabs' => array(
-          'browse' => 'Browse Families',
-          'add' => 'Add Family',
-          'trees' => 'Family Trees',
-          'reports' => 'Family Reports',
-          'relationships' => 'Relationship Tools'
+          'browse' => 'Browse',
+          'add' => 'Add New',
+          'edit' => 'Edit Family',
+          'utilities' => 'Utilities',
+          'reports' => 'Reports'
         )
       ),
       'sources' => array(
@@ -199,10 +198,13 @@ class HP_Admin
     add_action('wp_ajax_hp_upload_gedcom_chunk', array($this, 'ajax_upload_gedcom_chunk'));
     add_action('wp_ajax_hp_finalize_gedcom_upload', array($this, 'ajax_finalize_gedcom_upload'));
     add_action('wp_ajax_hp_cancel_upload', array($this, 'ajax_cancel_upload'));
-    add_action('wp_ajax_hp_refresh_server_files', array($this, 'ajax_refresh_server_files'));
+    add_action('wp_ajax_hp_refresh_server_files', array($this, 'ajax_refresh_server_files'));    // Load People AJAX handlers
+    $this->load_people_ajax_handlers();
 
-    // Load People AJAX handlers
-    $this->load_people_ajax_handlers();    // Add GEDCOM file support
+    // Load Families AJAX handlers
+    $this->load_families_ajax_handlers();
+
+    // Add GEDCOM file support
     add_filter('upload_mimes', array($this, 'add_gedcom_mime_type'));
     add_filter('wp_check_filetype_and_ext', array($this, 'check_gedcom_filetype'), 10, 4);
 
@@ -227,12 +229,40 @@ class HP_Admin
 
     if (file_exists($ajax_dir . 'utilities-handler.php')) {
       require_once $ajax_dir . 'utilities-handler.php';
-    }
-
-    if (file_exists($ajax_dir . 'tree-assignment-handler.php')) {
+    }    if (file_exists($ajax_dir . 'tree-assignment-handler.php')) {
       require_once $ajax_dir . 'tree-assignment-handler.php';
     }
   }
+
+  /**
+   * Load Families AJAX handlers
+   */
+  private function load_families_ajax_handlers()
+  {
+    $ajax_dir = plugin_dir_path(__FILE__) . '../includes/template/Families/ajax/';
+
+    // Include AJAX handler files
+    if (file_exists($ajax_dir . 'family-id-handler.php')) {
+      require_once $ajax_dir . 'family-id-handler.php';
+    }
+
+    if (file_exists($ajax_dir . 'family-finder-handler.php')) {
+      require_once $ajax_dir . 'family-finder-handler.php';
+    }
+
+    if (file_exists($ajax_dir . 'person-finder-handler.php')) {
+      require_once $ajax_dir . 'person-finder-handler.php';
+    }
+
+    if (file_exists($ajax_dir . 'reports-handler.php')) {
+      require_once $ajax_dir . 'reports-handler.php';
+    }
+
+    if (file_exists($ajax_dir . 'utilities-handler.php')) {
+      require_once $ajax_dir . 'utilities-handler.php';
+    }
+  }
+
   /**
    * Add admin menu
    */
@@ -277,9 +307,7 @@ class HP_Admin
       'import_gedcom',
       'heritagepress-import',
       array($this, 'import_export_page')
-    );
-
-    // People management submenu
+    );    // People management submenu
     add_submenu_page(
       'heritagepress',
       'Manage People',
@@ -287,7 +315,19 @@ class HP_Admin
       'edit_genealogy',
       'heritagepress-people',
       array($this, 'people_page')
-    );    // Database tables submenu
+    );
+
+    // Families management submenu
+    add_submenu_page(
+      'heritagepress',
+      'Manage Families',
+      'Families',
+      'edit_genealogy',
+      'heritagepress-families',
+      array($this, 'families_page')
+    );
+
+    // Database tables submenu
     add_submenu_page(
       'heritagepress',
       'Database Tables',
@@ -435,12 +475,46 @@ class HP_Admin
             'select_action' => __('Please select an action.', 'heritagepress'),
             'loading' => __('Loading...', 'heritagepress'),
             'person_saved' => __('Person saved successfully.', 'heritagepress'),
+            'error_occurred' => __('An error occurred. Please try again.', 'heritagepress'),          )
+        )
+      );
+    }
+
+    // Families specific assets
+    if (isset($_GET['page']) && $_GET['page'] === 'heritagepress-families') {
+      wp_enqueue_style(
+        'heritagepress-families',
+        HERITAGEPRESS_PLUGIN_URL . 'includes/template/Families/families.css',
+        array('heritagepress-admin'),
+        HERITAGEPRESS_VERSION . '.' . time()
+      );
+      wp_enqueue_script(
+        'heritagepress-families',
+        HERITAGEPRESS_PLUGIN_URL . 'includes/template/Families/families.js',
+        array('jquery', 'heritagepress-admin'),
+        HERITAGEPRESS_VERSION,
+        true
+      );
+      wp_localize_script(
+        'heritagepress-families',
+        'hp_families',
+        array(
+          'ajax_url' => admin_url('admin-ajax.php'),
+          'nonce' => wp_create_nonce('heritagepress_families_action'),
+          'strings' => array(
+            'confirm_delete' => __('Are you sure you want to delete this family?', 'heritagepress'),
+            'confirm_bulk_delete' => __('Are you sure you want to delete the selected families?', 'heritagepress'),
+            'select_families' => __('Please select at least one family.', 'heritagepress'),
+            'select_action' => __('Please select an action.', 'heritagepress'),
+            'loading' => __('Loading...', 'heritagepress'),
+            'family_saved' => __('Family saved successfully.', 'heritagepress'),
             'error_occurred' => __('An error occurred. Please try again.', 'heritagepress'),
           )
         )
       );
     }
   }
+
   /**
    * Admin notices
    */
@@ -554,10 +628,27 @@ class HP_Admin
     $tree = isset($_GET['tree']) ? sanitize_text_field($_GET['tree']) : '';
 
     // Handle form submissions
-    $this->handle_people_actions($current_tab);
-
-    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/People/people-main.php';
+    $this->handle_people_actions($current_tab);    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/People/people-main.php';
   }
+
+  /**
+   * Families page with tabs
+   */
+  public function families_page()
+  {
+    // Get current tab
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'browse';
+
+    // Get family ID for edit tab
+    $family_id = isset($_GET['familyID']) ? sanitize_text_field($_GET['familyID']) : '';
+    $tree = isset($_GET['tree']) ? sanitize_text_field($_GET['tree']) : '';
+
+    // Handle form submissions
+    $this->handle_families_actions($current_tab);
+
+    include HERITAGEPRESS_PLUGIN_DIR . 'includes/template/Families/families-main.php';
+  }
+
   /**
    * Import/Export page with tabs
    */
@@ -1134,14 +1225,64 @@ class HP_Admin
       case 'make_public':
         $this->handle_bulk_people_actions();
         break;
-    }
-
-    // Handle action2 for bottom bulk actions
+    }    // Handle action2 for bottom bulk actions
     if (isset($_POST['action2']) && $_POST['action2'] !== '-1') {
       $_POST['action'] = $_POST['action2'];
       $this->handle_bulk_people_actions();
     }
   }
+
+  /**
+   * Handle families management form submissions
+   */
+  private function handle_families_actions($tab)
+  {
+    if (!isset($_POST['action'])) {
+      return;
+    }
+
+    // Verify nonce for security
+    if (
+      !wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_families_action') &&
+      !wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_bulk_families') &&
+      !wp_verify_nonce($_POST['_wpnonce'], 'heritagepress_delete_family')
+    ) {
+      add_settings_error(
+        'heritagepress_families',
+        'invalid_nonce',
+        __('Security check failed. Please try again.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    switch ($_POST['action']) {
+      case 'add_family':
+        $this->handle_add_family();
+        break;
+
+      case 'update_family':
+        $this->handle_update_family();
+        break;
+
+      case 'delete_family':
+        $this->handle_delete_family();
+        break;
+
+      case 'delete':
+      case 'make_private':
+      case 'make_public':
+        $this->handle_bulk_families_actions();
+        break;
+    }
+
+    // Handle action2 for bottom bulk actions
+    if (isset($_POST['action2']) && $_POST['action2'] !== '-1') {
+      $_POST['action'] = $_POST['action2'];
+      $this->handle_bulk_families_actions();
+    }
+  }
+
   /**
    * Handle adding a new person - Enhanced TNG-style
    */
@@ -1569,6 +1710,349 @@ class HP_Admin
         }
         $this->add_admin_notice(
           sprintf(_n('%d person marked as public.', '%d people marked as public.', $updated, 'heritagepress'), $updated),
+          'success'        );
+        break;
+    }
+  }
+
+  /**
+   * Handle adding a new family
+   */
+  private function handle_add_family()
+  {
+    global $wpdb;
+
+    if (!current_user_can('edit_genealogy')) {
+      add_settings_error(
+        'heritagepress_families',
+        'permission_denied',
+        __('You do not have permission to add families.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $families_table = $wpdb->prefix . 'hp_families';
+
+    // Extract and sanitize form data
+    $family_data = array(
+      'familyID' => sanitize_text_field($_POST['familyID']),
+      'husband' => sanitize_text_field($_POST['husband']),
+      'wife' => sanitize_text_field($_POST['wife']),
+      'gedcom' => sanitize_text_field($_POST['gedcom']),
+      'marrdate' => sanitize_text_field($_POST['marrdate']),
+      'marrplace' => sanitize_text_field($_POST['marrplace']),
+      'divdate' => sanitize_text_field($_POST['divdate']),
+      'divplace' => sanitize_text_field($_POST['divplace']),
+      'living' => isset($_POST['living']) ? 1 : 0,
+      'private' => isset($_POST['private']) ? 1 : 0,
+      'notes' => wp_kses_post($_POST['notes']),
+      'changedate' => current_time('mysql'),
+      'changedby' => wp_get_current_user()->user_login
+    );
+
+    // Validate required fields
+    if (empty($family_data['familyID']) || empty($family_data['gedcom'])) {
+      add_settings_error(
+        'heritagepress_families',
+        'missing_required',
+        __('Family ID and tree selection are required.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    // Check if family ID already exists
+    $existing = $wpdb->get_var($wpdb->prepare(
+      "SELECT COUNT(*) FROM {$families_table} WHERE familyID = %s AND gedcom = %s",
+      $family_data['familyID'],
+      $family_data['gedcom']
+    ));
+
+    if ($existing > 0) {
+      add_settings_error(
+        'heritagepress_families',
+        'duplicate_id',
+        __('A family with this ID already exists in the selected tree.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    // Insert the family
+    $result = $wpdb->insert($families_table, $family_data);
+
+    if ($result === false) {
+      add_settings_error(
+        'heritagepress_families',
+        'insert_failed',
+        __('Failed to add family. Please try again.', 'heritagepress'),
+        'error'
+      );
+    } else {
+      add_settings_error(
+        'heritagepress_families',
+        'family_added',
+        sprintf(__('Family %s added successfully.', 'heritagepress'), $family_data['familyID']),
+        'success'
+      );
+    }
+  }
+
+  /**
+   * Handle updating an existing family
+   */
+  private function handle_update_family()
+  {
+    global $wpdb;
+
+    if (!current_user_can('edit_genealogy')) {
+      add_settings_error(
+        'heritagepress_families',
+        'permission_denied',
+        __('You do not have permission to update families.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $families_table = $wpdb->prefix . 'hp_families';
+    $original_id = sanitize_text_field($_POST['original_familyID']);
+    $gedcom = sanitize_text_field($_POST['gedcom']);
+
+    // Extract and sanitize form data
+    $family_data = array(
+      'familyID' => sanitize_text_field($_POST['familyID']),
+      'husband' => sanitize_text_field($_POST['husband']),
+      'wife' => sanitize_text_field($_POST['wife']),
+      'marrdate' => sanitize_text_field($_POST['marrdate']),
+      'marrplace' => sanitize_text_field($_POST['marrplace']),
+      'divdate' => sanitize_text_field($_POST['divdate']),
+      'divplace' => sanitize_text_field($_POST['divplace']),
+      'living' => isset($_POST['living']) ? 1 : 0,
+      'private' => isset($_POST['private']) ? 1 : 0,
+      'notes' => wp_kses_post($_POST['notes']),
+      'changedate' => current_time('mysql'),
+      'changedby' => wp_get_current_user()->user_login
+    );
+
+    // If family ID changed, check for conflicts
+    if ($family_data['familyID'] !== $original_id) {
+      $existing = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$families_table} WHERE familyID = %s AND gedcom = %s",
+        $family_data['familyID'],
+        $gedcom
+      ));
+
+      if ($existing > 0) {
+        add_settings_error(
+          'heritagepress_families',
+          'duplicate_id',
+          __('A family with this ID already exists in the selected tree.', 'heritagepress'),
+          'error'
+        );
+        return;
+      }
+
+      // Update references in people table if ID changed
+      $people_table = $wpdb->prefix . 'hp_people';
+      $wpdb->update(
+        $people_table,
+        array('famc' => $family_data['familyID']),
+        array('famc' => $original_id, 'gedcom' => $gedcom)
+      );
+      $wpdb->update(
+        $people_table,
+        array('fams' => $family_data['familyID']),
+        array('fams' => $original_id, 'gedcom' => $gedcom)
+      );
+    }
+
+    // Update the family
+    $result = $wpdb->update(
+      $families_table,
+      $family_data,
+      array('familyID' => $original_id, 'gedcom' => $gedcom)
+    );
+
+    if ($result === false) {
+      add_settings_error(
+        'heritagepress_families',
+        'update_failed',
+        __('Failed to update family. Please try again.', 'heritagepress'),
+        'error'
+      );
+    } else {
+      add_settings_error(
+        'heritagepress_families',
+        'family_updated',
+        sprintf(__('Family %s updated successfully.', 'heritagepress'), $family_data['familyID']),
+        'success'
+      );
+    }
+  }
+
+  /**
+   * Handle deleting a family
+   */
+  private function handle_delete_family()
+  {
+    global $wpdb;
+
+    if (!current_user_can('edit_genealogy')) {
+      add_settings_error(
+        'heritagepress_families',
+        'permission_denied',
+        __('You do not have permission to delete families.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $family_id = sanitize_text_field($_POST['familyID']);
+    $gedcom = sanitize_text_field($_POST['gedcom']);
+
+    $families_table = $wpdb->prefix . 'hp_families';
+    $people_table = $wpdb->prefix . 'hp_people';
+
+    // Clear family references from people
+    $wpdb->update(
+      $people_table,
+      array('famc' => ''),
+      array('famc' => $family_id, 'gedcom' => $gedcom)
+    );
+
+    $wpdb->update(
+      $people_table,
+      array('fams' => ''),
+      array('fams' => $family_id, 'gedcom' => $gedcom)
+    );
+
+    // Delete the family
+    $result = $wpdb->delete(
+      $families_table,
+      array('familyID' => $family_id, 'gedcom' => $gedcom)
+    );
+
+    if ($result === false) {
+      add_settings_error(
+        'heritagepress_families',
+        'delete_failed',
+        __('Failed to delete family. Please try again.', 'heritagepress'),
+        'error'
+      );
+    } else {
+      add_settings_error(
+        'heritagepress_families',
+        'family_deleted',
+        sprintf(__('Family %s deleted successfully.', 'heritagepress'), $family_id),
+        'success'
+      );
+    }
+  }
+
+  /**
+   * Handle bulk actions on families
+   */
+  private function handle_bulk_families_actions()
+  {
+    global $wpdb;
+
+    if (!current_user_can('edit_genealogy')) {
+      add_settings_error(
+        'heritagepress_families',
+        'permission_denied',
+        __('You do not have permission to perform bulk actions.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $action = sanitize_text_field($_POST['action']);
+    $selected_families = isset($_POST['selected_families']) ? array_map('sanitize_text_field', $_POST['selected_families']) : array();
+
+    if (empty($selected_families)) {
+      add_settings_error(
+        'heritagepress_families',
+        'no_selection',
+        __('Please select families to perform bulk actions.', 'heritagepress'),
+        'error'
+      );
+      return;
+    }
+
+    $families_table = $wpdb->prefix . 'hp_families';
+    $people_table = $wpdb->prefix . 'hp_people';
+
+    switch ($action) {
+      case 'delete':
+        $deleted = 0;
+        foreach ($selected_families as $family_id) {
+          // Clear references first
+          $wpdb->update(
+            $people_table,
+            array('famc' => ''),
+            array('famc' => $family_id)
+          );
+          $wpdb->update(
+            $people_table,
+            array('fams' => ''),
+            array('fams' => $family_id)
+          );
+
+          // Delete family
+          $result = $wpdb->delete(
+            $families_table,
+            array('ID' => $family_id)
+          );
+          if ($result !== false) {
+            $deleted++;
+          }
+        }
+        add_settings_error(
+          'heritagepress_families',
+          'bulk_deleted',
+          sprintf(_n('%d family deleted.', '%d families deleted.', $deleted, 'heritagepress'), $deleted),
+          'success'
+        );
+        break;
+
+      case 'make_private':
+        $updated = 0;
+        foreach ($selected_families as $family_id) {
+          $result = $wpdb->update(
+            $families_table,
+            array('private' => 1, 'changedate' => current_time('mysql'), 'changedby' => wp_get_current_user()->user_login),
+            array('ID' => $family_id)
+          );
+          if ($result !== false) {
+            $updated++;
+          }
+        }
+        add_settings_error(
+          'heritagepress_families',
+          'bulk_private',
+          sprintf(_n('%d family marked as private.', '%d families marked as private.', $updated, 'heritagepress'), $updated),
+          'success'
+        );
+        break;
+
+      case 'make_public':
+        $updated = 0;
+        foreach ($selected_families as $family_id) {
+          $result = $wpdb->update(
+            $families_table,
+            array('private' => 0, 'changedate' => current_time('mysql'), 'changedby' => wp_get_current_user()->user_login),
+            array('ID' => $family_id)
+          );
+          if ($result !== false) {
+            $updated++;
+          }
+        }
+        add_settings_error(
+          'heritagepress_families',
+          'bulk_public',
+          sprintf(_n('%d family marked as public.', '%d families marked as public.', $updated, 'heritagepress'), $updated),
           'success'
         );
         break;

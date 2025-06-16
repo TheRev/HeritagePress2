@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Include date utilities
-require_once __DIR__ . '/../../class-hp-date-utils.php';
+require_once __DIR__ . '/../../helpers/class-hp-date-utils.php';
 
 global $wpdb;
 
