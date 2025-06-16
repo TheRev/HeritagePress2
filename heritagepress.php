@@ -106,10 +106,8 @@ class HeritagePress
     add_action('admin_init', array($this, 'suppress_minor_warnings'), 1);
 
     // Initialize database manager
-    $this->database = new HP_Database_Manager();
-
-    // Initialize admin
-    if (is_admin()) {
+    $this->database = new HP_Database_Manager();    // Initialize admin
+    if (is_admin() || wp_doing_ajax()) {
       new HP_Admin();
     }
 

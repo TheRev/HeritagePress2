@@ -27,11 +27,18 @@ $families_table = $wpdb->prefix . 'hp_families';
 // Get tree data for dropdowns
 $trees_result = $wpdb->get_results("SELECT * FROM $trees_table ORDER BY treename", ARRAY_A);
 
-// Get people counts per tree
+// Get total counts including unassigned people
+$total_people_count = $wpdb->get_var("SELECT COUNT(*) FROM $people_table WHERE NOT (firstname = '** LOCKED **' AND lastname = '** RESERVED **')");
+$unassigned_people_count = $wpdb->get_var("SELECT COUNT(*) FROM $people_table WHERE gedcom NOT IN (SELECT gedcom FROM $trees_table) AND NOT (firstname = '** LOCKED **' AND lastname = '** RESERVED **')");
+
+// Check if we need to show warnings
+$show_no_trees_warning = empty($trees_result);
+$show_unassigned_warning = $unassigned_people_count > 0;
+// Get people counts per tree (even if tree doesn't exist in trees table)
 $tree_counts = array();
 foreach ($trees_result as $tree) {
   $tree_counts[$tree['gedcom']] = $wpdb->get_var(
-    $wpdb->prepare("SELECT COUNT(*) FROM $people_table WHERE gedcom = %s", $tree['gedcom'])
+    $wpdb->prepare("SELECT COUNT(*) FROM $people_table WHERE gedcom = %s AND NOT (firstname = '** LOCKED **' AND lastname = '** RESERVED **')", $tree['gedcom'])
   );
 }
 
@@ -118,7 +125,10 @@ $per_page = 25;
 $offset = ($search_params['page'] - 1) * $per_page;
 
 // Build WHERE clause
-$where_conditions = array("$people_table.gedcom = $trees_table.gedcom");
+$where_conditions = array();
+
+// Exclude locked/reserved records
+$where_conditions[] = "NOT ($people_table.firstname = '** LOCKED **' AND $people_table.lastname = '** RESERVED **')";
 
 if (!empty($search_params['tree'])) {
   $where_conditions[] = $wpdb->prepare("$people_table.gedcom = %s", $search_params['tree']);
@@ -219,11 +229,11 @@ if ($search_params['nokids'] === 'yes') {
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 $join_clause = !empty($join_clauses) ? implode(' ', $join_clauses) : '';
 
-// Count total records
+// Count total records - also use LEFT JOIN for count
 $count_query = "SELECT COUNT(*) as total FROM (
   SELECT $people_table.personID $select_extra
   FROM $people_table
-  INNER JOIN $trees_table ON $people_table.gedcom = $trees_table.gedcom
+  LEFT JOIN $trees_table ON $people_table.gedcom = $trees_table.gedcom
   $join_clause
   $where_clause
   $group_by
@@ -233,12 +243,12 @@ $count_query = "SELECT COUNT(*) as total FROM (
 $total_count = $wpdb->get_var($count_query);
 $total_pages = ceil($total_count / $per_page);
 
-// Main query with pagination
-$main_query = "SELECT $people_table.*, $trees_table.treename,
+// Main query with pagination - LEFT JOIN to handle people without trees
+$main_query = "SELECT $people_table.*, COALESCE($trees_table.treename, '[No Tree Assigned]') as treename,
   DATE_FORMAT($people_table.changedate, '%d %b %Y %H:%i:%s') as changedate_formatted
   $select_extra
   FROM $people_table
-  INNER JOIN $trees_table ON $people_table.gedcom = $trees_table.gedcom
+  LEFT JOIN $trees_table ON $people_table.gedcom = $trees_table.gedcom
   $join_clause
   $where_clause
   $group_by
@@ -309,6 +319,42 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
 ?>
 
 <div class="people-browse-section">
+
+  <!-- Tree and People Status Warnings -->
+  <?php if ($show_no_trees_warning): ?>
+    <div class="notice notice-warning">
+      <p>
+        <strong><?php _e('No Family Trees Found!', 'heritagepress'); ?></strong>
+        <?php printf(
+          __('You need to create at least one family tree before organizing your people. <a href="%s">Create your first tree here</a>.', 'heritagepress'),
+          admin_url('admin.php?page=heritagepress-trees&tab=add')
+        ); ?>
+      </p>
+    </div>
+  <?php elseif ($show_unassigned_warning): ?>
+    <div class="notice notice-info">
+      <p>
+        <strong><?php printf(__('%d people are not assigned to any tree.', 'heritagepress'), $unassigned_people_count); ?></strong>
+        <?php printf(
+          __('Consider <a href="%s">creating additional trees</a> or editing people to assign them to existing trees.', 'heritagepress'),
+          admin_url('admin.php?page=heritagepress-trees&tab=add')
+        ); ?>
+      </p>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($total_people_count == 0): ?>
+    <div class="notice notice-info">
+      <p>
+        <strong><?php _e('No People Found!', 'heritagepress'); ?></strong>
+        <?php printf(
+          __('Get started by <a href="%s">adding your first person</a> to begin building your family tree.', 'heritagepress'),
+          admin_url('admin.php?page=heritagepress-people&tab=add')
+        ); ?>
+      </p>
+    </div>
+  <?php endif; ?>
+
   <!-- Search Form -->
   <div class="search-form-card">
     <form method="get" id="people-search-form" class="people-search-form">
@@ -439,7 +485,7 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
               <input id="cb-select-all-1" type="checkbox" />
             </td>
             <th scope="col" class="manage-column column-photo"><?php _e('Photo', 'heritagepress'); ?></th>
-            <?php if (count($trees_result) > 1): ?>
+            <?php if (count($trees_result) > 1 || $show_no_trees_warning || $show_unassigned_warning): ?>
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
             <?php endif; ?>
             <th scope="col" class="<?php echo esc_attr($id_column_class); ?>">
@@ -454,8 +500,6 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
                 <?php echo $name_sort_indicator; ?>
               </a>
             </th>
-            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
-            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="<?php echo esc_attr($birth_column_class); ?>">
               <a href="<?php echo esc_url($birth_sort_link); ?>">
                 <span><?php _e('Birth', 'heritagepress'); ?></span>
@@ -468,6 +512,8 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
                 <?php echo $death_sort_indicator; ?>
               </a>
             </th>
+            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="<?php echo esc_attr($change_column_class); ?>">
               <a href="<?php echo esc_url($change_sort_link); ?>">
                 <span><?php _e('Last Changed', 'heritagepress'); ?></span>
@@ -476,146 +522,152 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
             </th>
           </tr>
         </thead>
-
         <tbody id="the-list">
-          <?php if (!empty($people_results)): ?> <?php foreach ($people_results as $person): ?> <tr id="person-<?php echo esc_attr($person['ID']); ?>" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-gedcom="<?php echo esc_attr($person['gedcom']); ?>">
-                <th scope="row" class="check-column">
-                  <input type="checkbox" name="selected_people[]" value="<?php echo esc_attr($person['ID']); ?>" />
-                </th>
-                <td class="column-photo">
-                  <!-- Photo placeholder - will be enhanced with actual photo display -->
-                  <div class="person-photo-placeholder">
-                    <span class="dashicons dashicons-admin-users"></span>
-                  </div>
-                </td>
-                <?php if (count($trees_result) > 1): ?>
-                  <td class="column-tree">
+          <?php if (!empty($people_results)): ?><?php foreach ($people_results as $person): ?> <tr id="person-<?php echo esc_attr($person['ID']); ?>" data-person-id="<?php echo esc_attr($person['personID']); ?>" data-gedcom="<?php echo esc_attr($person['gedcom']); ?>">
+            <th scope="row" class="check-column">
+              <input type="checkbox" name="selected_people[]" value="<?php echo esc_attr($person['ID']); ?>" />
+            </th>
+            <td class="column-photo">
+              <!-- Photo placeholder - will be enhanced with actual photo display -->
+              <div class="person-photo-placeholder">
+                <span class="dashicons dashicons-admin-users"></span>
+              </div>
+            </td> <?php if (count($trees_result) > 1 || $show_no_trees_warning || $show_unassigned_warning): ?>
+              <td class="column-tree">
+                <?php if ($person['treename'] === '[No Tree Assigned]'): ?>
+                  <span style="color: #d63384; font-weight: bold;">
+                    <?php _e('[No Tree Assigned]', 'heritagepress'); ?>
+                  </span>
+                <?php else: ?>
+                  <span class="tree-name">
                     <?php echo esc_html($person['treename']); ?>
-                  </td>
+                  </span>
                 <?php endif; ?>
-                <td class="column-personid">
-                  <strong>
-                    <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>" class="row-title">
-                      <?php echo esc_html($person['personID']); ?>
-                    </a>
-                  </strong>
-                  <div class="row-actions">
-                    <span class="edit">
-                      <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>"><?php _e('Edit', 'heritagepress'); ?></a>
-                    </span>
-                    <span class="view">
-                      | <a href="#"
-                        onclick="alert('Person view page coming soon!'); return false;"
-                        title="<?php _e('View this person on frontend', 'heritagepress'); ?>"><?php _e('View', 'heritagepress'); ?></a>
-                    </span>
-                    <span class="delete">
-                      | <a href="#"
-                        onclick="if(confirm('<?php printf(__('Are you sure you want to delete %s? This action cannot be undone.', 'heritagepress'), esc_js($person['firstname'] . ' ' . $person['lastname'])); ?>')) { deletePerson('<?php echo esc_js($person['personID']); ?>', '<?php echo esc_js($person['gedcom']); ?>'); } return false;"
-                        title="<?php _e('Delete this person', 'heritagepress'); ?>"
-                        class="delete-link"><?php _e('Delete', 'heritagepress'); ?></a>
-                    </span>
-                  </div>
-                </td>
-                <td class="column-name">
-                  <div class="person-name">
-                    <?php
-                                                    $name_parts = array();
-                                                    if (!empty($person['prefix'])) $name_parts[] = $person['prefix'];
-                                                    if (!empty($person['firstname'])) $name_parts[] = $person['firstname'];
-                                                    if (!empty($person['lnprefix'])) $name_parts[] = $person['lnprefix'];
-                                                    if (!empty($person['lastname'])) $name_parts[] = '<strong>' . $person['lastname'] . '</strong>';
-                                                    if (!empty($person['suffix'])) $name_parts[] = $person['suffix'];
-
-                                                    echo implode(' ', $name_parts);
-
-                                                    if (!empty($person['nickname'])) {
-                                                      echo ' <em>"' . esc_html($person['nickname']) . '"</em>';
-                                                    }
-                    ?>
-                  </div>
-
-                  <div class="person-status">
-                    <?php if ($person['living'] == 1): ?>
-                      <span class="status-living"><?php _e('Living', 'heritagepress'); ?></span>
-                    <?php endif; ?>
-                    <?php if ($person['private'] == 1): ?>
-                      <span class="status-private"><?php _e('Private', 'heritagepress'); ?></span> <?php endif; ?>
-                  </div>
-                </td>
-                <td class="column-spouse">
-                  <?php
-                                                    // Get relationship information for this person
-                                                    $relationships = get_person_relationships($person['personID'], $person['gedcom'], $wpdb, $families_table, $people_table);
-
-                                                    if (!empty($relationships['spouses'])) {
-                                                      $spouse_links = array();
-                                                      foreach ($relationships['spouses'] as $spouse) {
-                                                        $spouse_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($spouse['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($spouse['name']) . '">' . esc_html($spouse['name']) . '</a>';
-                                                        $spouse_links[] = $spouse_link;
-                                                      }
-                                                      echo implode('<br>', $spouse_links);
-                                                    } else {
-                                                      echo '<span class="no-data">—</span>';
-                                                    }
-                  ?>
-                </td>
-                <td class="column-partner">
-                  <?php
-                                                    if (!empty($relationships['partners'])) {
-                                                      $partner_links = array();
-                                                      foreach ($relationships['partners'] as $partner) {
-                                                        $partner_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($partner['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($partner['name'] . ' (' . $partner['relationship_type'] . ')') . '">' . esc_html($partner['name']) . '</a>';
-                                                        if ($partner['relationship_type'] !== 'partner') {
-                                                          $partner_link .= ' <small>(' . esc_html($partner['relationship_type']) . ')</small>';
-                                                        }
-                                                        $partner_links[] = $partner_link;
-                                                      }
-                                                      echo implode('<br>', $partner_links);
-                                                    } else {
-                                                      echo '<span class="no-data">—</span>';
-                                                    }
-                  ?>
-                </td>
-                <td class="column-birth">
-                  <?php
-                                                    $birth_display = HP_Date_Utils::format_display_date($person, 'birth');
-                                                    if (!empty($birth_display)):
-                  ?>
-                    <strong><?php echo $birth_display; ?></strong>
-                  <?php endif; ?>
-
-                  <?php if (!empty($person['birthplace'])): ?>
-                    <br><small><?php echo esc_html($person['birthplace']); ?></small>
-                  <?php elseif (!empty($person['altbirthplace'])): ?>
-                    <br><small><?php echo esc_html($person['altbirthplace']); ?></small>
-                  <?php endif; ?>
-                </td>
-                <td class="column-death">
-                  <?php
-                                                    $death_display = HP_Date_Utils::format_display_date($person, 'death');
-                                                    if (!empty($death_display)):
-                  ?>
-                    <strong><?php echo $death_display; ?></strong>
-                  <?php endif; ?>
-
-                  <?php if (!empty($person['deathplace'])): ?>
-                    <br><small><?php echo esc_html($person['deathplace']); ?></small>
-                  <?php elseif (!empty($person['burialplace'])): ?>
-                    <br><small><?php echo esc_html($person['burialplace']); ?></small> <?php endif; ?>
-                </td>
-                <td class="column-changed">
-                  <?php echo esc_html($person['changedate_formatted']); ?>
-                  <?php if (!empty($person['changedby'])): ?>
-                    <br><small><?php echo esc_html($person['changedby']); ?></small>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?> <?php else: ?> <tr class="no-items">
-              <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '10' : '9'; ?>">
-                <?php _e('No people found.', 'heritagepress'); ?>
               </td>
-            </tr>
-          <?php endif; ?>
+            <?php endif; ?>
+            <td class="column-personid">
+              <strong>
+                <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>" class="row-title">
+                  <?php echo esc_html($person['personID']); ?>
+                </a>
+              </strong>
+              <div class="row-actions">
+                <span class="edit">
+                  <a href="<?php echo admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($person['personID']) . '&tree=' . urlencode($person['gedcom'])); ?>"><?php _e('Edit', 'heritagepress'); ?></a>
+                </span>
+                <span class="view">
+                  | <a href="#"
+                    onclick="alert('Person view page coming soon!'); return false;"
+                    title="<?php _e('View this person on frontend', 'heritagepress'); ?>"><?php _e('View', 'heritagepress'); ?></a>
+                </span>
+                <span class="delete">
+                  | <a href="#"
+                    onclick="if(confirm('<?php printf(__('Are you sure you want to delete %s? This action cannot be undone.', 'heritagepress'), esc_js($person['firstname'] . ' ' . $person['lastname'])); ?>')) { deletePerson('<?php echo esc_js($person['personID']); ?>', '<?php echo esc_js($person['gedcom']); ?>'); } return false;"
+                    title="<?php _e('Delete this person', 'heritagepress'); ?>"
+                    class="delete-link"><?php _e('Delete', 'heritagepress'); ?></a>
+                </span>
+              </div>
+            </td>
+            <td class="column-name">
+              <div class="person-name">
+                <?php
+                                                  $name_parts = array();
+                                                  if (!empty($person['prefix'])) $name_parts[] = $person['prefix'];
+                                                  if (!empty($person['firstname'])) $name_parts[] = $person['firstname'];
+                                                  if (!empty($person['lnprefix'])) $name_parts[] = $person['lnprefix'];
+                                                  if (!empty($person['lastname'])) $name_parts[] = '<strong>' . $person['lastname'] . '</strong>';
+                                                  if (!empty($person['suffix'])) $name_parts[] = $person['suffix'];
+
+                                                  echo implode(' ', $name_parts);
+
+                                                  if (!empty($person['nickname'])) {
+                                                    echo ' <em>"' . esc_html($person['nickname']) . '"</em>';
+                                                  }
+                ?>
+              </div>
+
+              <div class="person-status">
+                <?php if ($person['living'] == 1): ?>
+                  <span class="status-living"><?php _e('Living', 'heritagepress'); ?></span>
+                <?php endif; ?>
+                <?php if ($person['private'] == 1): ?>
+                  <span class="status-private"><?php _e('Private', 'heritagepress'); ?></span> <?php endif; ?>
+              </div>
+            </td>
+            <td class="column-birth">
+              <?php
+                                                  $birth_display = HP_Date_Utils::format_display_date($person, 'birth');
+                                                  if (!empty($birth_display)):
+              ?>
+                <strong><?php echo $birth_display; ?></strong>
+              <?php endif; ?>
+
+              <?php if (!empty($person['birthplace'])): ?>
+                <br><small><?php echo esc_html($person['birthplace']); ?></small>
+              <?php elseif (!empty($person['altbirthplace'])): ?>
+                <br><small><?php echo esc_html($person['altbirthplace']); ?></small>
+              <?php endif; ?>
+            </td>
+            <td class="column-death">
+              <?php
+                                                  $death_display = HP_Date_Utils::format_display_date($person, 'death');
+                                                  if (!empty($death_display)):
+              ?>
+                <strong><?php echo $death_display; ?></strong>
+              <?php endif; ?>
+
+              <?php if (!empty($person['deathplace'])): ?>
+                <br><small><?php echo esc_html($person['deathplace']); ?></small>
+              <?php elseif (!empty($person['burialplace'])): ?>
+                <br><small><?php echo esc_html($person['burialplace']); ?></small> <?php endif; ?>
+            </td>
+            <td class="column-spouse">
+              <?php
+                                                  // Get relationship information for this person
+                                                  $relationships = get_person_relationships($person['personID'], $person['gedcom'], $wpdb, $families_table, $people_table);
+
+                                                  if (!empty($relationships['spouses'])) {
+                                                    $spouse_links = array();
+                                                    foreach ($relationships['spouses'] as $spouse) {
+                                                      $spouse_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($spouse['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($spouse['name']) . '">' . esc_html($spouse['name']) . '</a>';
+                                                      $spouse_links[] = $spouse_link;
+                                                    }
+                                                    echo implode('<br>', $spouse_links);
+                                                  } else {
+                                                    echo '<span class="no-data">—</span>';
+                                                  }
+              ?>
+            </td>
+            <td class="column-partner">
+              <?php
+                                                  if (!empty($relationships['partners'])) {
+                                                    $partner_links = array();
+                                                    foreach ($relationships['partners'] as $partner) {
+                                                      $partner_link = '<a href="' . admin_url('admin.php?page=heritagepress-people&tab=edit&personID=' . urlencode($partner['id']) . '&tree=' . urlencode($person['gedcom'])) . '" title="' . esc_attr($partner['name'] . ' (' . $partner['relationship_type'] . ')') . '">' . esc_html($partner['name']) . '</a>';
+                                                      if ($partner['relationship_type'] !== 'partner') {
+                                                        $partner_link .= ' <small>(' . esc_html($partner['relationship_type']) . ')</small>';
+                                                      }
+                                                      $partner_links[] = $partner_link;
+                                                    }
+                                                    echo implode('<br>', $partner_links);
+                                                  } else {
+                                                    echo '<span class="no-data">—</span>';
+                                                  }
+              ?>
+            </td>
+            <td class="column-changed">
+              <?php echo esc_html($person['changedate_formatted']); ?>
+              <?php if (!empty($person['changedby'])): ?>
+                <br><small><?php echo esc_html($person['changedby']); ?></small>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?> <?php else: ?> <tr class="no-items">
+          <td class="colspanchange" colspan="<?php echo count($trees_result) > 1 ? '10' : '9'; ?>">
+            <?php _e('No people found.', 'heritagepress'); ?>
+          </td>
+        </tr>
+      <?php endif; ?>
         </tbody>
 
         <tfoot>
@@ -629,10 +681,10 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
               <th scope="col" class="manage-column column-tree"><?php _e('Tree', 'heritagepress'); ?></th>
             <?php endif; ?> <th scope="col" class="manage-column column-personid"><?php _e('Person ID', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-name"><?php _e('Name', 'heritagepress'); ?></th>
-            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
-            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-birth"><?php _e('Birth', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-death"><?php _e('Death', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-spouse"><?php _e('Spouse', 'heritagepress'); ?></th>
+            <th scope="col" class="manage-column column-partner"><?php _e('Partner', 'heritagepress'); ?></th>
             <th scope="col" class="manage-column column-changed"><?php _e('Last Changed', 'heritagepress'); ?></th>
           </tr>
         </tfoot>
@@ -711,16 +763,14 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
     deleteLinks.forEach(link => {
       link.style.opacity = '0.5';
       link.style.pointerEvents = 'none';
-    });
-
-    // Create and submit delete form
+    }); // Create and submit delete form
     var form = jQuery('<form method="post">')
       .append(jQuery('<input type="hidden" name="action" value="delete_person">'))
       .append(jQuery('<input type="hidden" name="personID" value="' + personID + '">'))
       .append(jQuery('<input type="hidden" name="gedcom" value="' + gedcom + '">'))
       .append('<?php echo wp_nonce_field('heritagepress_delete_person', '_wpnonce', true, false); ?>');
-
     jQuery('body').append(form);
     form.submit();
   }
+  });
 </script>

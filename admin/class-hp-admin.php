@@ -209,7 +209,6 @@ class HP_Admin
     // TODO: Initialize background processing when needed
     // $this->init_background_processing();
   }
-
   /**
    * Load People AJAX handlers
    */
@@ -228,6 +227,10 @@ class HP_Admin
 
     if (file_exists($ajax_dir . 'utilities-handler.php')) {
       require_once $ajax_dir . 'utilities-handler.php';
+    }
+
+    if (file_exists($ajax_dir . 'tree-assignment-handler.php')) {
+      require_once $ajax_dir . 'tree-assignment-handler.php';
     }
   }
   /**
@@ -1006,6 +1009,90 @@ class HP_Admin
   }
 
   /**
+   * AJAX handler for generating person IDs
+   */
+  public function ajax_generate_person_id()
+  {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'hp_generate_person_id')) {
+      wp_send_json_error('Security check failed');
+      return;
+    }
+
+    if (!current_user_can('edit_genealogy')) {
+      wp_send_json_error('Permission denied');
+      return;
+    }
+
+    $gedcom = sanitize_text_field($_POST['gedcom']);
+    if (empty($gedcom)) {
+      wp_send_json_error('Tree not specified');
+      return;
+    }
+
+    global $wpdb;
+    $people_table = $wpdb->prefix . 'hp_people';
+
+    // Generate a new person ID
+    $prefix = get_option('heritagepress_person_id_prefix', 'I');
+
+    // Find the highest existing ID
+    $query = $wpdb->prepare(
+      "SELECT personID FROM $people_table WHERE gedcom = %s AND personID LIKE %s ORDER BY CAST(SUBSTRING(personID, 2) AS UNSIGNED) DESC LIMIT 1",
+      $gedcom,
+      $prefix . '%'
+    );
+
+    $last_id = $wpdb->get_var($query);
+
+    if ($last_id) {
+      $number = intval(substr($last_id, 1)) + 1;
+    } else {
+      $number = 1;
+    }
+
+    $new_id = $prefix . $number;
+
+    wp_send_json_success(array('personID' => $new_id));
+  }
+
+  /**
+   * AJAX handler for checking person ID availability
+   */
+  public function ajax_check_person_id()
+  {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'hp_check_person_id')) {
+      wp_send_json_error('Security check failed');
+      return;
+    }
+
+    if (!current_user_can('edit_genealogy')) {
+      wp_send_json_error('Permission denied');
+      return;
+    }
+
+    $person_id = sanitize_text_field($_POST['personID']);
+    $gedcom = sanitize_text_field($_POST['gedcom']);
+
+    if (empty($person_id) || empty($gedcom)) {
+      wp_send_json_error('Missing parameters');
+      return;
+    }
+
+    global $wpdb;
+    $people_table = $wpdb->prefix . 'hp_people';
+
+    $exists = $wpdb->get_var($wpdb->prepare(
+      "SELECT COUNT(*) FROM $people_table WHERE personID = %s AND gedcom = %s",
+      $person_id,
+      $gedcom
+    ));
+
+    wp_send_json_success(array('available' => ($exists == 0)));
+  }
+
+  /**
    * Handle people management form submissions
    */
   private function handle_people_actions($tab)
@@ -1056,7 +1143,7 @@ class HP_Admin
     }
   }
   /**
-   * Handle adding a new person
+   * Handle adding a new person - Enhanced TNG-style
    */
   private function handle_add_person()
   {
@@ -1073,34 +1160,103 @@ class HP_Admin
     }
 
     $people_table = $wpdb->prefix . 'hp_people';
+    $branches_table = $wpdb->prefix . 'hp_branchlinks';
 
-    // Sanitize and prepare person data
+    // Handle Person ID generation if empty
+    $person_id = sanitize_text_field($_POST['personID']);
+    if (empty($person_id)) {
+      $gedcom = sanitize_text_field($_POST['gedcom']);
+      $prefix = get_option('heritagepress_person_id_prefix', 'I');
+
+      // Find the highest existing ID
+      $query = $wpdb->prepare(
+        "SELECT personID FROM $people_table WHERE gedcom = %s AND personID LIKE %s ORDER BY CAST(SUBSTRING(personID, 2) AS UNSIGNED) DESC LIMIT 1",
+        $gedcom,
+        $prefix . '%'
+      );
+
+      $last_id = $wpdb->get_var($query);
+
+      if ($last_id) {
+        $number = intval(substr($last_id, 1)) + 1;
+      } else {
+        $number = 1;
+      }
+
+      $person_id = $prefix . $number;
+    }    // Handle gender selection including "other" option
+    $sex = sanitize_text_field($_POST['sex']);
+    if (empty($sex) && !empty($_POST['other_gender'])) {
+      $sex = sanitize_text_field($_POST['other_gender']);
+    }    // Sanitize and prepare person data - Full TNG schema
     $person_data = array(
-      'personID' => sanitize_text_field($_POST['personID']),
-      'gedcom' => sanitize_text_field($_POST['gedcom']),
+      'personID' => $person_id,
+      'gedcom' => sanitize_text_field($_POST['tree1']), // TNG uses 'tree1'
       'firstname' => sanitize_text_field($_POST['firstname']),
       'lastname' => sanitize_text_field($_POST['lastname']),
-      'lnprefix' => sanitize_text_field($_POST['lnprefix']),
+      'lnprefix' => sanitize_text_field($_POST['lnprefix'] ?? ''), // TNG field
       'prefix' => sanitize_text_field($_POST['prefix']),
       'suffix' => sanitize_text_field($_POST['suffix']),
       'nickname' => sanitize_text_field($_POST['nickname']),
-      'nameorder' => sanitize_text_field($_POST['nameorder']),
-      'sex' => sanitize_text_field($_POST['sex']),
-      'birthplace' => sanitize_text_field($_POST['birthplace']),
-      'deathplace' => sanitize_text_field($_POST['deathplace']),
-      'altbirthtype' => sanitize_text_field($_POST['altbirthtype'] ?? ''),
-      'altbirthdate' => sanitize_text_field($_POST['altbirthdate'] ?? ''),
-      'altbirthplace' => sanitize_text_field($_POST['altbirthplace'] ?? ''),
-      'burialdate' => sanitize_text_field($_POST['burialdate'] ?? ''),
-      'burialplace' => sanitize_text_field($_POST['burialplace'] ?? ''),
-      'living' => isset($_POST['living']) ? 1 : 0,
-      'private' => isset($_POST['private']) ? 1 : 0,
-      'changedate' => current_time('mysql'),
-      'changedby' => wp_get_current_user()->user_login
-    );
+      'title' => sanitize_text_field($_POST['title'] ?? ''), // Now available in full schema
+      'nameorder' => sanitize_text_field($_POST['pnameorder']), // Form uses 'pnameorder', DB uses 'nameorder'
+      'sex' => $sex,
 
-    // Process dates with dual storage using the date validator
-    $date_fields = ['birthdate', 'deathdate', 'altbirthdate', 'burialdate'];
+      // Birth events - all TNG fields now available
+      'birthdate' => sanitize_text_field($_POST['birthdate'] ?? ''),
+      'birthdatetr' => '0000-00-00', // Will be calculated
+      'birthplace' => sanitize_text_field($_POST['birthplace'] ?? ''),
+      'altbirthtype' => sanitize_text_field($_POST['altbirthtype'] ?? ''), // TNG field
+      'altbirthdate' => sanitize_text_field($_POST['altbirthdate'] ?? ''), // TNG field
+      'altbirthdatetr' => '0000-00-00', // Will be calculated
+      'altbirthplace' => sanitize_text_field($_POST['altbirthplace'] ?? ''), // TNG field
+
+      // Death events - all TNG fields now available
+      'deathdate' => sanitize_text_field($_POST['deathdate'] ?? ''),
+      'deathdatetr' => '0000-00-00', // Will be calculated
+      'deathplace' => sanitize_text_field($_POST['deathplace'] ?? ''),
+      'burialdate' => sanitize_text_field($_POST['burialdate'] ?? ''), // Now available
+      'burialdatetr' => '0000-00-00', // Will be calculated
+      'burialplace' => sanitize_text_field($_POST['burialplace'] ?? ''), // Now available
+      'burialtype' => isset($_POST['burialtype']) ? '1' : '0', // TNG field
+
+      // LDS events - all TNG fields now available
+      'baptdate' => sanitize_text_field($_POST['baptdate'] ?? ''),
+      'baptdatetr' => '0000-00-00', // Will be calculated
+      'baptplace' => sanitize_text_field($_POST['baptplace'] ?? ''),
+      'confdate' => sanitize_text_field($_POST['confdate'] ?? ''),
+      'confdatetr' => '0000-00-00', // Will be calculated
+      'confplace' => sanitize_text_field($_POST['confplace'] ?? ''),
+      'initdate' => sanitize_text_field($_POST['initdate'] ?? ''),
+      'initdatetr' => '0000-00-00', // Will be calculated
+      'initplace' => sanitize_text_field($_POST['initplace'] ?? ''),
+      'endldate' => sanitize_text_field($_POST['endldate'] ?? ''),
+      'endldatetr' => '0000-00-00', // Will be calculated
+      'endlplace' => sanitize_text_field($_POST['endlplace'] ?? ''),
+
+      // Status fields
+      'living' => isset($_POST['living']) ? '1' : '0',
+      'private' => isset($_POST['private']) ? '1' : '0',
+
+      // TNG additional fields now available
+      'famc' => sanitize_text_field($_POST['famc'] ?? ''),
+      'metaphone' => '', // Will be calculated
+      'branch' => '', // Will be set separately
+      'changedate' => current_time('mysql'),
+      'changedby' => wp_get_current_user()->user_login,
+      'edituser' => '',
+      'edittime' => 0
+    );    // Handle all TNG date fields with both display and sortable versions
+    $date_fields = array(
+      'birthdate',
+      'altbirthdate',
+      'deathdate',
+      'burialdate',
+      'baptdate',
+      'confdate',
+      'initdate',
+      'endldate'
+    );
 
     foreach ($date_fields as $field) {
       if (isset($_POST[$field])) {
@@ -1112,21 +1268,88 @@ class HP_Admin
       }
     }
 
-    $result = $wpdb->insert($people_table, $person_data);
+    // Check if Person ID already exists (indicating it was locked/reserved)
+    $existing_person = $wpdb->get_row($wpdb->prepare(
+      "SELECT * FROM $people_table WHERE personID = %s AND gedcom = %s",
+      $person_id,
+      $person_data['gedcom']
+    ));
 
-    if ($result === false) {
-      add_settings_error(
-        'heritagepress_people',
-        'add_failed',
-        __('Failed to add person. Please try again.', 'heritagepress'),
-        'error'
-      );
-    } else {
+    $is_locked_record = false;
+    if ($existing_person) {
+      // Check if this is a locked/reserved record
+      if ($existing_person->firstname === '** LOCKED **' && $existing_person->lastname === '** RESERVED **') {
+        $is_locked_record = true;
+      } else {
+        // Person ID already exists with real data
+        add_settings_error(
+          'heritagepress_people',
+          'duplicate_id',
+          __('Person ID already exists. Please use a different ID.', 'heritagepress'),
+          'error'
+        );
+        return;
+      }
+    }
+
+    // Start transaction for person and branch insertion
+    $wpdb->query('START TRANSACTION');
+
+    try {
+      if ($is_locked_record) {
+        // Update the existing locked record
+        $result = $wpdb->update(
+          $people_table,
+          $person_data,
+          array(
+            'personID' => $person_id,
+            'gedcom' => $person_data['gedcom']
+          )
+        );
+        $person_wp_id = $existing_person->ID; // Use existing WordPress ID
+      } else {
+        // Insert new person
+        $result = $wpdb->insert($people_table, $person_data);
+        $person_wp_id = $wpdb->insert_id;
+      }
+
+      if ($result === false) {
+        throw new Exception($is_locked_record ? 'Failed to update locked person' : 'Failed to insert person');
+      } // Handle branch assignment
+      if (isset($_POST['branch']) && !empty($_POST['branch'])) {
+        $branch = sanitize_text_field($_POST['branch']);
+        $branch_data = array(
+          'personID' => $person_id,
+          'gedcom' => $person_data['gedcom'],
+          'branch' => $branch
+        );
+        $wpdb->insert($branches_table, $branch_data);
+      }
+
+      $wpdb->query('COMMIT');
       add_settings_error(
         'heritagepress_people',
         'person_added',
-        __('Person added successfully.', 'heritagepress'),
+        $is_locked_record ?
+          __('Person information completed successfully! The locked ID has been updated.', 'heritagepress') :
+          __('Person added successfully.', 'heritagepress'),
         'success'
+      );
+
+      // Check if "add and continue" was requested
+      if (isset($_POST['add_continue'])) {
+        // Redirect back to add form
+        wp_redirect(admin_url('admin.php?page=heritagepress-people&tab=add&added=1'));
+        exit;
+      }
+    } catch (Exception $e) {
+      $wpdb->query('ROLLBACK');
+
+      add_settings_error(
+        'heritagepress_people',
+        'add_failed',
+        __('Failed to add person. Please try again.', 'heritagepress') . ' Error: ' . $e->getMessage(),
+        'error'
       );
     }
   }
@@ -1149,13 +1372,11 @@ class HP_Admin
 
     $people_table = $wpdb->prefix . 'hp_people';
     $person_id = sanitize_text_field($_POST['personID']);
-    $gedcom = sanitize_text_field($_POST['gedcom']);
-
-    // Sanitize and prepare person data
+    $gedcom = sanitize_text_field($_POST['gedcom']);    // Sanitize and prepare person data
     $person_data = array(
       'firstname' => sanitize_text_field($_POST['firstname']),
       'lastname' => sanitize_text_field($_POST['lastname']),
-      'lnprefix' => sanitize_text_field($_POST['lnprefix']),
+      'lnprefix' => '', // Field removed from form but kept in database for compatibility
       'prefix' => sanitize_text_field($_POST['prefix']),
       'suffix' => sanitize_text_field($_POST['suffix']),
       'nickname' => sanitize_text_field($_POST['nickname']),

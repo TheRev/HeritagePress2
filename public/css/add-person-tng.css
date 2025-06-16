@@ -1,0 +1,924 @@
+/**
+ * Elegant Add Person Form CSS
+ * Modern styling matching HeritagePress design patterns
+ * Enhanced for high contrast and accessibility
+ */
+
+/* =============================================================================
+   MAIN LAYOUT AND CARD STRUCTURE
+   ============================================================================= */
+
+.add-person-section {
+  margin: 15px auto 0; /* Added auto margins for centering */
+  max-width: 1000px; /* Set reasonable maximum width to prevent excessive stretching */
+  width: 100%; /* Full width up to max-width */
+  padding: 0 20px; /* Add horizontal padding for breathing room */
+  color: #1a202c; /* Increased contrast from #2c3e50 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Add subtle container styling */
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+/* Enhanced Form Cards - Professional and Compact */
+.person-form-card {
+  background: #ffffff !important;
+  border: 1px solid #a0a5aa !important; /* Increased contrast from #c4c8cc */
+  border-radius: 4px !important; /* Smaller radius for professional look */
+  padding: 0;
+  margin-bottom: 12px !important; /* Reduced from 15px for maximum compactness */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18) !important; /* Increased contrast from 0.12 */
+  overflow: visible; /* Allow content to be visible but contained */
+  position: relative; /* Establish positioning context */
+}
+
+.person-form-card-header {
+  background: #eff1f3 !important; /* Increased contrast from #f5f6f7 */
+  border-bottom: 1px solid #bfc5cb !important; /* Increased contrast from #d5d9dd */
+  padding: 10px 12px !important; /* Further reduced from 12px 15px */
+}
+
+.person-form-card-title {
+  margin: 0;
+  font-size: 14px !important; /* Reduced from 18px */
+  font-weight: 600 !important; /* Less bold */
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Slightly reduced gap */
+}
+
+.person-form-card-title .dashicons {
+  font-size: 15px; /* Slightly reduced from 16px */
+  color: #3498db;
+}
+
+/* Add subtle hint that section is collapsible */
+.collapsible-header .person-form-card-title::after {
+  content: " (click to toggle)";
+  font-size: 11px;
+  color: #6b7280; /* Increased contrast from #9ca3af */
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.collapsible-header:hover .person-form-card-title::after {
+  opacity: 1;
+}
+
+.person-form-card-body {
+  padding: 12px !important; /* Further reduced from 15px */
+  position: relative; /* Ensure proper containment */
+  overflow: visible; /* Allow content to be visible */
+}
+
+/* =============================================================================
+   FORM SECTIONS
+   ============================================================================= */
+
+.form-section {
+  margin-bottom: 20px; /* Reduced from 35px */
+  border: 1px solid #d1d5db; /* Increased contrast from #e5e7eb */
+  border-radius: 4px; /* Smaller radius */
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); /* Increased contrast from 0.04 */
+}
+
+.form-section-title {
+  background: #f1f3f4; /* Increased contrast from #f9fafb */
+  border-bottom: 1px solid #d1d5db; /* Increased contrast from #e5e7eb */
+  padding: 10px 15px; /* Reduced from 15px 20px */
+  margin: 0;
+  font-size: 13px !important; /* Reduced from 16px */
+  font-weight: 600 !important;
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduced gap */
+  border-radius: 4px 4px 0 0; /* Smaller radius */
+}
+
+.form-section-title .dashicons {
+  font-size: 14px; /* Reduced from 18px */
+  color: #3498db;
+}
+
+/* =============================================================================
+   FORM TABLE STYLING
+   ============================================================================= */
+
+.hp-form-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.hp-form-table th {
+  text-align: left;
+  font-weight: 600 !important; /* Reduced from 700 */
+  padding: 10px !important; /* Further reduced from 12px */
+  width: 150px !important; /* Further reduced from 160px */
+  vertical-align: top;
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  font-size: 13px !important; /* Reduced from 15px */
+  background: #eff1f3; /* Increased contrast from #f5f6f7 */
+  border-bottom: 1px solid #d1d5db; /* Increased contrast from #e2e5e8 */
+}
+
+.hp-form-table td {
+  padding: 10px !important; /* Further reduced from 12px */
+  vertical-align: top;
+  border-bottom: 1px solid #d1d5db; /* Increased contrast from #e2e5e8 */
+}
+
+.hp-form-table .form-required {
+  color: #dc2626 !important; /* Professional red instead of dark red */
+  margin-left: 3px !important; /* Reduced margin */
+  font-weight: 600 !important; /* Reduced from 700 */
+  font-size: 14px !important; /* Reduced from 16px */
+}
+
+.hp-form-table .description {
+  color: #4b5563 !important; /* Increased contrast from #6b7280 */
+  font-size: 12px !important; /* Reduced from 13px */
+  font-style: italic;
+  margin-top: 6px !important; /* Reduced from 8px */
+  font-weight: 400 !important; /* Reduced from 500 */
+  line-height: 1.3 !important; /* Tighter line height */
+  display: flex;
+  align-items: flex-start;
+  gap: 4px; /* Reduced gap */
+}
+
+.description .dashicons {
+  font-size: 12px; /* Reduced from 14px */
+  color: #3498db;
+  margin-top: 1px; /* Reduced margin */
+  flex-shrink: 0;
+}
+
+/* =============================================================================
+   INPUT FIELD STYLING
+   ============================================================================= */
+
+.hp-form-table input[type="text"],
+.hp-form-table select,
+.hp-form-table textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px !important; /* Reduced from 14px */
+  border: 1px solid #a0a5aa !important; /* Increased contrast from #c4c8cc */
+  border-radius: 3px !important; /* Smaller radius */
+  padding: 5px 7px !important; /* Further reduced from 6px 8px */
+  background-color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  line-height: 1.2 !important; /* Even tighter line height */
+}
+
+.hp-form-table input[type="text"]:focus,
+.hp-form-table select:focus,
+.hp-form-table textarea:focus {
+  border-color: #3498db !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1) !important; /* Reduced shadow */
+  outline: none !important;
+}
+
+/* Field sizes - further reduced for maximum compactness */
+.small-text {
+  width: 70px !important;
+} /* Further reduced from 80px */
+.medium-text {
+  width: 130px !important;
+} /* Further reduced from 150px */
+.large-text {
+  width: 220px !important;
+} /* Further reduced from 250px */
+
+/* Event-specific field sizes */
+.datefield {
+  width: 90px !important;
+} /* Further reduced from 100px */
+.placefield {
+  width: 200px !important;
+} /* Further reduced from 220px */
+
+/* =============================================================================
+   ADDITIONAL NAMES GRID - 2x2 Layout
+   ============================================================================= */
+
+.additional-names-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Exactly 2 columns */
+  grid-template-rows: auto auto; /* Exactly 2 rows */
+  gap: 15px 20px; /* Vertical gap, Horizontal gap */
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 500px; /* Prevent it from getting too wide */
+}
+
+/* Ensure specific order: Prefix, Title, Suffix, Nickname */
+.additional-names-grid .name-field:nth-child(1) {
+  grid-area: 1 / 1;
+} /* Prefix - Row 1, Col 1 */
+.additional-names-grid .name-field:nth-child(2) {
+  grid-area: 1 / 2;
+} /* Title - Row 1, Col 2 */
+.additional-names-grid .name-field:nth-child(3) {
+  grid-area: 2 / 1;
+} /* Suffix - Row 2, Col 1 */
+.additional-names-grid .name-field:nth-child(4) {
+  grid-area: 2 / 2;
+} /* Nickname - Row 2, Col 2 */
+
+.name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.name-field label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  margin-bottom: 3px;
+}
+
+.name-field input {
+  font-size: 13px !important;
+  padding: 5px 7px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border: 1px solid #a0a5aa !important; /* Increased contrast from #c4c8cc */
+  border-radius: 3px !important;
+}
+
+/* Responsive design for additional names grid - maintain 2x2 grid */
+@media (max-width: 768px) {
+  .additional-names-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 10px;
+  }
+
+  /* Reset grid areas for mobile - just stack them */
+  .additional-names-grid .name-field:nth-child(1) {
+    grid-area: auto;
+  }
+  .additional-names-grid .name-field:nth-child(2) {
+    grid-area: auto;
+  }
+  .additional-names-grid .name-field:nth-child(3) {
+    grid-area: auto;
+  }
+  .additional-names-grid .name-field:nth-child(4) {
+    grid-area: auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .additional-names-grid {
+    grid-template-columns: 1fr 1fr; /* Always 2 columns on tablet and desktop */
+    grid-template-rows: auto auto; /* Always 2 rows */
+    gap: 15px 20px;
+  }
+
+  /* Maintain the 2x2 grid order on all larger screens */
+  .additional-names-grid .name-field:nth-child(1) {
+    grid-area: 1 / 1;
+  } /* Prefix - Row 1, Col 1 */
+  .additional-names-grid .name-field:nth-child(2) {
+    grid-area: 1 / 2;
+  } /* Title - Row 1, Col 2 */
+  .additional-names-grid .name-field:nth-child(3) {
+    grid-area: 2 / 1;
+  } /* Suffix - Row 2, Col 1 */
+  .additional-names-grid .name-field:nth-child(4) {
+    grid-area: 2 / 2;
+  } /* Nickname - Row 2, Col 2 */
+}
+
+/* =============================================================================
+   EVENT FIELDS STYLING
+   ============================================================================= */
+
+.events-help {
+  background: #f1f3f4; /* Increased contrast from #f9fafb */
+  border: 1px solid #d1d5db; /* Increased contrast from #e5e7eb */
+  border-radius: 3px; /* Smaller radius */
+  padding: 10px; /* Reduced from 15px */
+  margin: 12px; /* Reduced from 20px */
+  margin-bottom: 0;
+}
+
+.events-table {
+  margin: 12px; /* Reduced from 20px */
+}
+
+.event-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Reduced from 20px */
+  align-items: flex-start;
+}
+
+.date-field,
+.place-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px; /* Reduced from 5px */
+}
+
+.date-field label,
+.place-field label {
+  font-size: 12px !important; /* Reduced from 13px */
+  font-weight: 600 !important;
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+}
+
+.burial-options {
+  margin-top: 6px; /* Reduced from 10px */
+}
+
+/* =============================================================================
+   PERSON ID CONTROLS
+   ============================================================================= */
+
+.person-id-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* Reduced from 10px */
+  align-items: center;
+  margin-bottom: 8px; /* Reduced from 10px */
+}
+
+.person-id-controls input[type="text"] {
+  flex: 0 0 auto;
+}
+
+.person-id-controls .button {
+  flex: 0 0 auto;
+}
+
+/* =============================================================================
+   PRIVACY OPTIONS
+   ============================================================================= */
+
+.privacy-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Reduced from 20px */
+  margin-bottom: 8px; /* Reduced from 10px */
+}
+
+.checkbox-field {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important; /* Reduced from 8px */
+  font-size: 13px !important; /* Reduced from 14px */
+  font-weight: 500 !important;
+  cursor: pointer;
+  color: #374151 !important; /* Professional gray */
+  margin: 0 !important;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 16px !important; /* Reduced from 18px */
+  height: 16px !important;
+  margin: 0 !important;
+  border: 1px solid #d1d5db !important; /* Softer border */
+  border-radius: 2px !important; /* Smaller radius */
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+}
+
+.checkbox-field input[type="checkbox"]:checked {
+  background: #3498db !important;
+  border-color: #2980b9 !important;
+}
+
+/* =============================================================================
+   PROFESSIONAL BUTTON STYLING
+   ============================================================================= */
+
+.button-primary,
+input[type="submit"].button-primary {
+  background: #3498db !important;
+  border: 1px solid #2980b9 !important; /* Thinner border */
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-radius: 2px !important; /* Even smaller radius for more professional look */
+  padding: 5px 10px !important; /* Further reduced from 6px 12px */
+  font-size: 12px !important; /* Further reduced from 13px */
+  transition: all 0.15s ease !important; /* Faster transition */
+  box-shadow: 0 1px 2px rgba(52, 152, 219, 0.15) !important; /* Subtle shadow */
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.button-primary:hover,
+input[type="submit"].button-primary:hover {
+  background: #2980b9 !important;
+  border-color: #1f618d !important;
+  transform: none !important; /* Remove transform for professional look */
+  box-shadow: 0 1px 3px rgba(52, 152, 219, 0.2) !important; /* Subtle hover shadow */
+}
+
+.button,
+input[type="submit"]:not(.button-primary),
+input[type="button"] {
+  background: #ffffff !important;
+  border: 1px solid #9ca3af !important; /* Increased contrast from #d1d5db */
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  font-weight: 500 !important;
+  border-radius: 2px !important; /* Even smaller radius for more professional look */
+  padding: 5px 10px !important; /* Further reduced from 6px 12px */
+  font-size: 12px !important; /* Further reduced from 13px */
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+}
+
+.button:hover,
+input[type="submit"]:not(.button-primary):hover,
+input[type="button"]:hover {
+  background: #f1f3f4 !important; /* Increased contrast from #f9fafb */
+  border-color: #6b7280 !important; /* Increased contrast from #9ca3af */
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  transform: none !important; /* Remove transform */
+  box-shadow: 0 1px 2px rgba(107, 114, 128, 0.15) !important; /* Increased contrast from 0.1 */
+}
+
+.button-large {
+  padding: 6px 14px !important; /* Reduced from 8px 16px */
+  font-size: 13px !important; /* Reduced from 14px */
+}
+
+/* =============================================================================
+   SUBMIT SECTION
+   ============================================================================= */
+
+.submit-section {
+  border: 1px solid #d1d5db !important; /* Increased contrast from #e5e7eb */
+  background: #ffffff !important;
+}
+
+.submit-section .form-section-title {
+  background: #e5e7eb !important; /* Increased contrast from #f3f4f6 */
+  color: #1f2937 !important; /* Increased contrast from #374151 */
+  border-bottom: 1px solid #d1d5db !important; /* Increased contrast from #e5e7eb */
+}
+
+.submit-info {
+  padding: 12px; /* Reduced from 20px */
+  background: #f1f3f4; /* Increased contrast from #f9fafb */
+  border-bottom: 1px solid #e5e7eb; /* Increased contrast from #f3f4f6 */
+}
+
+.submit-info .description {
+  margin: 0 !important;
+  font-size: 13px !important; /* Reduced from 14px */
+  color: #4b5563 !important; /* Increased contrast from #6b7280 */
+  font-weight: 500 !important; /* Reduced from 600 */
+}
+
+.submit-buttons {
+  padding: 15px; /* Reduced from 25px */
+  display: flex;
+  gap: 8px; /* Reduced from 15px */
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* =============================================================================
+   VALIDATION AND ERROR STYLING
+   ============================================================================= */
+
+.validation-error-notice {
+  background: #fee2e2 !important; /* Increased contrast from #fef2f2 */
+  border: 1px solid #f87171 !important; /* Increased contrast from #fca5a5 */
+  border-radius: 4px !important; /* Smaller radius */
+  padding: 12px !important; /* Reduced from 15px */
+  margin-bottom: 15px !important; /* Reduced from 20px */
+  color: #b91c1c !important; /* Increased contrast from #dc2626 */
+}
+
+.validation-error-notice p {
+  margin: 0 0 8px !important; /* Reduced from 10px */
+  font-weight: 600 !important;
+  font-size: 13px !important; /* Smaller text */
+}
+
+.validation-error-notice ul {
+  margin: 0 !important;
+  padding-left: 18px !important; /* Reduced from 20px */
+}
+
+.validation-error-notice li {
+  margin-bottom: 3px !important; /* Reduced from 5px */
+  font-size: 12px !important; /* Smaller text */
+}
+
+.field-focused {
+  background: rgba(52, 152, 219, 0.03) !important; /* Much more subtle */
+}
+
+.date-valid .datefield {
+  border-color: #10b981 !important; /* Professional green */
+  background: #f0fdf4 !important; /* Very subtle green background */
+}
+
+.date-invalid .datefield {
+  border-color: #f87171 !important; /* Professional red */
+  background: #fef2f2 !important; /* Very subtle red background */
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .add-person-section {
+    padding: 0 15px; /* Reduced padding on mobile */
+    margin: 10px auto 0; /* Reduced top margin on mobile */
+  }
+
+  .person-form-card-body {
+    padding: 10px !important; /* More compact on mobile */
+  }
+
+  .hp-form-table th {
+    width: auto !important;
+    display: block;
+    padding: 8px 10px 4px !important; /* More compact mobile padding */
+  }
+
+  .hp-form-table td {
+    display: block;
+    padding: 4px 10px 12px !important; /* More compact mobile padding */
+  }
+
+  .event-fields {
+    flex-direction: column;
+    gap: 10px; /* Reduced gap on mobile */
+  }
+  .additional-names-grid {
+    grid-template-columns: 1fr !important; /* Force single column on mobile */
+    gap: 10px !important;
+  }
+
+  /* Reset grid areas for mobile - just stack them */
+  .additional-names-grid .name-field:nth-child(1) {
+    grid-area: auto !important;
+  }
+  .additional-names-grid .name-field:nth-child(2) {
+    grid-area: auto !important;
+  }
+  .additional-names-grid .name-field:nth-child(3) {
+    grid-area: auto !important;
+  }
+  .additional-names-grid .name-field:nth-child(4) {
+    grid-area: auto !important;
+  }
+
+  .submit-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .large-text,
+  .medium-text {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .add-person-section {
+    max-width: 800px; /* Even narrower on tablets */
+    padding: 0 18px; /* Adjust padding for tablets */
+  }
+  .additional-names-grid {
+    grid-template-columns: 1fr 1fr !important; /* Maintain 2x2 grid on tablets */
+    grid-template-rows: auto auto !important;
+    gap: 15px 20px !important;
+  }
+
+  /* Maintain the 2x2 grid order on tablets */
+  .additional-names-grid .name-field:nth-child(1) {
+    grid-area: 1 / 1 !important;
+  } /* Prefix - Row 1, Col 1 */
+  .additional-names-grid .name-field:nth-child(2) {
+    grid-area: 1 / 2 !important;
+  } /* Title - Row 1, Col 2 */
+  .additional-names-grid .name-field:nth-child(3) {
+    grid-area: 2 / 1 !important;
+  } /* Suffix - Row 2, Col 1 */
+  .additional-names-grid .name-field:nth-child(4) {
+    grid-area: 2 / 2 !important;
+  } /* Nickname - Row 2, Col 2 */
+
+  .event-fields {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .add-person-section {
+    max-width: 900px; /* Slightly narrower on medium screens */
+  }
+}
+
+@media (max-width: 640px) {
+  .person-id-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .person-id-controls input,
+  .person-id-controls .button {
+    width: 100%;
+  }
+
+  .privacy-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Very wide screens - prevent excessive stretching */
+@media (min-width: 1400px) {
+  .add-person-section {
+    max-width: 1100px; /* Slightly wider on very large screens but still constrained */
+  }
+}
+
+/* Special styling for the person ID generation area */
+.add-person-section.tng-style #checkmsg span {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Ensure proper spacing in event rows */
+.add-person-section.tng-style .normal tr td:first-child {
+  text-align: right;
+  padding-right: 8px;
+  font-weight: normal;
+  white-space: nowrap;
+  width: 100px;
+}
+
+/* TNG Event Row Icon Styles */
+.smallicon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  text-decoration: none;
+  margin: 0 2px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.admin-find-icon {
+  background-image: url("../images/find.gif");
+}
+
+.admin-temp-icon {
+  background-image: url("../images/temple.gif");
+}
+
+.admin-more-on-icon {
+  background-image: url("../images/more-on.gif");
+}
+
+.admin-more-off-icon {
+  background-image: url("../images/more-off.gif");
+}
+
+.admin-note-on-icon {
+  background-image: url("../images/note-on.gif");
+}
+
+.admin-note-off-icon {
+  background-image: url("../images/note-off.gif");
+}
+
+.admin-cite-on-icon {
+  background-image: url("../images/cite-on.gif");
+}
+
+.admin-cite-off-icon {
+  background-image: url("../images/cite-off.gif");
+}
+
+.admin-edit-icon {
+  background-image: url("../images/edit.gif");
+}
+
+.admin-delete-icon {
+  background-image: url("../images/delete.gif");
+}
+
+/* Action button containers */
+.action-btn {
+  width: 20px;
+  text-align: center;
+  padding: 2px;
+}
+
+/* Alternative birth type dropdown */
+.lightback {
+  background-color: #f9f9f9;
+  border: 1px solid #cccccc;
+}
+
+.pad5 {
+  padding: 5px;
+}
+
+.rounded4 {
+  border-radius: 4px;
+}
+
+/* Event field styling */
+.shortfield {
+  width: 140px;
+}
+
+.verylongfield {
+  width: 270px;
+}
+
+.veryshortfield {
+  width: 80px;
+}
+
+.longfield {
+  width: 200px;
+}
+
+.datefield {
+  width: 140px;
+}
+
+.placefield {
+  width: 270px;
+}
+
+/* TNG Toggle Styles */
+.subhead {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #374151; /* Professional gray instead of black */
+}
+
+.togglehead {
+  text-decoration: none;
+  color: #374151; /* Professional gray instead of black */
+}
+
+.togglehead:hover {
+  text-decoration: underline;
+}
+
+.th-indent {
+  margin-left: 5px;
+}
+
+.tsh-indent {
+  margin-left: 25px;
+}
+
+.topmarginsmall {
+  margin-top: 5px;
+}
+
+.topbuffer {
+  margin-top: 10px;
+}
+
+/* Form validation styles */
+input.error {
+  background-color: #ffeeee;
+  border-color: #ff6666;
+}
+
+input.valid {
+  background-color: #eeffee;
+  border-color: #66ff66;
+}
+
+/* ID check message styles */
+.id-check-message {
+  font-size: 10px;
+  margin-left: 5px;
+}
+
+.id-available {
+  color: green;
+}
+
+.id-unavailable {
+  color: red;
+}
+
+/* Override WordPress admin styles that might interfere */
+.add-person-section.tng-style table {
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.add-person-section.tng-style table td {
+  border: none;
+  padding: 3px 5px;
+}
+
+.add-person-section.tng-style input {
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.add-person-section.tng-style select {
+  box-shadow: none;
+  border-radius: 0;
+  height: auto;
+}
+
+/* Hide elements when JavaScript toggles them */
+.hidden {
+  display: none !important;
+}
+
+/* Link styling within the form */
+.add-person-section.tng-style a {
+  color: #0066cc;
+  text-decoration: none;
+  font-size: 11px;
+}
+
+.add-person-section.tng-style a:hover {
+  text-decoration: underline;
+}
+
+/* =============================================================================
+   COLLAPSIBLE SECTION STYLING
+   ============================================================================= */
+
+/* Collapsible section header with toggle */
+.collapsible-header {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  border-radius: 4px !important; /* Match card styling */
+}
+
+.collapsible-header:hover {
+  background: #f0f1f2 !important; /* Slightly darker on hover for better feedback */
+}
+
+.collapsible-header .toggle-icon {
+  margin-left: auto; /* Push to right */
+  transition: transform 0.2s ease;
+  font-size: 16px;
+  color: #6b7280;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.collapsible-header.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Collapsible content */
+.collapsible-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* LDS Events specific styling */
+.lds-events-card .person-form-card-header {
+  position: relative;
+}
+
+.lds-events-card .collapsible-content {
+  max-height: 1000px; /* Large enough for content */
+}
+
+.lds-events-card .collapsible-content.collapsed {
+  max-height: 0;
+  padding: 0 !important;
+}
+
+.lds-events-card .collapsible-content.collapsed .person-form-card-body {
+  padding: 0 !important;
+}
