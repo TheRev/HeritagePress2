@@ -46,9 +46,9 @@ class HP_Admin
    */
   private function load_date_system()
   {
-    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-parser.php';
-    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-validator.php';
-    require_once plugin_dir_path(__FILE__) . '../includes/class-hp-date-config.php';
+    require_once plugin_dir_path(__FILE__) . '../includes/helpers/class-hp-date-parser.php';
+    require_once plugin_dir_path(__FILE__) . '../includes/helpers/class-hp-date-validator.php';
+    require_once plugin_dir_path(__FILE__) . '../includes/helpers/class-hp-date-config.php';
 
     // Initialize date validation and configuration
     HP_Date_Validator::init();

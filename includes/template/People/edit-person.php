@@ -349,18 +349,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
         </h3>
       </div>
       <div class="person-form-card-body collapsible-content">
-        <table class="hp-form-table">
-          <tr>
+        <table class="hp-form-table">          <tr>
             <th><label for="notes"><?php _e('Notes:', 'heritagepress'); ?></label></th>
             <td>
-              <textarea id="notes" name="notes" class="large-text" rows="4"><?php echo esc_textarea($person_data['notes']); ?></textarea>
+              <textarea id="notes" name="notes" class="large-text" rows="4"><?php echo esc_textarea(isset($person_data['notes']) ? $person_data['notes'] : ''); ?></textarea>
               <p class="description"><?php _e('Additional notes and information about this person', 'heritagepress'); ?></p>
             </td>
           </tr>
           <tr>
             <th><label for="gedcom_id"><?php _e('GEDCOM ID:', 'heritagepress'); ?></label></th>
             <td>
-              <input type="text" id="gedcom_id" name="gedcom_id" class="large-text" value="<?php echo esc_attr($person_data['gedcom_id']); ?>" readonly>
+              <input type="text" id="gedcom_id" name="gedcom_id" class="large-text" value="<?php echo esc_attr(isset($person_data['gedcom_id']) ? $person_data['gedcom_id'] : $person_data['personID']); ?>" readonly>
               <p class="description"><?php _e('Original GEDCOM identifier (read-only)', 'heritagepress'); ?></p>
             </td>
           </tr>

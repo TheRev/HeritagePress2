@@ -15,7 +15,7 @@ class HP_Database_Manager
 {
   const DB_VERSION = '3.0.0'; // New version with complete genealogy structure
   const STRUCTURE_LOCK = 'LOCKED_2025_06_14'; // Structure protection lock
-  
+
   private $wpdb;
   private $table_prefix;
   private $charset_collate;
@@ -45,17 +45,34 @@ class HP_Database_Manager
     global $wpdb;
     return $wpdb->prefix . 'hp_' . $table;
   }
-
   /**
-   * Check if all required tables exist
-   */
-  public function tables_exist()
+   * Check if all required tables exist using modular classes
+   */  public function tables_exist()
   {
-    $required_tables = $this->get_required_table_list();
+    // Include all modular table classes
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-core.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-events.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-media.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-places.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-dna.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-research.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-system.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-utility.php');
 
-    foreach ($required_tables as $table) {
-      $table_name = self::get_table_name($table);
-      if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
+    // Create instances of each modular class and check tables
+    $modules = [
+      'Core' => new HP_Database_Core(),
+      'Events' => new HP_Database_Events(),
+      'Media' => new HP_Database_Media(),
+      'Places' => new HP_Database_Places(),
+      'DNA' => new HP_Database_DNA(),
+      'Research' => new HP_Database_Research(),
+      'System' => new HP_Database_System(),
+      'Utility' => new HP_Database_Utility()
+    ];
+
+    foreach ($modules as $module_name => $module) {
+      if (!$module->tables_exist()) {
         return false;
       }
     }
@@ -107,36 +124,126 @@ class HP_Database_Manager
     ];
   }
   /**
-   * Create all genealogy database tables from genealogy SQL dump
+   * Create all genealogy database tables using modular classes
    */
   public function create_tables()
   {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
     $this->wpdb->hide_errors();
-
     try {
-      // First try to use the SQL dump method
-      if ($this->create_tables_from_sql_dump()) {
-        error_log('HeritagePress: Successfully created tables from genealogy SQL dump');
+      // Include all modular table classes
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-core.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-events.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-media.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-places.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-dna.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-research.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-system.php');
+      require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-utility.php'); // Create instances of each modular class
+      $modules = [
+        'Core' => new HP_Database_Core(),
+        'Events' => new HP_Database_Events(),
+        'Media' => new HP_Database_Media(),
+        'Places' => new HP_Database_Places(),
+        'DNA' => new HP_Database_DNA(),
+        'Research' => new HP_Database_Research(),
+        'System' => new HP_Database_System(),
+        'Utility' => new HP_Database_Utility()
+      ];
+
+      $created_modules = 0;
+      $total_modules = count($modules);
+
+      // Create tables for each module
+      foreach ($modules as $module_name => $module) {
+        error_log("HeritagePress: Creating {$module_name} tables...");
+        if ($module->create_tables()) {
+          $created_modules++;
+          error_log("HeritagePress: {$module_name} tables created successfully");
+        } else {
+          error_log("HeritagePress: Failed to create {$module_name} tables");
+        }
+      }
+
+      // Create import jobs table for background processing
+      $this->create_import_jobs_table();
+
+      if ($created_modules === $total_modules) {
+        error_log("HeritagePress: All {$total_modules} table modules created successfully");
         update_option('heritagepress_db_version', self::DB_VERSION);
         $this->wpdb->show_errors();
         return true;
+      } else {
+        error_log("HeritagePress: Only {$created_modules} of {$total_modules} modules created successfully");
+        $this->wpdb->show_errors();
+        return false;
       }
-
-      // Fallback to hardcoded structures if SQL dump is not available
-      error_log('HeritagePress: SQL dump not available, using hardcoded table structures');
-      $this->create_tables_hardcoded();
-
-      update_option('heritagepress_db_version', self::DB_VERSION);
-      $this->wpdb->show_errors();
-      return true;
     } catch (Exception $e) {
       $this->wpdb->show_errors();
       error_log('HeritagePress: Database creation error: ' . $e->getMessage());
       return false;
     }
   }
+  /**
+   * Create import jobs table for background processing
+   */
+  private function create_import_jobs_table()
+  {
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    $table_name = $this->table_prefix . 'import_jobs';
+
+    $sql = "CREATE TABLE `$table_name` (
+      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `job_id` varchar(36) NOT NULL,
+      `user_id` bigint(20) unsigned NOT NULL,
+      `file_path` text NOT NULL,
+      `import_options` longtext,
+      `status` varchar(20) NOT NULL DEFAULT 'queued',
+      `progress` decimal(5,2) NOT NULL DEFAULT 0.00,
+      `total_records` int(11) NOT NULL DEFAULT 0,
+      `processed_records` int(11) NOT NULL DEFAULT 0,
+      `errors` longtext,
+      `log` longtext,
+      `created_at` datetime NOT NULL,
+      `updated_at` datetime NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `job_id` (`job_id`),
+      KEY `user_id` (`user_id`),
+      KEY `status` (`status`),
+      KEY `created_at` (`created_at`)
+    ) {$this->charset_collate};";
+
+    $result = dbDelta($sql);
+
+    if ($this->wpdb->last_error) {
+      error_log("HeritagePress: Failed to create import_jobs table: " . $this->wpdb->last_error);
+      return false;
+    }
+
+    error_log("HeritagePress: Import jobs table created successfully");
+    return true;
+  }
+
+  /**
+   * Ensure import jobs table exists (for backward compatibility)
+   */
+  public function ensure_import_jobs_table()
+  {
+    $table_name = $this->table_prefix . 'import_jobs';
+
+    // Check if table exists
+    $table_exists = $this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name;
+
+    if (!$table_exists) {
+      error_log("HeritagePress: Import jobs table missing, creating...");
+      return $this->create_import_jobs_table();
+    }
+
+    return true;
+  }
+
   /**
    * Create tables from genealogy SQL dump file
    */
@@ -147,11 +254,6 @@ class HP_Database_Manager
       HERITAGEPRESS_PLUGIN_DIR . 'genealogy.sql',
       ABSPATH . 'BACKUPS/genealogy.sql',
       ABSPATH . '../BACKUPS/genealogy.sql'
-      // Legacy migration paths (commented out):
-      // HERITAGEPRESS_PLUGIN_DIR . '../../../BACKUPS/tng.sql',
-      // HERITAGEPRESS_PLUGIN_DIR . 'tng.sql',
-      // ABSPATH . 'BACKUPS/tng.sql',
-      // ABSPATH . '../BACKUPS/tng.sql'
     ];
 
     $sql_file = null;
@@ -175,7 +277,7 @@ class HP_Database_Manager
     }
 
     // Extract CREATE TABLE statements
-    preg_match_all('/CREATE TABLE `tng_(\w+)` \((.*?)\) ENGINE=/s', $sql_content, $matches, PREG_SET_ORDER);
+    preg_match_all('/CREATE TABLE `hp_(\w+)` \((.*?)\) ENGINE=/s', $sql_content, $matches, PREG_SET_ORDER);
 
     if (empty($matches)) {
       error_log('HeritagePress: No CREATE TABLE statements found in SQL dump');
@@ -365,19 +467,109 @@ class HP_Database_Manager
       // For now, I'll show the pattern and include a few key ones
     ];
   }
-
   /**
-   * Drop all HeritagePress tables
+   * Drop all HeritagePress tables using modular classes
    */
   public function drop_tables()
-  {
-    $tables = $this->get_required_table_list();
+  {    // Include all modular table classes
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-core.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-events.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-media.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-places.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-dna.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-research.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-system.php');
+    require_once(HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-utility.php');
 
-    foreach ($tables as $table) {
-      $hp_table = $this->table_prefix . $table;
-      $this->wpdb->query("DROP TABLE IF EXISTS `$hp_table`");
+    // Create instances of each modular class and drop tables
+    $modules = [
+      'Utility' => new HP_Database_Utility(),      // Drop utility tables first
+      'System' => new HP_Database_System(),        // Then system tables
+      'Research' => new HP_Database_Research(),    // Then research tables
+      'DNA' => new HP_Database_DNA(),              // Then DNA tables
+      'Places' => new HP_Database_Places(),        // Then places tables
+      'Media' => new HP_Database_Media(),          // Then media tables
+      'Events' => new HP_Database_Events(),        // Then events tables
+      'Core' => new HP_Database_Core()             // Finally core tables (reverse order)
+    ];
+
+    foreach ($modules as $module_name => $module) {
+      error_log("HeritagePress: Dropping {$module_name} tables...");
+      $module->drop_tables();
     }
 
     delete_option('heritagepress_db_version');
+    error_log('HeritagePress: All tables dropped successfully');
+  }
+
+  /**
+   * Get counts of records in all HeritagePress tables
+   *
+   * @return array Table counts indexed by table name
+   */
+  public function get_table_counts()
+  {
+    $counts = array();
+    $tables = $this->get_table_names();
+
+    foreach ($tables as $table_name) {
+      $table = $this->wpdb->prefix . 'hp_' . $table_name;
+      $sql = "SELECT COUNT(*) FROM $table";
+      $count = $this->wpdb->get_var($sql);
+      $counts[$table_name] = intval($count);
+    }
+
+    return $counts;
+  }
+
+  /**
+   * Get statistics about tables including creation date and last modified
+   *
+   * @return array Table statistics
+   */
+  public function get_table_stats()
+  {
+    $stats = array();
+    $tables = $this->get_table_names();
+
+    foreach ($tables as $table_name) {
+      $table = $this->wpdb->prefix . 'hp_' . $table_name;
+      $sql = "SHOW TABLE STATUS LIKE '$table'";
+      $result = $this->wpdb->get_row($sql);
+
+      if ($result) {
+        $stats[$table_name] = array(
+          'rows' => $result->Rows,
+          'data_length' => $result->Data_length,
+          'index_length' => $result->Index_length,
+          'created' => $result->Create_time,
+          'updated' => $result->Update_time,
+        );
+      }
+    }
+
+    return $stats;
+  }
+
+  /**
+   * Get list of all HeritagePress table names without prefix
+   *
+   * @return array Table names without prefix
+   */
+  private function get_table_names()
+  {
+    return array(
+      'people',
+      'families',
+      'events',
+      'places',
+      'sources',
+      'citations',
+      'media',
+      'repositories',
+      'notes',
+      'trees',
+      'settings',
+    );
   }
 }

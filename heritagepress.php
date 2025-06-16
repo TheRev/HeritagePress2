@@ -77,9 +77,9 @@ class HeritagePress
    * Include required files
    */  private function includes()
   {    // Core database and model classes
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-database-manager.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-person-manager.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-family-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-person-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-family-manager.php';
 
     // Load the modular GEDCOM importer controller first
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
