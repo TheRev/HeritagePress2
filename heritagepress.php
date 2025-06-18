@@ -111,6 +111,11 @@ class HeritagePress
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-association-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-branch-manager.php';
 
+    // Handlers
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/interface-hp-handler.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-ajax-handler.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-form-handler.php';
+
     // Controllers
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/interface-hp-controller.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-base-controller.php';
@@ -118,25 +123,17 @@ class HeritagePress
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-trees-controller.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-import-controller.php';
 
-    // Handlers
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-ajax-handler.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-form-handler.php';
-
-    // Public facing functionality
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'public/class-hp-public.php';
-
     // GEDCOM functionality
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-adapter.php';
 
-    // Helper classes
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/helpers/class-hp-date-utils.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/helpers/class-hp-string-utils.php';
-
     // Load admin functionality if in admin area
     if (is_admin()) {
-      $this->load_admin();
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
     }
+
+    // Public facing functionality
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'public/class-hp-public.php';
   }
   /**
    * Initialize plugin
