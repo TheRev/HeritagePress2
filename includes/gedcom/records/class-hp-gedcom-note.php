@@ -94,11 +94,10 @@ class HP_GEDCOM_Note extends HP_GEDCOM_Record_Base
    *
    * @param array $note_data Note data
    * @return string|false Note ID or false on failure
-   */
-  private function insert_note($note_data)
+   */  private function insert_note($note_data)
   {
     // Ensure we have a table name with proper prefix
-    $notes_table = $this->db->prefix . 'hp_notes';
+    $notes_table = $this->db->prefix . 'hp_xnotes';
 
     // Check if note already exists
     $existing_note = $this->db->get_row(
@@ -182,10 +181,8 @@ class HP_GEDCOM_Note extends HP_GEDCOM_Record_Base
     // Check if this is a reference to an existing note
     if (isset($note_record['pointer']) && !empty($note_record['pointer'])) {
       $note_data['gedcom_id'] = $note_record['pointer'];
-    }
-
-    // Ensure we have a table name with proper prefix
-    $notes_table = $this->db->prefix . 'hp_notes';
+    }    // Ensure we have a table name with proper prefix
+    $notes_table = $this->db->prefix . 'hp_xnotes';
 
     // Insert the note
     $result = $this->db->insert($notes_table, $note_data);

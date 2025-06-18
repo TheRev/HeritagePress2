@@ -1,0 +1,263 @@
+0 HEAD
+1 SOUR Family_Tree_Maker
+2 VERS 16.0.685.0
+2 NAME Family Tree Maker
+2 CORP Ancestry.com
+3 ADDR 360 W 4800 N
+4 CONT Provo, UT 84604
+4 CONT USA
+3 PHON 801-705-7000
+3 WWW www.ancestry.com
+1 DEST ANSTFILE
+1 DATE 17 JUN 2025
+2 TIME 14:30:00
+1 SUBM @SUBM1@
+1 FILE comprehensive_test.ged
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @SUBM1@ SUBM
+1 NAME Test User
+1 ADDR 123 Main Street
+2 CONT Anytown, State 12345
+2 CONT USA
+1 PHON +1 555-123-4567
+1 EMAIL test@example.com
+0 @I1@ INDI
+1 NAME John William /Smith/
+2 GIVN John William
+2 SURN Smith
+2 _MARNM Smith
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 1920
+2 PLAC Chicago, Cook County, Illinois, USA
+2 SOUR @S1@
+3 PAGE Page 123
+3 DATA
+4 DATE 15 MAR 1920
+4 TEXT Birth recorded in city records
+1 DEAT
+2 DATE 22 NOV 1995
+2 PLAC Phoenix, Maricopa County, Arizona, USA
+2 CAUS Heart failure
+1 BURI
+2 DATE 25 NOV 1995
+2 PLAC Greenwood Cemetery, Phoenix, Arizona
+1 RESI
+2 DATE FROM 1950 TO 1995
+2 PLAC Phoenix, Arizona
+1 OCCU Carpenter
+1 RELI Lutheran
+1 FAMS @F1@
+1 FAMC @F2@
+1 NOTE @N1@
+1 OBJE @M1@
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I2@ INDI
+1 NAME Mary Elizabeth /Johnson/
+2 GIVN Mary Elizabeth
+2 SURN Johnson
+2 _MARNM Smith
+1 SEX F
+1 BIRT
+2 DATE 8 JUL 1925
+2 PLAC Minneapolis, Hennepin County, Minnesota, USA
+2 SOUR @S2@
+1 DEAT
+2 DATE 3 FEB 2001
+2 PLAC Phoenix, Maricopa County, Arizona, USA
+1 BURI
+2 DATE 6 FEB 2001
+2 PLAC Greenwood Cemetery, Phoenix, Arizona
+1 MARR
+2 DATE 14 FEB 1948
+2 PLAC Chicago, Cook County, Illinois, USA
+2 SOUR @S1@
+1 FAMS @F1@
+1 FAMC @F3@
+1 NOTE @N2@
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I3@ INDI
+1 NAME Robert John /Smith/
+2 GIVN Robert John
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 20 APR 1950
+2 PLAC Chicago, Cook County, Illinois, USA
+1 FAMC @F1@
+1 FAMS @F4@
+1 OCCU Engineer
+1 _LIVING Y
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I4@ INDI
+1 NAME Susan Marie /Smith/
+2 GIVN Susan Marie
+2 SURN Smith
+1 SEX F
+1 BIRT
+2 DATE 12 SEP 1952
+2 PLAC Phoenix, Maricopa County, Arizona, USA
+1 FAMC @F1@
+1 _LIVING Y
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I5@ INDI
+1 NAME William /Smith/
+2 GIVN William
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE ABT 1890
+2 PLAC Illinois, USA
+1 DEAT
+2 DATE BET 1960 AND 1970
+2 PLAC Chicago, Illinois
+1 FAMS @F2@
+1 OCCU Blacksmith
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I6@ INDI
+1 NAME Anna /Wilson/
+2 GIVN Anna
+2 SURN Wilson
+2 _MARNM Smith
+1 SEX F
+1 BIRT
+2 DATE 1895
+2 PLAC Wisconsin, USA
+1 DEAT
+2 DATE 1965
+2 PLAC Chicago, Illinois
+1 FAMS @F2@
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @I7@ INDI
+1 NAME Linda /Brown/
+2 GIVN Linda
+2 SURN Brown
+2 _MARNM Smith
+1 SEX F
+1 BIRT
+2 DATE 15 JAN 1955
+2 PLAC Denver, Colorado, USA
+1 FAMS @F4@
+1 _LIVING Y
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 CHIL @I4@
+1 MARR
+2 DATE 14 FEB 1948
+2 PLAC Chicago, Cook County, Illinois, USA
+2 SOUR @S1@
+3 PAGE Marriage License #1234
+1 NOTE @N3@
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @F2@ FAM
+1 HUSB @I5@
+1 WIFE @I6@
+1 CHIL @I1@
+1 MARR
+2 DATE 1915
+2 PLAC Chicago, Illinois
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @F3@ FAM
+1 WIFE @I2@
+1 NOTE Family of origin for Mary Elizabeth Johnson
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @F4@ FAM
+1 HUSB @I3@
+1 WIFE @I7@
+1 MARR
+2 DATE 20 JUN 1980
+2 PLAC Denver, Colorado, USA
+1 _LIVING Y
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @S1@ SOUR
+1 TITL Chicago City Records
+1 AUTH Chicago Department of Records
+1 PUBL Chicago, Illinois
+2 DATE 1850-2000
+1 REPO @R1@
+1 NOTE Contains birth, death, and marriage records
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @S2@ SOUR
+1 TITL Minnesota State Birth Records
+1 AUTH Minnesota State Archives
+1 PUBL St. Paul, Minnesota
+1 REPO @R2@
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @R1@ REPO
+1 NAME Chicago Public Library
+1 ADDR 400 S State St
+2 CONT Chicago, IL 60605
+2 CONT USA
+1 PHON (312) 747-4300
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @R2@ REPO
+1 NAME Minnesota Historical Society
+1 ADDR 345 Kellogg Blvd W
+2 CONT St. Paul, MN 55102
+2 CONT USA
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @N1@ NOTE
+1 CONT John Smith was known for his excellent carpentry work.
+1 CONT He built many homes in the Chicago area before moving to Arizona.
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @N2@ NOTE
+1 CONT Mary was an excellent cook and was known throughout the neighborhood
+1 CONT for her apple pies. She was very active in the church community.
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @N3@ NOTE
+1 CONT John and Mary were married on Valentine's Day 1948 in a small ceremony
+1 CONT at St. Mary's Church in Chicago. The wedding was attended by close
+1 CONT family and friends.
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 @M1@ OBJE
+1 FILE photos/john_smith_portrait.jpg
+2 FORM jpeg
+2 TITL Portrait of John Smith, circa 1950
+1 NOTE This photograph was taken when John was about 30 years old,
+2 CONT shortly after moving to Phoenix.
+1 CHAN
+2 DATE 17 JUN 2025
+3 TIME 14:30:00
+0 TRLR

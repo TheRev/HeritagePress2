@@ -17,6 +17,12 @@ if (isset($_GET['job_id']) && !empty($_GET['job_id'])) {
 
 global $wpdb;
 
+// Display admin notices for import actions
+if (class_exists('HP_Import_Controller')) {
+  $import_controller = new HP_Import_Controller();
+  $import_controller->display_notices();
+}
+
 // Get available trees
 $trees_table = $wpdb->prefix . 'hp_trees';
 $trees_query = "SELECT gedcom, treename FROM $trees_table ORDER BY treename";
@@ -47,147 +53,273 @@ $max_file_size = wp_max_upload_size();
 $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
 ?>
 
+<style>
+  /* Ensure critical styles are loaded */
+  .form-card {
+    background: #fff;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+
+  .form-card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-bottom: 1px solid #e8eaed;
+    padding: 25px 30px;
+    position: relative;
+  }
+
+  .form-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0073aa 0%, #005a87 50%, #0073aa 100%);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+  }
+
+  .header-icon .dashicons {
+    color: #fff;
+    font-size: 24px;
+  }
+
+  .form-card-body {
+    padding: 30px;
+  }
+
+  .selection-button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 35px;
+  }
+
+  .selection-btn {
+    width: 100%;
+    min-height: 140px;
+    background: #ffffff;
+    border: 2px solid #e8eaed;
+    border-radius: 12px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .selection-btn:hover {
+    border-color: #0073aa;
+    background: #f8fbfd;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 115, 170, 0.15);
+    align-items: center;
+    text-align: center;
+    height: 100%;
+  }
+
+  .btn-icon {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+  }
+
+  .computer-btn .btn-icon {
+    background: linear-gradient(135deg, #00a32a 0%, #008a20 100%);
+  }
+
+  .server-btn .btn-icon {
+    background: linear-gradient(135deg, #135e96 0%, #0f4c7c 100%);
+  }
+
+  .btn-icon .dashicons {
+    color: #fff;
+    font-size: 22px;
+  }
+
+  .btn-content h4 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+  }
+
+  .btn-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #646970;
+  }
+</style>
+
 <!-- Import Tab Content (Based on admin_dataimport.php) -->
 <div class="import-section">
   <div class="section-header">
     <h2 class="section-title"><?php _e('Import GEDCOM Data', 'heritagepress'); ?></h2>
     <p class="section-description"><?php _e('Add or replace genealogy data in your HeritagePress database from GEDCOM files', 'heritagepress'); ?></p>
   </div>
-
-  <form action="<?php echo admin_url('admin.php?page=heritagepress-import&tab=import'); ?>" method="post" name="form1" enctype="multipart/form-data" id="gedcom-import-form">
-    <?php wp_nonce_field('heritagepress_import', '_wpnonce'); ?>
-    <input type="hidden" name="action" value="import_gedcom" />
-
-    <!-- File Selection Card -->
+  <form action="<?php echo admin_url('admin.php?page=heritagepress-import'); ?>" method="post" name="form1" enctype="multipart/form-data" id="gedcom-import-form">
+    <?php wp_nonce_field('hp_import_gedcom', '_wpnonce'); ?>
+    <input type="hidden" name="action" value="import_gedcom" /><!-- File Selection Card -->
     <div class="form-card file-selection-card">
       <div class="form-card-header">
-        <h3 class="form-card-title">
-          <span class="dashicons dashicons-groups"></span>
-          <?php _e('Select GEDCOM File', 'heritagepress'); ?>
-        </h3>
-        <p class="form-card-subtitle"><?php _e('Choose your genealogy data file for import - supports files up to 500MB with chunked upload', 'heritagepress'); ?></p>
+        <div class="header-content">
+          <div class="header-icon">
+            <span class="dashicons dashicons-media-document"></span>
+          </div>
+          <div class="header-text">
+            <h3 class="form-card-title"><?php _e('Select GEDCOM File', 'heritagepress'); ?></h3>
+            <p class="form-card-subtitle"><?php _e('Choose your genealogy data file for import', 'heritagepress'); ?></p>
+          </div>
+        </div>
       </div>
 
       <div class="form-card-body">
-        <!-- Upload Method Selection -->
-        <div class="upload-method-tabs" role="tablist" aria-label="<?php esc_attr_e('Upload Method Selection', 'heritagepress'); ?>">
-          <div class="upload-area-header">
-            <h4><?php _e('Upload GEDCOM File', 'heritagepress'); ?></h4>
+        <!-- Elegant Two Button File Selection -->
+        <div class="file-selection-container">
+          <div class="selection-intro">
+            <p><?php _e('Select the source of your GEDCOM file:', 'heritagepress'); ?></p>
           </div>
 
-          <div class="method-tab-buttons">
-            <button type="button" class="method-tab-button active" data-method="computer"
-              role="tab" aria-selected="true" aria-controls="computer-upload-tab"
-              id="computer-tab-button" tabindex="0">
-              <span class="dashicons dashicons-upload" aria-hidden="true"></span>
-              <span class="tab-label"><?php _e('Upload from Computer', 'heritagepress'); ?></span>
-            </button> <button type="button" class="method-tab-button" data-method="server"
-              role="tab" aria-selected="false" aria-controls="server-upload-tab"
-              id="server-tab-button" tabindex="-1">
-              <span class="dashicons dashicons-database" aria-hidden="true"></span>
-              <span class="tab-label"><?php _e('Select from Server', 'heritagepress'); ?></span>
-            </button>
-          </div>
-
-          <!-- Hidden radio inputs for form submission -->
-          <input type="radio" name="upload_method" value="computer" id="method-computer" checked style="display: none;" aria-hidden="true">
-          <input type="radio" name="upload_method" value="server" id="method-server" style="display: none;" aria-hidden="true">
-        </div> <!-- Computer Upload Tab Content -->
-        <div class="upload-tab-content" id="computer-upload-tab" role="tabpanel"
-          aria-labelledby="computer-tab-button" tabindex="0">
-          <div class="upload-section">
-            <div class="file-input-section">
-              <div class="file-input-wrapper">
-                <input type="file" name="gedcom_file" id="gedcom-file-input" accept=".ged,.gedcom"
-                  class="file-input" aria-describedby="upload-requirements" style="display: none;">
-                <div class="selected-file-info" id="selected-file-info" style="display: none;">
-                  <span class="dashicons dashicons-media-document" aria-hidden="true"></span>
-                  <span class="file-name" id="selected-file-name"></span>
-                  <span class="file-size" id="selected-file-size"></span>
-                </div>
-              </div>
-
-              <div class="upload-requirements" id="upload-requirements">
-                <div class="requirement-item">
-                  <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                  <?php printf(__('Maximum file size: %dMB', 'heritagepress'), 500); ?>
-                </div>
-                <div class="requirement-item">
-                  <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                  <?php _e('Supported formats: .ged, .gedcom', 'heritagepress'); ?>
-                </div>
-                <div class="requirement-item">
-                  <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                  <?php _e('Chunked upload for large files', 'heritagepress'); ?>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upload Progress -->
-            <div id="upload-progress" class="upload-progress" style="display: none;">
-              <div class="progress-header">
-                <h4 class="progress-title">
-                  <span class="dashicons dashicons-upload"></span>
-                  <?php _e('Uploading GEDCOM file...', 'heritagepress'); ?>
-                </h4>
-                <button type="button" id="cancel-upload" class="button button-link-delete">
-                  <span class="dashicons dashicons-dismiss"></span>
-                  <?php _e('Cancel', 'heritagepress'); ?>
-                </button>
-              </div>
-              <div class="progress-container">
-                <div class="progress-bar">
-                  <div id="upload-progress-bar" class="progress-fill"></div>
-                </div>
-                <div class="progress-stats">
-                  <span id="upload-progress-text" class="progress-percentage">0%</span>
-                  <span id="upload-speed" class="progress-speed"><?php _e('Calculating...', 'heritagepress'); ?></span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Selected File Info -->
-            <div id="selected-file-info" class="selected-file-display" style="display: none;">
-              <div class="file-info-card">
-                <div class="file-icon-large">
-                  <span class="dashicons dashicons-media-document"></span>
-                </div>
-                <div class="file-details">
-                  <h4 id="file-name" class="file-name"></h4>
-                  <div id="file-stats" class="file-stats"></div>
-                  <div class="file-status">
-                    <span class="dashicons dashicons-yes-alt"></span>
-                    <?php _e('Ready for import', 'heritagepress'); ?>
+          <div class="selection-button-group">
+            <!-- From Computer Button -->
+            <div class="selection-option">
+              <button type="button" id="computer-button" class="selection-btn computer-btn" aria-describedby="computer-desc">
+                <div class="btn-background-pattern"></div>
+                <div class="btn-content-wrapper">
+                  <div class="btn-icon">
+                    <span class="dashicons dashicons-desktop"></span>
+                  </div>
+                  <div class="btn-content">
+                    <h4><?php _e('From Computer', 'heritagepress'); ?></h4>
+                    <p id="computer-desc"><?php _e('Browse and upload from your device', 'heritagepress'); ?></p>
+                  </div>
+                  <div class="btn-arrow">
+                    <span class="dashicons dashicons-arrow-right-alt2"></span>
                   </div>
                 </div>
-                <div class="file-actions">
-                  <button type="button" id="remove-file" class="button button-link-delete">
-                    <span class="dashicons dashicons-trash"></span>
-                    <?php _e('Remove', 'heritagepress'); ?>
-                  </button>
+              </button>
+              <input type="file" name="gedcom_file" id="gedcom-file-input" accept=".ged,.gedcom" style="display: none;">
+            </div>
+
+            <!-- From Server Button -->
+            <div class="selection-option">
+              <button type="button" id="server-button" class="selection-btn server-btn" aria-describedby="server-desc">
+                <div class="btn-background-pattern"></div>
+                <div class="btn-content-wrapper">
+                  <div class="btn-icon">
+                    <span class="dashicons dashicons-cloud"></span>
+                  </div>
+                  <div class="btn-content">
+                    <h4><?php _e('From Server', 'heritagepress'); ?></h4>
+                    <p id="server-desc"><?php _e('Choose from previously uploaded files', 'heritagepress'); ?></p>
+                  </div>
+                  <div class="btn-arrow">
+                    <span class="dashicons dashicons-arrow-right-alt2"></span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- File Requirements with Better Design -->
+          <div class="file-requirements">
+            <div class="requirements-header">
+              <span class="dashicons dashicons-info"></span>
+              <span><?php _e('File Requirements', 'heritagepress'); ?></span>
+            </div>
+            <div class="requirements-grid">
+              <div class="requirement-item">
+                <div class="requirement-icon">
+                  <span class="dashicons dashicons-yes-alt"></span>
+                </div>
+                <div class="requirement-text">
+                  <strong><?php _e('Size:', 'heritagepress'); ?></strong>
+                  <?php printf(__('Up to %dMB', 'heritagepress'), 500); ?>
+                </div>
+              </div>
+              <div class="requirement-item">
+                <div class="requirement-icon">
+                  <span class="dashicons dashicons-yes-alt"></span>
+                </div>
+                <div class="requirement-text">
+                  <strong><?php _e('Format:', 'heritagepress'); ?></strong>
+                  <?php _e('.ged, .gedcom', 'heritagepress'); ?>
+                </div>
+              </div>
+              <div class="requirement-item">
+                <div class="requirement-icon">
+                  <span class="dashicons dashicons-yes-alt"></span>
+                </div>
+                <div class="requirement-text">
+                  <strong><?php _e('Upload:', 'heritagepress'); ?></strong>
+                  <?php _e('Chunked for large files', 'heritagepress'); ?>
                 </div>
               </div>
             </div>
-
-            <input type="hidden" id="uploaded-file-path" name="uploaded_file_path">
           </div>
-        </div> <!-- Server File Selection Tab Content -->
-        <div class="upload-tab-content" id="server-upload-tab" style="display: none;"
-          role="tabpanel" aria-labelledby="server-tab-button" tabindex="0">
-          <div class="upload-section">
-            <div class="upload-area-header">
-              <h4><?php _e('Select Server File', 'heritagepress'); ?></h4>
-              <p class="upload-area-description"><?php _e('Choose from previously uploaded GEDCOM files on the server', 'heritagepress'); ?></p>
-            </div>
+        </div>
 
-            <div class="server-file-selector">
-              <div class="server-file-dropdown">
-                <label for="server-file-select" class="server-file-label">
-                  <span class="dashicons dashicons-portfolio" aria-hidden="true"></span>
-                  <?php _e('Available GEDCOM Files', 'heritagepress'); ?>
-                </label>
-                <div class="server-file-controls"> <select name="server_file" id="server-file-select" class="server-file-select"
-                    aria-describedby="server-file-help">
+        <!-- Selected File Display -->
+        <div id="selected-file-display" class="selected-file-display" style="display: none;">
+          <div class="file-info-card">
+            <div class="file-icon-large">
+              <span class="dashicons dashicons-media-document"></span>
+            </div>
+            <div class="file-details">
+              <h4 id="file-name" class="file-name"></h4>
+              <div id="file-stats" class="file-stats"></div>
+              <div class="file-status">
+                <span class="dashicons dashicons-yes-alt"></span>
+                <span id="file-status-text"><?php _e('Ready for import', 'heritagepress'); ?></span>
+              </div>
+            </div>
+            <div class="file-actions">
+              <button type="button" id="remove-file" class="button button-link-delete">
+                <span class="dashicons dashicons-trash"></span>
+                <?php _e('Remove', 'heritagepress'); ?>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Server File Selection Modal (Hidden by default) -->
+        <div id="server-file-modal" class="server-modal" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3><?php _e('Select Server File', 'heritagepress'); ?></h3>
+              <button type="button" id="close-modal" class="modal-close">
+                <span class="dashicons dashicons-no-alt"></span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="server-file-selector">
+                <label for="server-file-select"><?php _e('Available GEDCOM Files:', 'heritagepress'); ?></label>
+                <div class="server-controls">
+                  <select name="server_file" id="server-file-select" class="server-file-select">
                     <option value=""><?php _e('Select a file from server...', 'heritagepress'); ?></option>
                     <?php
                     // Get server files
@@ -213,38 +345,63 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
                     ?>
                   </select>
                   <button type="button" id="refresh-server-files" class="button button-secondary">
-                    <span class="dashicons dashicons-update-alt" aria-hidden="true"></span>
-                    <?php _e('Refresh List', 'heritagepress'); ?>
+                    <span class="dashicons dashicons-update-alt"></span>
+                    <?php _e('Refresh', 'heritagepress'); ?>
                   </button>
-                </div>
-                <div id="server-file-help" class="sr-only">
-                  <?php _e('Select a GEDCOM file that has been previously uploaded to the server. Files are listed with their size and last modified date.', 'heritagepress'); ?>
-                </div>
-              </div>
-
-              <!-- Server File Info Display -->
-              <div id="server-file-info" class="selected-file-display" style="display: none;">
-                <div class="file-info-card server-file-card">
-                  <div class="file-icon-large">
-                    <span class="dashicons dashicons-database"></span>
-                  </div>
-                  <div class="file-details">
-                    <h4 id="server-file-name" class="file-name"></h4>
-                    <div id="server-file-stats" class="file-stats"></div>
-                    <div class="file-status">
-                      <span class="dashicons dashicons-yes-alt"></span>
-                      <?php _e('Server file selected', 'heritagepress'); ?>
-                    </div>
-                  </div>
-                  <div class="file-source">
-                    <span class="dashicons dashicons-admin-site"></span>
-                    <?php _e('From Server', 'heritagepress'); ?>
-                  </div>
                 </div>
               </div>
             </div>
+            <div class="modal-footer">
+              <button type="button" id="select-server-file" class="button button-primary" disabled>
+                <?php _e('Select File', 'heritagepress'); ?>
+              </button>
+              <button type="button" id="cancel-server-selection" class="button button-secondary">
+                <?php _e('Cancel', 'heritagepress'); ?>
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- Add Tree Modal -->
+        <div id="add-tree-modal" class="server-modal" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3><?php _e('Add New Tree', 'heritagepress'); ?></h3>
+              <button type="button" id="close-add-tree-modal" class="modal-close">
+                <span class="dashicons dashicons-no-alt"></span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="add-tree-form">
+                <div class="form-field">
+                  <label for="new-tree-id"><?php _e('Tree ID:', 'heritagepress'); ?> <span class="required">*</span></label>
+                  <input type="text" id="new-tree-id" name="tree_id" required
+                    pattern="[a-zA-Z0-9]+"
+                    title="<?php _e('Tree ID must be alphanumeric (letters and numbers only)', 'heritagepress'); ?>"
+                    placeholder="<?php _e('e.g., smith2024', 'heritagepress'); ?>" />
+                  <p class="description"><?php _e('Unique identifier for this tree (alphanumeric only)', 'heritagepress'); ?></p>
+                </div>
+                <div class="form-field">
+                  <label for="new-tree-name"><?php _e('Tree Name:', 'heritagepress'); ?> <span class="required">*</span></label>
+                  <input type="text" id="new-tree-name" name="tree_name" required
+                    placeholder="<?php _e('e.g., Smith Family Tree', 'heritagepress'); ?>" />
+                  <p class="description"><?php _e('Display name for this tree', 'heritagepress'); ?></p>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="create-tree-btn" class="button button-primary">
+                <?php _e('Create Tree', 'heritagepress'); ?>
+              </button>
+              <button type="button" id="cancel-add-tree" class="button button-secondary">
+                <?php _e('Cancel', 'heritagepress'); ?>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" id="uploaded-file-path" name="uploaded_file_path">
+        <input type="hidden" id="selected-upload-method" name="upload_method" value="">
       </div>
     </div>
 
@@ -285,7 +442,7 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
                   <option value="<?php echo esc_attr($tree['gedcom']); ?>"><?php echo esc_html($tree['treename']); ?></option>
                 <?php endforeach; ?>
               </select>
-              <input type="button" name="newtree" value="<?php _e('Add New Tree', 'heritagepress'); ?>" class="button button-secondary" onclick="alert('Add new tree functionality not yet implemented');" />
+              <input type="button" name="newtree" value="<?php _e('Add New Tree', 'heritagepress'); ?>" class="button button-secondary" onclick="if(typeof openAddTreeModal === 'function'){ openAddTreeModal(); } else { alert('Function not loaded yet. Please try again.'); console.error('openAddTreeModal function not found'); }" />
             </td>
           </tr>
           <tr id="destbranch" style="display:none">
@@ -497,6 +654,121 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
       <?php endif; ?>
     </div>
   </div>
-
   <iframe id="results" height="0" width="0" frameborder="0" name="results" onload="iframeLoaded();" style="display:none;"></iframe>
 </div>
+
+<script>
+  // Ensure basic button functionality works
+  document.addEventListener('DOMContentLoaded', function() {
+    // From Computer button functionality
+    var computerBtn = document.getElementById('computer-button');
+    var fileInput = document.getElementById('gedcom-file-input');
+    var uploadMethodInput = document.getElementById('selected-upload-method');
+
+    if (computerBtn && fileInput) {
+      computerBtn.addEventListener('click', function() {
+        fileInput.click();
+        if (uploadMethodInput) {
+          uploadMethodInput.value = 'computer';
+        }
+      });
+    }
+
+    // From Server button functionality
+    var serverBtn = document.getElementById('server-button');
+    var serverModal = document.getElementById('server-file-modal');
+
+    if (serverBtn && serverModal) {
+      serverBtn.addEventListener('click', function() {
+        serverModal.style.display = 'flex';
+        if (uploadMethodInput) {
+          uploadMethodInput.value = 'server';
+        }
+      });
+    }
+
+    // Close modal functionality
+    var closeButtons = document.querySelectorAll('#close-modal, #cancel-server-selection');
+    closeButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (serverModal) {
+          serverModal.style.display = 'none';
+        }
+      });
+    });
+
+    // File input change handler
+    if (fileInput) {
+      fileInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          var fileName = document.getElementById('file-name');
+          var fileStats = document.getElementById('file-stats');
+          var fileDisplay = document.getElementById('selected-file-display');
+          var uploadedPath = document.getElementById('uploaded-file-path');
+
+          if (fileName) fileName.textContent = file.name;
+          if (fileStats) {
+            var sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileStats.innerHTML = '<span class="file-size">' + sizeMB + ' MB</span> • <span class="file-source">Computer file</span>';
+          }
+          if (fileDisplay) fileDisplay.style.display = 'block';
+          if (uploadedPath) uploadedPath.value = file.name;
+        }
+      });
+    }
+  });
+
+  // Fallback function for Add New Tree modal
+  if (typeof openAddTreeModal === 'undefined') {
+    console.log("Defining fallback openAddTreeModal function");
+    window.openAddTreeModal = function() {
+      console.log("Fallback openAddTreeModal called");
+      var modal = document.getElementById('add-tree-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        // Focus on first input
+        setTimeout(function() {
+          var firstInput = document.getElementById('new-tree-id');
+          if (firstInput) firstInput.focus();
+        }, 100);
+      } else {
+        alert('Modal element not found. Please refresh the page and try again.');
+      }
+    };
+    window.closeAddTreeModal = function() {
+      var modal = document.getElementById('add-tree-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    // Add event listeners for modal close buttons
+    document.addEventListener('DOMContentLoaded', function() {
+      var closeBtn = document.getElementById('close-add-tree-modal');
+      var cancelBtn = document.getElementById('cancel-add-tree');
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          window.closeAddTreeModal();
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          window.closeAddTreeModal();
+        });
+      }
+
+      // Close on overlay click
+      var modal = document.getElementById('add-tree-modal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            window.closeAddTreeModal();
+          }
+        });
+      }
+    });
+  }
+</script>

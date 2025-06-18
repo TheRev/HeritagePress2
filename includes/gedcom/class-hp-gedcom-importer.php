@@ -110,7 +110,6 @@ class HP_GEDCOM_Importer_Controller
    * Utilities instance
    */
   private $utils;
-
   /**
    * Constructor
    *
@@ -129,6 +128,18 @@ class HP_GEDCOM_Importer_Controller
       'privacy_year_threshold' => 100,
       'batch_size' => 100,
       'memory_limit' => '256M',
+      // Import options
+      'del' => 'match',
+      'allevents' => '',
+      'eventsonly' => '',
+      'ucaselast' => 0,
+      'norecalc' => 0,
+      'neweronly' => 0,
+      'importmedia' => 0,
+      'importlatlong' => 0,
+      'offsetchoice' => 'auto',
+      'useroffset' => 0,
+      'branch' => ''
     ));
 
     $this->init_stats();
@@ -165,59 +176,64 @@ class HP_GEDCOM_Importer_Controller
     $this->program_detector = new HP_GEDCOM_Program_Detector();
     $this->utils = new HP_GEDCOM_Utils();
   }
-
   /**
-   * Main import method
+   * Main import method - using enhanced parser
    *
    * @return array Import results
    */
   public function import()
   {
-    global $wpdb;
-
     $this->log_import_start();
 
     try {
-      // Validate the GEDCOM file first
-      if (!$this->validator->validate_gedcom_file($this->file_path)) {
-        $this->log_import_error('Invalid GEDCOM file');
-        return array('success' => false, 'errors' => $this->errors);
+      // Basic file validation
+      if (!file_exists($this->file_path)) {
+        throw new Exception('GEDCOM file does not exist: ' . $this->file_path);
       }
 
-      // Detect the source program
-      $program_info = $this->program_detector->detect_program($this->file_path);
-      $this->stats['source_program'] = $program_info['name'];
-      $this->stats['source_version'] = $program_info['version'];
+      if (!is_readable($this->file_path)) {
+        throw new Exception('GEDCOM file is not readable: ' . $this->file_path);
+      }
 
-      // Begin transaction
-      $wpdb->query('START TRANSACTION');
+      if (filesize($this->file_path) === 0) {
+        throw new Exception('GEDCOM file is empty');
+      }      // Load the enhanced parser
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-enhanced-gedcom-parser.php';
 
-      // Parse and process the file
-      $result = $this->parser->parse_file($this->file_path, $this->tree_id, $this->options);
+      // Create parser instance with options
+      $parser = new HP_Enhanced_GEDCOM_Parser($this->file_path, $this->tree_id, $this->options);
 
-      if (!$result['success']) {
-        $wpdb->query('ROLLBACK');
+      // Parse the file
+      $result = $parser->parse();
+
+      if ($result['success']) {
+        // Update our stats with parser results
+        $this->stats = array_merge($this->stats, $result['stats']);
+        $this->warnings = array_merge($this->warnings, $result['warnings']);
+
+        $this->log_import_success();
+        return array(
+          'success' => true,
+          'stats' => $this->stats,
+          'warnings' => $this->warnings
+        );
+      } else {
+        $this->errors = array_merge($this->errors, $result['errors']);
         $this->log_import_error($result['error']);
-        return array('success' => false, 'errors' => $this->errors);
+        return array(
+          'success' => false,
+          'error' => $result['error'],
+          'errors' => $this->errors
+        );
       }
-
-      // Update statistics
-      $this->stats = array_merge($this->stats, $result['stats']);
-
-      // Commit transaction
-      $wpdb->query('COMMIT');
-
-      $this->log_import_success();
-      return array(
-        'success' => true,
-        'stats' => $this->stats,
-        'warnings' => $this->warnings,
-        'program_info' => $program_info
-      );
     } catch (Exception $e) {
-      $wpdb->query('ROLLBACK');
+      $this->add_error($e->getMessage());
       $this->log_import_error($e->getMessage());
-      return array('success' => false, 'errors' => $this->errors);
+      return array(
+        'success' => false,
+        'error' => $e->getMessage(),
+        'errors' => $this->errors
+      );
     }
   }
 

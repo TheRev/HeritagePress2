@@ -1,0 +1,17 @@
+0 HEAD
+1 SOUR HeritagePress Test
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+
+0 @N1@ NOTE
+1 CONT This is a test note for the HeritagePress GEDCOM parser.
+1 CONT It should be properly imported into the hp_xnotes table.
+
+0 @I1@ INDI
+1 NAME John /Doe/
+1 SEX M
+1 NOTE @N1@
+
+0 TRLR

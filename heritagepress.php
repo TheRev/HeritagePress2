@@ -12,6 +12,22 @@
  * Requires at least: 5.0
  * Tested up to: 6.5
  * Requires PHP: 7.4
+ *
+ * DEVELOPMENT NOTE:
+ * =================
+ * This plugin uses a CONTROLLER-based architecture.
+ *
+ * DO NOT create class-hp-admin.php or similar monolithic admin files!
+ *
+ * Instead, use the existing controller pattern:
+ * - admin/controllers/class-hp-{feature}-controller.php (handles logic)
+ * - admin/handlers/class-hp-{feature}-handler.php (handles forms/AJAX)
+ * - admin/views/{feature}/ (contains templates)
+ *
+ * Example: For GEDCOM import functionality, use:
+ * - admin/controllers/class-hp-import-controller.php
+ * - admin/handlers/class-hp-import-handler.php
+ * - admin/views/import/
  */
 
 // Prevent direct access
@@ -80,6 +96,8 @@ class HeritagePress
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/database/class-hp-database-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-person-manager.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-family-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-association-manager.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/core/class-hp-branch-manager.php';
 
     // Load the modular GEDCOM importer controller first
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
@@ -87,12 +105,20 @@ class HeritagePress
     // Load the simple adapter that provides the HP_GEDCOM_Importer class
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-adapter.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/hp-gedcom-settings.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/hp-gedcom-ajax.php';
-
-    // Admin interface
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/hp-gedcom-ajax.php';    // Admin interface - using controller system
     if (is_admin()) {
-      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
-    }    // Public interface
+      // Load controller base class
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-base-controller.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/interface-hp-controller.php';
+
+      // Load controllers
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-import-controller.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-people-controller.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-trees-controller.php';
+
+      // Add admin menu
+      add_action('admin_menu', array($this, 'add_admin_menu'));
+    } // Public interface
     if (!is_admin() || wp_doing_ajax()) {
       require_once HERITAGEPRESS_PLUGIN_DIR . 'public/class-hp-public.php';
     }    // Old reference to adapter removed since we load it earlier
@@ -106,10 +132,8 @@ class HeritagePress
     add_action('admin_init', array($this, 'suppress_minor_warnings'), 1);
 
     // Initialize database manager
-    $this->database = new HP_Database_Manager();    // Initialize admin
-    if (is_admin() || wp_doing_ajax()) {
-      new HP_Admin();
-    }
+    $this->database = new HP_Database_Manager();    // Initialize admin (already initialized in load_dependencies)
+    // Controllers are now managed by HP_Admin_New class
 
     // Initialize public
     if (!is_admin() || wp_doing_ajax()) {
@@ -192,6 +216,84 @@ class HeritagePress
         return false; // Let PHP handle other errors normally
       });
     }
+  }
+  /**
+   * Add admin menu using controller system
+   */
+  public function add_admin_menu()
+  {
+    add_menu_page(
+      __('HeritagePress', 'heritagepress'),
+      __('HeritagePress', 'heritagepress'),
+      'manage_options',
+      'heritagepress',
+      array($this, 'admin_page'),
+      'dashicons-groups',
+      30
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Import', 'heritagepress'),
+      __('Import', 'heritagepress'),
+      'manage_options',
+      'heritagepress-import',
+      array($this, 'import_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('People', 'heritagepress'),
+      __('People', 'heritagepress'),
+      'manage_options',
+      'heritagepress-people',
+      array($this, 'people_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Trees', 'heritagepress'),
+      __('Trees', 'heritagepress'),
+      'manage_options',
+      'heritagepress-trees',
+      array($this, 'trees_page')
+    );
+  }
+
+  /**
+   * Main admin page
+   */
+  public function admin_page()
+  {
+    $controller = new HP_People_Controller();
+    $controller->display_page();
+  }
+
+  /**
+   * Import page
+   */
+  public function import_page()
+  {
+    $controller = new HP_Import_Controller();
+    $controller->display_page();
+  }
+
+  /**
+   * People page
+   */
+  public function people_page()
+  {
+    $controller = new HP_People_Controller();
+    $controller->display_page();
+  }
+
+  /**
+   * Trees page
+   */
+  public function trees_page()
+  {
+    $controller = new HP_Trees_Controller();
+    $controller->display_page();
   }
 }
 

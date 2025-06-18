@@ -196,7 +196,7 @@ class HP_GEDCOM_Repository extends HP_GEDCOM_Record_Base
       return;
     }
 
-    $notes_table = $this->db->prefix . 'hp_notes';
+    $notes_table = $this->db->prefix . 'hp_xnotes';
 
     foreach ($record['children'] as $child) {
       if (isset($child['tag']) && $child['tag'] === 'NOTE' && !empty($child['value'])) {

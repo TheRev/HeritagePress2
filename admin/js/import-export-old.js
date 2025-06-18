@@ -1,0 +1,1645 @@
+/**
+ * Import/Export JavaScript functionality
+ * Based on TNG admin.js and dataimport.js
+ */
+
+// Global variables for import/export
+var opening = "Opening file...";
+var uploading = "Uploading...";
+var peoplelbl = "People";
+var familieslbl = "Families";
+var sourceslbl = "Sources";
+var noteslbl = "Notes";
+var medialbl = "Media";
+var placeslbl = "Places";
+var stopmsg = "Stop";
+var stoppedmsg = "Stopped";
+var resumemsg = "Resume";
+var reopenmsg = "Reopen";
+var saveimport = "1";
+var selectimportfile = "Please select an import file.";
+var selectdesttree = "Please select a destination tree.";
+var entertreeid = "Please enter a tree ID.";
+var alphanum = "Tree ID must be alphanumeric.";
+var entertreename = "Please enter a tree name.";
+var confdeletefile = "Are you sure you want to delete this file?";
+var finished_msg = "Finished importing!";
+var importing_msg = "Importing GEDCOM...";
+var removeged_msg = "Remove GEDCOM";
+var close_msg = "Close Window";
+var more_options = "More Options";
+
+var branches = new Array();
+var branchcounts = new Array();
+
+/**
+ * Check file selection before form submission
+ */
+function checkFile(form) {
+  // Check if file is selected
+  var remoteFile = form.remotefile;
+  var databaseFile = form.database;
+
+  if (
+    (!remoteFile || !remoteFile.value) &&
+    (!databaseFile || !databaseFile.value)
+  ) {
+    alert(selectimportfile);
+    return false;
+  }
+
+  // Check if tree is selected (unless creating new)
+  var tree = form.tree1;
+  if (tree && !tree.value) {
+    alert(selectdesttree);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Toggle import/export sections
+ */
+function toggleSections(eventsOnly) {
+  var sections = ["desttree", "replace", "ioptions"];
+  for (var i = 0; i < sections.length; i++) {
+    var element = document.getElementById(sections[i]);
+    if (element) {
+      element.style.display = eventsOnly ? "none" : "";
+    }
+  }
+}
+
+/**
+ * Toggle no recalculation options
+ */
+function toggleNorecalcdiv(show) {
+  var div = document.getElementById("norecalcdiv");
+  if (div) {
+    div.style.display = show ? "" : "none";
+  }
+}
+
+/**
+ * Toggle append options
+ */
+function toggleAppenddiv(show) {
+  var div = document.getElementById("appenddiv");
+  if (div) {
+    div.style.display = show ? "" : "none";
+  }
+}
+
+/**
+ * Toggle form target for legacy import
+ */
+function toggleTarget(form) {
+  if (form.old && form.old.checked) {
+    form.target = "results";
+    var iframe = document.getElementById("results");
+    if (iframe) {
+      iframe.style.display = "block";
+      iframe.height = "300";
+      iframe.width = "100%";
+    }
+  } else {
+    form.target = "";
+    var iframe = document.getElementById("results");
+    if (iframe) {
+      iframe.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Get branches for selected tree
+ */
+function getBranches(selectElement, selectedIndex) {
+  var tree = selectElement.value;
+  var branchSelect =
+    document.getElementById("branch1") || document.getElementById("branch");
+
+  if (branchSelect) {
+    // Clear existing options
+    branchSelect.innerHTML = '<option value="">All branches</option>';
+
+    // Show/hide branch selection
+    var branchRow = document.getElementById("destbranch");
+    if (branchRow) {
+      branchRow.style.display = tree ? "" : "none";
+    }
+
+    // Load branches via AJAX if tree is selected
+    if (tree && typeof jQuery !== "undefined") {
+      jQuery.post(
+        ajaxurl,
+        {
+          action: "hp_get_branches",
+          tree: tree,
+          nonce: hp_admin.nonce,
+        },
+        function (response) {
+          if (response.success && response.data) {
+            var options = '<option value="">All branches</option>';
+            for (var i = 0; i < response.data.length; i++) {
+              var branch = response.data[i];
+              options +=
+                '<option value="' +
+                branch.branch +
+                '">' +
+                branch.description +
+                "</option>";
+            }
+            branchSelect.innerHTML = options;
+          }
+        }
+      );
+    }
+  }
+}
+
+/**
+ * Swap branches for export tree selection
+ */
+function swapBranches(form) {
+  if (form.tree) {
+    getBranches(form.tree, form.tree.selectedIndex);
+  }
+}
+
+/**
+ * Toggle media export options
+ */
+function toggleStuff() {
+  var exportMedia = document.getElementById("exportmedia");
+  var exportMediaFiles = document.getElementById("exportmediafiles");
+  var expRows = document.getElementById("exprows");
+
+  if (exportMedia && exportMediaFiles && expRows) {
+    if (exportMedia.checked) {
+      exportMediaFiles.disabled = false;
+      expRows.style.display = "block";
+    } else {
+      exportMediaFiles.disabled = true;
+      exportMediaFiles.checked = false;
+      expRows.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Handle iframe load for import progress
+ */
+function iframeLoaded() {
+  console.log("Import iframe loaded");
+  // Additional progress handling can be added here
+}
+
+/**
+ * Run post-import utility
+ */
+function runPostImportUtility(utility) {
+  if (confirm("Run post-import utility: " + utility + "?")) {
+    var form = document.createElement("form");
+    form.method = "POST";
+    form.action = window.location.href;
+
+    // Add nonce
+    var nonceField = document.createElement("input");
+    nonceField.type = "hidden";
+    nonceField.name = "_wpnonce";
+    nonceField.value = hp_admin.nonce;
+    form.appendChild(nonceField);
+
+    // Add action
+    var actionField = document.createElement("input");
+    actionField.type = "hidden";
+    actionField.name = "secaction";
+    actionField.value = utility;
+    form.appendChild(actionField);
+
+    // Add tree
+    var treeSelect = document.getElementById("treequeryselect");
+    if (treeSelect) {
+      var treeField = document.createElement("input");
+      treeField.type = "hidden";
+      treeField.name = "tree";
+      treeField.value = treeSelect.value;
+      form.appendChild(treeField);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+/**
+ * File picker placeholder function
+ */
+function FilePicker(inputId, type) {
+  alert(
+    "File picker functionality will be implemented. For now, please type the file path manually."
+  );
+}
+
+/**
+ * Modern Import Wizard Functionality
+ */
+
+// Wizard state management
+let currentStep = 1;
+let maxSteps = 4;
+let selectedFile = null;
+let validationResults = null;
+
+// Initialize wizard when document is ready
+document.addEventListener("DOMContentLoaded", function () {
+  initImportWizard();
+  initFileUpload();
+  initTreeSelection();
+  initFormValidation();
+});
+
+/**
+ * Initialize the import wizard
+ */
+function initImportWizard() {
+  const nextBtn = document.getElementById("next-step");
+  const prevBtn = document.getElementById("prev-step");
+  const submitBtn = document.getElementById("start-import");
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", nextStep);
+  }
+  if (prevBtn) {
+    prevBtn.addEventListener("click", prevStep);
+  }
+
+  // Initialize first step
+  showStep(1);
+}
+
+/**
+ * Initialize modern file upload functionality
+ */
+function initFileUpload() {
+  const uploadZone = document.getElementById("upload-zone");
+  const fileInput = document.getElementById("gedcom-file");
+  const fileInfo = document.getElementById("file-info");
+  const removeBtn = document.getElementById("remove-file");
+
+  if (!uploadZone || !fileInput) return;
+
+  // Click to select file
+  uploadZone.addEventListener("click", () => fileInput.click());
+
+  // Drag and drop functionality
+  uploadZone.addEventListener("dragover", handleDragOver);
+  uploadZone.addEventListener("dragleave", handleDragLeave);
+  uploadZone.addEventListener("drop", handleFileDrop);
+
+  // File input change
+  fileInput.addEventListener("change", handleFileSelect);
+
+  // Remove file
+  if (removeBtn) {
+    removeBtn.addEventListener("click", removeSelectedFile);
+  }
+}
+
+/**
+ * Handle drag over event
+ */
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.add("dragover");
+}
+
+/**
+ * Handle drag leave event
+ */
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove("dragover");
+}
+
+/**
+ * Handle file drop
+ */
+function handleFileDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove("dragover");
+
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFileSelection(files[0]);
+  }
+}
+
+/**
+ * Handle file input selection
+ */
+function handleFileSelect(e) {
+  const files = e.target.files;
+  if (files.length > 0) {
+    handleFileSelection(files[0]);
+  }
+}
+
+/**
+ * Handle file selection (from any source)
+ */
+function handleFileSelection(file) {
+  // Validate file type
+  const allowedTypes = [".ged", ".gedcom"];
+  const fileName = file.name.toLowerCase();
+  const isValidType = allowedTypes.some((type) => fileName.endsWith(type));
+
+  if (!isValidType) {
+    alert("Please select a GEDCOM file (.ged or .gedcom)");
+    return;
+  }
+
+  selectedFile = file;
+  showFileInfo(file);
+  validateFile(file);
+}
+
+/**
+ * Show file information
+ */
+function showFileInfo(file) {
+  const fileInfo = document.getElementById("file-info");
+  const fileName = document.getElementById("file-name");
+  const fileSize = document.getElementById("file-size");
+  const uploadZone = document.getElementById("upload-zone");
+
+  if (fileInfo && fileName && fileSize) {
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    fileInfo.style.display = "flex";
+    uploadZone.style.display = "none";
+  }
+}
+
+/**
+ * Remove selected file
+ */
+function removeSelectedFile() {
+  selectedFile = null;
+  validationResults = null;
+
+  const fileInfo = document.getElementById("file-info");
+  const uploadZone = document.getElementById("upload-zone");
+  const fileInput = document.getElementById("gedcom-file");
+  const validationDiv = document.getElementById("validation-results");
+
+  if (fileInfo) fileInfo.style.display = "none";
+  if (uploadZone) uploadZone.style.display = "block";
+  if (fileInput) fileInput.value = "";
+  if (validationDiv) validationDiv.style.display = "none";
+
+  updateStepValidation();
+}
+
+/**
+ * Validate GEDCOM file
+ */
+function validateFile(file) {
+  const validationDiv = document.getElementById("validation-results");
+  if (!validationDiv) return;
+
+  // Show validation section
+  validationDiv.style.display = "block";
+
+  // Simulate file validation (in real implementation, this would be an AJAX call)
+  setTimeout(() => {
+    const mockResults = {
+      individuals: Math.floor(Math.random() * 1000) + 100,
+      families: Math.floor(Math.random() * 500) + 50,
+      sources: Math.floor(Math.random() * 200) + 20,
+      media: Math.floor(Math.random() * 300) + 30,
+      errors: [],
+      warnings: [],
+    };
+
+    showValidationResults(mockResults);
+    validationResults = mockResults;
+    updateStepValidation();
+  }, 1500);
+}
+
+/**
+ * Show validation results
+ */
+function showValidationResults(results) {
+  document.getElementById("individuals-count").textContent = results.individuals;
+  document.getElementById("families-count").textContent = results.families;
+  document.getElementById("sources-count").textContent = results.sources;
+  document.getElementById("media-count").textContent = results.media;
+
+  const issuesDiv = document.getElementById("validation-issues");
+  if (issuesDiv) {
+    if (results.errors.length > 0 || results.warnings.length > 0) {
+      let issuesHtml = "";
+
+      if (results.errors.length > 0) {
+        issuesHtml += '<div class="validation-errors"><h5>Errors:</h5><ul>';
+        results.errors.forEach((error) => {
+          issuesHtml += `<li>${error}</li>`;
+        });
+        issuesHtml += "</ul></div>";
+      }
+
+      if (results.warnings.length > 0) {
+        issuesHtml += '<div class="validation-warnings"><h5>Warnings:</h5><ul>';
+        results.warnings.forEach((warning) => {
+          issuesHtml += `<li>${warning}</li>`;
+        });
+        issuesHtml += "</ul></div>";
+      }
+
+      issuesDiv.innerHTML = issuesHtml;
+    } else {
+      issuesDiv.innerHTML =
+        '<div class="validation-success">✅ No issues found in the GEDCOM file.</div>';
+    }
+  }
+}
+
+/**
+ * Initialize tree selection functionality
+ */
+function initTreeSelection() {
+  const treeRadios = document.querySelectorAll('input[name="tree_destination"]');
+  const treeSelect = document.getElementById("tree1");
+  const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+
+  treeRadios.forEach((radio) => {
+    radio.addEventListener("change", function () {
+      if (this.value === "existing") {
+        if (treeSelect) treeSelect.disabled = false;
+        if (newTreeInput) newTreeInput.disabled = true;
+      } else if (this.value === "new") {
+        if (treeSelect) treeSelect.disabled = true;
+        if (newTreeInput) newTreeInput.disabled = false;
+      }
+      updateStepValidation();
+    });
+  });
+
+  if (treeSelect) {
+    treeSelect.addEventListener("change", updateStepValidation);
+  }
+  if (newTreeInput) {
+    newTreeInput.addEventListener("input", updateStepValidation);
+  }
+}
+
+/**
+ * Move to next step
+ */
+function nextStep() {
+  if (!validateCurrentStep()) {
+    return;
+  }
+
+  if (currentStep < maxSteps) {
+    currentStep++;
+    showStep(currentStep);
+  }
+}
+
+/**
+ * Move to previous step
+ */
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    showStep(currentStep);
+  }
+}
+
+/**
+ * Show specific step
+ */
+function showStep(step) {
+  // Hide all step contents
+  document.querySelectorAll(".wizard-step-content").forEach((content) => {
+    content.style.display = "none";
+    content.classList.remove("active");
+  });
+
+  // Show current step content
+  const currentContent = document.querySelector(`[data-step="${step}"]`);
+  if (currentContent) {
+    currentContent.style.display = "block";
+    currentContent.classList.add("active");
+  }
+
+  // Update step indicators
+  document.querySelectorAll(".wizard-step").forEach((stepEl, index) => {
+    stepEl.classList.remove("active", "completed");
+    if (index + 1 === step) {
+      stepEl.classList.add("active");
+    } else if (index + 1 < step) {
+      stepEl.classList.add("completed");
+    }
+  });
+
+  // Update navigation buttons
+  updateNavigationButtons();
+  updateStepValidation();
+}
+
+/**
+ * Update navigation buttons
+ */
+function updateNavigationButtons() {
+  const nextBtn = document.getElementById("next-step");
+  const prevBtn = document.getElementById("prev-step");
+  const submitBtn = document.getElementById("start-import");
+
+  if (prevBtn) {
+    prevBtn.style.display = currentStep === 1 ? "none" : "inline-block";
+  }
+
+  if (nextBtn && submitBtn) {
+    if (currentStep === maxSteps) {
+      nextBtn.style.display = "none";
+      submitBtn.style.display = "inline-block";
+    } else {
+      nextBtn.style.display = "inline-block";
+      submitBtn.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Validate current step
+ */
+function validateCurrentStep() {
+  switch (currentStep) {
+    case 1: // File selection
+      return validateStep1();
+    case 2: // Tree selection
+      return validateStep2();
+    case 3: // Options
+      return true; // Options are optional
+    case 4: // Import
+      return true;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Validate step 1 (file selection)
+ */
+function validateStep1() {
+  const hasFile = selectedFile !== null;
+  const hasServerFile = document.getElementById("database").value.trim() !== "";
+
+  if (!hasFile && !hasServerFile) {
+    alert("Please select a GEDCOM file to import.");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validate step 2 (tree selection)
+ */
+function validateStep2() {
+  const existingTreeRadio = document.querySelector(
+    'input[name="tree_destination"][value="existing"]'
+  );
+  const newTreeRadio = document.querySelector('input[name="tree_destination"][value="new"]');
+  const treeSelect = document.getElementById("tree1");
+  const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+
+  if (existingTreeRadio && existingTreeRadio.checked) {
+    if (!treeSelect || !treeSelect.value) {
+      alert("Please select an existing tree.");
+      return false;
+    }
+  } else if (newTreeRadio && newTreeRadio.checked) {
+    if (!newTreeInput || !newTreeInput.value.trim()) {
+      alert("Please enter a name for the new tree.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Update step validation status
+ */
+function updateStepValidation() {
+  const nextBtn = document.getElementById("next-step");
+  if (!nextBtn) return;
+
+  const isValid = validateCurrentStep();
+  nextBtn.disabled = !isValid;
+  nextBtn.classList.toggle("button-primary", isValid);
+  nextBtn.classList.toggle("button-secondary", !isValid);
+}
+
+/**
+ * Initialize form validation
+ */
+function initFormValidation() {
+  const form = document.getElementById("gedcom-import-form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    if (currentStep < maxSteps) {
+      e.preventDefault();
+      return false;
+    }
+
+    // Show import progress
+    showImportProgress();
+  });
+}
+
+/**
+ * Show import progress
+ */
+function showImportProgress() {
+  const progressSection = document.getElementById("import-progress");
+  const summarySection = document.getElementById("import-summary");
+
+  if (summarySection) {
+    // Populate summary
+    const filename = selectedFile ? selectedFile.name : document.getElementById("database").value;
+    const tree = getSelectedTreeName();
+    const method = getSelectedImportMethod();
+
+    document.getElementById("summary-filename").textContent = filename;
+    document.getElementById("summary-tree").textContent = tree;
+    document.getElementById("summary-method").textContent = method;
+
+    summarySection.style.display = "block";
+  }
+
+  if (progressSection) {
+    progressSection.style.display = "block";
+    startProgressSimulation();
+  }
+}
+
+/**
+ * Get selected tree name
+ */
+function getSelectedTreeName() {
+  const existingTreeRadio = document.querySelector(
+    'input[name="tree_destination"][value="existing"]'
+  );
+  if (existingTreeRadio && existingTreeRadio.checked) {
+    const treeSelect = document.getElementById("tree1");
+    return treeSelect ? treeSelect.options[treeSelect.selectedIndex].text : "Unknown";
+  } else {
+    const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+    return newTreeInput ? newTreeInput.value : "New Tree";
+  }
+}
+
+/**
+ * Get selected import method
+ */
+function getSelectedImportMethod() {
+  const selectedMethod = document.querySelector('input[name="del"]:checked');
+  if (!selectedMethod) return "Unknown";
+
+  switch (selectedMethod.value) {
+    case "yes":
+      return "Replace all data";
+    case "match":
+      return "Replace matching data";
+    case "no":
+      return "Ignore matching data";
+    case "append":
+      return "Append with offset";
+    default:
+      return "Unknown";
+  }
+}
+
+/**
+ * Simulate import progress
+ */
+function startProgressSimulation() {
+  const progressFill = document.getElementById("progress-fill");
+  const progressText = document.getElementById("progress-text");
+  const currentOperation = document.getElementById("current-operation");
+  const recordsProcessed = document.getElementById("records-processed");
+  const totalRecords = document.getElementById("total-records");
+
+  if (!progressFill || !validationResults) return;
+
+  const total = validationResults.individuals + validationResults.families;
+  totalRecords.textContent = total;
+
+  let processed = 0;
+  const operations = [
+    "Validating GEDCOM structure...",
+    "Processing individuals...",
+    "Processing families...",
+    "Processing sources...",
+    "Processing media...",
+    "Updating relationships...",
+    "Finalizing import...",
+  ];
+
+  let operationIndex = 0;
+
+  const updateProgress = () => {
+    if (processed < total) {
+      processed += Math.floor(Math.random() * 10) + 1;
+      if (processed > total) processed = total;
+
+      const percentage = Math.round((processed / total) * 100);
+      progressFill.style.width = percentage + "%";
+      progressText.textContent = percentage + "%";
+      recordsProcessed.textContent = processed;
+
+      // Update operation
+      if (operationIndex < operations.length - 1 && Math.random() > 0.7) {
+        operationIndex++;
+        currentOperation.textContent = operations[operationIndex];
+      }
+
+      setTimeout(updateProgress, Math.random() * 500 + 200);
+    } else {
+      // Import complete
+      showImportResults();
+    }
+  };
+
+  updateProgress();
+}
+
+/**
+ * Show import results
+ */
+function showImportResults() {
+  const progressSection = document.getElementById("import-progress");
+  const resultsSection = document.getElementById("import-results");
+
+  if (progressSection) progressSection.style.display = "none";
+  if (resultsSection) {
+    // Populate results
+    if (validationResults) {
+      document.getElementById("imported-individuals").textContent = validationResults.individuals;
+      document.getElementById("imported-families").textContent = validationResults.families;
+      document.getElementById("imported-sources").textContent = validationResults.sources;
+      document.getElementById("imported-media").textContent = validationResults.media;
+    }
+
+    resultsSection.style.display = "block";
+  }
+}
+
+/**
+ * Format file size for display
+ */
+function formatFileSize(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+/**
+ * Initialize import log toggle
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleBtn = document.getElementById("toggle-log");
+  const importLog = document.getElementById("import-log");
+
+  if (toggleBtn && importLog) {
+    toggleBtn.addEventListener("click", function () {
+      if (importLog.style.display === "none") {
+        importLog.style.display = "block";
+        toggleBtn.textContent = "Hide Details";
+      } else {
+        importLog.style.display = "none";
+        toggleBtn.textContent = "Show Details";
+      }
+    });
+  }
+});
+
+/**
+ * Check file selection before form submission
+ */
+function checkFile(form) {
+  // Check if file is selected
+  var remoteFile = form.remotefile;
+  var databaseFile = form.database;
+
+  if (
+    (!remoteFile || !remoteFile.value) &&
+    (!databaseFile || !databaseFile.value)
+  ) {
+    alert(selectimportfile);
+    return false;
+  }
+
+  // Check if tree is selected (unless creating new)
+  var tree = form.tree1;
+  if (tree && !tree.value) {
+    alert(selectdesttree);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Toggle import/export sections
+ */
+function toggleSections(eventsOnly) {
+  var sections = ["desttree", "replace", "ioptions"];
+  for (var i = 0; i < sections.length; i++) {
+    var element = document.getElementById(sections[i]);
+    if (element) {
+      element.style.display = eventsOnly ? "none" : "";
+    }
+  }
+}
+
+/**
+ * Toggle no recalculation options
+ */
+function toggleNorecalcdiv(show) {
+  var div = document.getElementById("norecalcdiv");
+  if (div) {
+    div.style.display = show ? "" : "none";
+  }
+}
+
+/**
+ * Toggle append options
+ */
+function toggleAppenddiv(show) {
+  var div = document.getElementById("appenddiv");
+  if (div) {
+    div.style.display = show ? "" : "none";
+  }
+}
+
+/**
+ * Toggle form target for legacy import
+ */
+function toggleTarget(form) {
+  if (form.old && form.old.checked) {
+    form.target = "results";
+    var iframe = document.getElementById("results");
+    if (iframe) {
+      iframe.style.display = "block";
+      iframe.height = "300";
+      iframe.width = "100%";
+    }
+  } else {
+    form.target = "";
+    var iframe = document.getElementById("results");
+    if (iframe) {
+      iframe.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Get branches for selected tree
+ */
+function getBranches(selectElement, selectedIndex) {
+  var tree = selectElement.value;
+  var branchSelect =
+    document.getElementById("branch1") || document.getElementById("branch");
+
+  if (branchSelect) {
+    // Clear existing options
+    branchSelect.innerHTML = '<option value="">All branches</option>';
+
+    // Show/hide branch selection
+    var branchRow = document.getElementById("destbranch");
+    if (branchRow) {
+      branchRow.style.display = tree ? "" : "none";
+    }
+
+    // Load branches via AJAX if tree is selected
+    if (tree && typeof jQuery !== "undefined") {
+      jQuery.post(
+        ajaxurl,
+        {
+          action: "hp_get_branches",
+          tree: tree,
+          nonce: hp_admin.nonce,
+        },
+        function (response) {
+          if (response.success && response.data) {
+            var options = '<option value="">All branches</option>';
+            for (var i = 0; i < response.data.length; i++) {
+              var branch = response.data[i];
+              options +=
+                '<option value="' +
+                branch.branch +
+                '">' +
+                branch.description +
+                "</option>";
+            }
+            branchSelect.innerHTML = options;
+          }
+        }
+      );
+    }
+  }
+}
+
+/**
+ * Swap branches for export tree selection
+ */
+function swapBranches(form) {
+  if (form.tree) {
+    getBranches(form.tree, form.tree.selectedIndex);
+  }
+}
+
+/**
+ * Toggle media export options
+ */
+function toggleStuff() {
+  var exportMedia = document.getElementById("exportmedia");
+  var exportMediaFiles = document.getElementById("exportmediafiles");
+  var expRows = document.getElementById("exprows");
+
+  if (exportMedia && exportMediaFiles && expRows) {
+    if (exportMedia.checked) {
+      exportMediaFiles.disabled = false;
+      expRows.style.display = "block";
+    } else {
+      exportMediaFiles.disabled = true;
+      exportMediaFiles.checked = false;
+      expRows.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Handle iframe load for import progress
+ */
+function iframeLoaded() {
+  console.log("Import iframe loaded");
+  // Additional progress handling can be added here
+}
+
+/**
+ * Run post-import utility
+ */
+function runPostImportUtility(utility) {
+  if (confirm("Run post-import utility: " + utility + "?")) {
+    var form = document.createElement("form");
+    form.method = "POST";
+    form.action = window.location.href;
+
+    // Add nonce
+    var nonceField = document.createElement("input");
+    nonceField.type = "hidden";
+    nonceField.name = "_wpnonce";
+    nonceField.value = hp_admin.nonce;
+    form.appendChild(nonceField);
+
+    // Add action
+    var actionField = document.createElement("input");
+    actionField.type = "hidden";
+    actionField.name = "secaction";
+    actionField.value = utility;
+    form.appendChild(actionField);
+
+    // Add tree
+    var treeSelect = document.getElementById("treequeryselect");
+    if (treeSelect) {
+      var treeField = document.createElement("input");
+      treeField.type = "hidden";
+      treeField.name = "tree";
+      treeField.value = treeSelect.value;
+      form.appendChild(treeField);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+/**
+ * File picker placeholder function
+ */
+function FilePicker(inputId, type) {
+  alert(
+    "File picker functionality will be implemented. For now, please type the file path manually."
+  );
+}
+
+/**
+ * Modern Import Wizard Functionality
+ */
+
+// Wizard state management
+let currentStep = 1;
+let maxSteps = 4;
+let selectedFile = null;
+let validationResults = null;
+
+// Initialize wizard when document is ready
+document.addEventListener("DOMContentLoaded", function () {
+  initImportWizard();
+  initFileUpload();
+  initTreeSelection();
+  initFormValidation();
+});
+
+/**
+ * Initialize the import wizard
+ */
+function initImportWizard() {
+  const nextBtn = document.getElementById("next-step");
+  const prevBtn = document.getElementById("prev-step");
+  const submitBtn = document.getElementById("start-import");
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", nextStep);
+  }
+  if (prevBtn) {
+    prevBtn.addEventListener("click", prevStep);
+  }
+
+  // Initialize first step
+  showStep(1);
+}
+
+/**
+ * Initialize modern file upload functionality
+ */
+function initFileUpload() {
+  const uploadZone = document.getElementById("upload-zone");
+  const fileInput = document.getElementById("gedcom-file");
+  const fileInfo = document.getElementById("file-info");
+  const removeBtn = document.getElementById("remove-file");
+
+  if (!uploadZone || !fileInput) return;
+
+  // Click to select file
+  uploadZone.addEventListener("click", () => fileInput.click());
+
+  // Drag and drop functionality
+  uploadZone.addEventListener("dragover", handleDragOver);
+  uploadZone.addEventListener("dragleave", handleDragLeave);
+  uploadZone.addEventListener("drop", handleFileDrop);
+
+  // File input change
+  fileInput.addEventListener("change", handleFileSelect);
+
+  // Remove file
+  if (removeBtn) {
+    removeBtn.addEventListener("click", removeSelectedFile);
+  }
+}
+
+/**
+ * Handle drag over event
+ */
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.add("dragover");
+}
+
+/**
+ * Handle drag leave event
+ */
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove("dragover");
+}
+
+/**
+ * Handle file drop
+ */
+function handleFileDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove("dragover");
+
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFileSelection(files[0]);
+  }
+}
+
+/**
+ * Handle file input selection
+ */
+function handleFileSelect(e) {
+  const files = e.target.files;
+  if (files.length > 0) {
+    handleFileSelection(files[0]);
+  }
+}
+
+/**
+ * Handle file selection (from any source)
+ */
+function handleFileSelection(file) {
+  // Validate file type
+  const allowedTypes = [".ged", ".gedcom"];
+  const fileName = file.name.toLowerCase();
+  const isValidType = allowedTypes.some((type) => fileName.endsWith(type));
+
+  if (!isValidType) {
+    alert("Please select a GEDCOM file (.ged or .gedcom)");
+    return;
+  }
+
+  selectedFile = file;
+  showFileInfo(file);
+  validateFile(file);
+}
+
+/**
+ * Show file information
+ */
+function showFileInfo(file) {
+  const fileInfo = document.getElementById("file-info");
+  const fileName = document.getElementById("file-name");
+  const fileSize = document.getElementById("file-size");
+  const uploadZone = document.getElementById("upload-zone");
+
+  if (fileInfo && fileName && fileSize) {
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    fileInfo.style.display = "flex";
+    uploadZone.style.display = "none";
+  }
+}
+
+/**
+ * Remove selected file
+ */
+function removeSelectedFile() {
+  selectedFile = null;
+  validationResults = null;
+
+  const fileInfo = document.getElementById("file-info");
+  const uploadZone = document.getElementById("upload-zone");
+  const fileInput = document.getElementById("gedcom-file");
+  const validationDiv = document.getElementById("validation-results");
+
+  if (fileInfo) fileInfo.style.display = "none";
+  if (uploadZone) uploadZone.style.display = "block";
+  if (fileInput) fileInput.value = "";
+  if (validationDiv) validationDiv.style.display = "none";
+
+  updateStepValidation();
+}
+
+/**
+ * Validate GEDCOM file
+ */
+function validateFile(file) {
+  const validationDiv = document.getElementById("validation-results");
+  if (!validationDiv) return;
+
+  // Show validation section
+  validationDiv.style.display = "block";
+
+  // Simulate file validation (in real implementation, this would be an AJAX call)
+  setTimeout(() => {
+    const mockResults = {
+      individuals: Math.floor(Math.random() * 1000) + 100,
+      families: Math.floor(Math.random() * 500) + 50,
+      sources: Math.floor(Math.random() * 200) + 20,
+      media: Math.floor(Math.random() * 300) + 30,
+      errors: [],
+      warnings: [],
+    };
+
+    showValidationResults(mockResults);
+    validationResults = mockResults;
+    updateStepValidation();
+  }, 1500);
+}
+
+/**
+ * Show validation results
+ */
+function showValidationResults(results) {
+  document.getElementById("individuals-count").textContent = results.individuals;
+  document.getElementById("families-count").textContent = results.families;
+  document.getElementById("sources-count").textContent = results.sources;
+  document.getElementById("media-count").textContent = results.media;
+
+  const issuesDiv = document.getElementById("validation-issues");
+  if (issuesDiv) {
+    if (results.errors.length > 0 || results.warnings.length > 0) {
+      let issuesHtml = "";
+
+      if (results.errors.length > 0) {
+        issuesHtml += '<div class="validation-errors"><h5>Errors:</h5><ul>';
+        results.errors.forEach((error) => {
+          issuesHtml += `<li>${error}</li>`;
+        });
+        issuesHtml += "</ul></div>";
+      }
+
+      if (results.warnings.length > 0) {
+        issuesHtml += '<div class="validation-warnings"><h5>Warnings:</h5><ul>';
+        results.warnings.forEach((warning) => {
+          issuesHtml += `<li>${warning}</li>`;
+        });
+        issuesHtml += "</ul></div>";
+      }
+
+      issuesDiv.innerHTML = issuesHtml;
+    } else {
+      issuesDiv.innerHTML =
+        '<div class="validation-success">✅ No issues found in the GEDCOM file.</div>';
+    }
+  }
+}
+
+/**
+ * Initialize tree selection functionality
+ */
+function initTreeSelection() {
+  const treeRadios = document.querySelectorAll('input[name="tree_destination"]');
+  const treeSelect = document.getElementById("tree1");
+  const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+
+  treeRadios.forEach((radio) => {
+    radio.addEventListener("change", function () {
+      if (this.value === "existing") {
+        if (treeSelect) treeSelect.disabled = false;
+        if (newTreeInput) newTreeInput.disabled = true;
+      } else if (this.value === "new") {
+        if (treeSelect) treeSelect.disabled = true;
+        if (newTreeInput) newTreeInput.disabled = false;
+      }
+      updateStepValidation();
+    });
+  });
+
+  if (treeSelect) {
+    treeSelect.addEventListener("change", updateStepValidation);
+  }
+  if (newTreeInput) {
+    newTreeInput.addEventListener("input", updateStepValidation);
+  }
+}
+
+/**
+ * Move to next step
+ */
+function nextStep() {
+  if (!validateCurrentStep()) {
+    return;
+  }
+
+  if (currentStep < maxSteps) {
+    currentStep++;
+    showStep(currentStep);
+  }
+}
+
+/**
+ * Move to previous step
+ */
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    showStep(currentStep);
+  }
+}
+
+/**
+ * Show specific step
+ */
+function showStep(step) {
+  // Hide all step contents
+  document.querySelectorAll(".wizard-step-content").forEach((content) => {
+    content.style.display = "none";
+    content.classList.remove("active");
+  });
+
+  // Show current step content
+  const currentContent = document.querySelector(`[data-step="${step}"]`);
+  if (currentContent) {
+    currentContent.style.display = "block";
+    currentContent.classList.add("active");
+  }
+
+  // Update step indicators
+  document.querySelectorAll(".wizard-step").forEach((stepEl, index) => {
+    stepEl.classList.remove("active", "completed");
+    if (index + 1 === step) {
+      stepEl.classList.add("active");
+    } else if (index + 1 < step) {
+      stepEl.classList.add("completed");
+    }
+  });
+
+  // Update navigation buttons
+  updateNavigationButtons();
+  updateStepValidation();
+}
+
+/**
+ * Update navigation buttons
+ */
+function updateNavigationButtons() {
+  const nextBtn = document.getElementById("next-step");
+  const prevBtn = document.getElementById("prev-step");
+  const submitBtn = document.getElementById("start-import");
+
+  if (prevBtn) {
+    prevBtn.style.display = currentStep === 1 ? "none" : "inline-block";
+  }
+
+  if (nextBtn && submitBtn) {
+    if (currentStep === maxSteps) {
+      nextBtn.style.display = "none";
+      submitBtn.style.display = "inline-block";
+    } else {
+      nextBtn.style.display = "inline-block";
+      submitBtn.style.display = "none";
+    }
+  }
+}
+
+/**
+ * Validate current step
+ */
+function validateCurrentStep() {
+  switch (currentStep) {
+    case 1: // File selection
+      return validateStep1();
+    case 2: // Tree selection
+      return validateStep2();
+    case 3: // Options
+      return true; // Options are optional
+    case 4: // Import
+      return true;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Validate step 1 (file selection)
+ */
+function validateStep1() {
+  const hasFile = selectedFile !== null;
+  const hasServerFile = document.getElementById("database").value.trim() !== "";
+
+  if (!hasFile && !hasServerFile) {
+    alert("Please select a GEDCOM file to import.");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validate step 2 (tree selection)
+ */
+function validateStep2() {
+  const existingTreeRadio = document.querySelector(
+    'input[name="tree_destination"][value="existing"]'
+  );
+  const newTreeRadio = document.querySelector('input[name="tree_destination"][value="new"]');
+  const treeSelect = document.getElementById("tree1");
+  const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+
+  if (existingTreeRadio && existingTreeRadio.checked) {
+    if (!treeSelect || !treeSelect.value) {
+      alert("Please select an existing tree.");
+      return false;
+    }
+  } else if (newTreeRadio && newTreeRadio.checked) {
+    if (!newTreeInput || !newTreeInput.value.trim()) {
+      alert("Please enter a name for the new tree.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Update step validation status
+ */
+function updateStepValidation() {
+  const nextBtn = document.getElementById("next-step");
+  if (!nextBtn) return;
+
+  const isValid = validateCurrentStep();
+  nextBtn.disabled = !isValid;
+  nextBtn.classList.toggle("button-primary", isValid);
+  nextBtn.classList.toggle("button-secondary", !isValid);
+}
+
+/**
+ * Initialize form validation
+ */
+function initFormValidation() {
+  const form = document.getElementById("gedcom-import-form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    if (currentStep < maxSteps) {
+      e.preventDefault();
+      return false;
+    }
+
+    // Show import progress
+    showImportProgress();
+  });
+}
+
+/**
+ * Show import progress
+ */
+function showImportProgress() {
+  const progressSection = document.getElementById("import-progress");
+  const summarySection = document.getElementById("import-summary");
+
+  if (summarySection) {
+    // Populate summary
+    const filename = selectedFile ? selectedFile.name : document.getElementById("database").value;
+    const tree = getSelectedTreeName();
+    const method = getSelectedImportMethod();
+
+    document.getElementById("summary-filename").textContent = filename;
+    document.getElementById("summary-tree").textContent = tree;
+    document.getElementById("summary-method").textContent = method;
+
+    summarySection.style.display = "block";
+  }
+
+  if (progressSection) {
+    progressSection.style.display = "block";
+    startProgressSimulation();
+  }
+}
+
+/**
+ * Get selected tree name
+ */
+function getSelectedTreeName() {
+  const existingTreeRadio = document.querySelector(
+    'input[name="tree_destination"][value="existing"]'
+  );
+  if (existingTreeRadio && existingTreeRadio.checked) {
+    const treeSelect = document.getElementById("tree1");
+    return treeSelect ? treeSelect.options[treeSelect.selectedIndex].text : "Unknown";
+  } else {
+    const newTreeInput = document.querySelector('input[name="new_tree_name"]');
+    return newTreeInput ? newTreeInput.value : "New Tree";
+  }
+}
+
+/**
+ * Get selected import method
+ */
+function getSelectedImportMethod() {
+  const selectedMethod = document.querySelector('input[name="del"]:checked');
+  if (!selectedMethod) return "Unknown";
+
+  switch (selectedMethod.value) {
+    case "yes":
+      return "Replace all data";
+    case "match":
+      return "Replace matching data";
+    case "no":
+      return "Ignore matching data";
+    case "append":
+      return "Append with offset";
+    default:
+      return "Unknown";
+  }
+}
+
+/**
+ * Simulate import progress
+ */
+function startProgressSimulation() {
+  const progressFill = document.getElementById("progress-fill");
+  const progressText = document.getElementById("progress-text");
+  const currentOperation = document.getElementById("current-operation");
+  const recordsProcessed = document.getElementById("records-processed");
+  const totalRecords = document.getElementById("total-records");
+
+  if (!progressFill || !validationResults) return;
+
+  const total = validationResults.individuals + validationResults.families;
+  totalRecords.textContent = total;
+
+  let processed = 0;
+  const operations = [
+    "Validating GEDCOM structure...",
+    "Processing individuals...",
+    "Processing families...",
+    "Processing sources...",
+    "Processing media...",
+    "Updating relationships...",
+    "Finalizing import...",
+  ];
+
+  let operationIndex = 0;
+
+  const updateProgress = () => {
+    if (processed < total) {
+      processed += Math.floor(Math.random() * 10) + 1;
+      if (processed > total) processed = total;
+
+      const percentage = Math.round((processed / total) * 100);
+      progressFill.style.width = percentage + "%";
+      progressText.textContent = percentage + "%";
+      recordsProcessed.textContent = processed;
+
+      // Update operation
+      if (operationIndex < operations.length - 1 && Math.random() > 0.7) {
+        operationIndex++;
+        currentOperation.textContent = operations[operationIndex];
+      }
+
+      setTimeout(updateProgress, Math.random() * 500 + 200);
+    } else {
+      // Import complete
+      showImportResults();
+    }
+  };
+
+  updateProgress();
+}
+
+/**
+ * Show import results
+ */
+function showImportResults() {
+  const progressSection = document.getElementById("import-progress");
+  const resultsSection = document.getElementById("import-results");
+
+  if (progressSection) progressSection.style.display = "none";
+  if (resultsSection) {
+    // Populate results
+    if (validationResults) {
+      document.getElementById("imported-individuals").textContent = validationResults.individuals;
+      document.getElementById("imported-families").textContent = validationResults.families;
+      document.getElementById("imported-sources").textContent = validationResults.sources;
+      document.getElementById("imported-media").textContent = validationResults.media;
+    }
+
+    resultsSection.style.display = "block";
+  }
+}
+
+/**
+ * Format file size for display
+ */
+function formatFileSize(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+/**
+ * Initialize import log toggle
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleBtn = document.getElementById("toggle-log");
+  const importLog = document.getElementById("import-log");
+
+  if (toggleBtn && importLog) {
+    toggleBtn.addEventListener("click", function () {
+      if (importLog.style.display === "none") {
+        importLog.style.display = "block";
+        toggleBtn.textContent = "Hide Details";
+      } else {
+        importLog.style.display = "none";
+        toggleBtn.textContent = "Show Details";
+      }
+    });
+  }
+});

@@ -93,23 +93,23 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_person') {  // Pre-fill
 
 // Enqueue TNG-style CSS for this page
 wp_enqueue_style(
-  'heritagepress-add-person-tng',
-  plugin_dir_url(__FILE__) . '../../../public/css/add-person-tng.css',
+  'heritagepress-add-person',
+  plugin_dir_url(__FILE__) . '../../../public/css/add-person.css',
   array(),
   '1.0.0'
 );
 
 // Enqueue TNG-style JavaScript for enhanced functionality
 wp_enqueue_script(
-  'heritagepress-add-person-tng',
-  plugin_dir_url(__FILE__) . '../../../public/js/add-person-tng.js',
+  'heritagepress-add-person',
+  plugin_dir_url(__FILE__) . '../../../public/js/add-person.js',
   array('jquery'),
   '1.0.0',
   true
 );
 
 // Localize script for AJAX
-wp_localize_script('heritagepress-add-person-tng', 'hp_ajax_object', array(
+wp_localize_script('heritagepress-add-person', 'hp_ajax_object', array(
   'ajax_url' => admin_url('admin-ajax.php'),
   'nonce' => wp_create_nonce('hp_ajax_nonce')
 ));
@@ -594,7 +594,7 @@ function getAltBirthTypes($currentType)
  */
 function displayToggle($id, $state, $target, $headline, $subhead, $append = "")
 {
-  $rval = "<span class=\"subhead\"><a href=\"#\" onclick=\"return toggleSection('$target','$id');\" class=\"togglehead\" style=\"color:black\"><img src=\"../../../public/images/" . ($state ? "tng_collapse.gif" : "tng_expand.gif") . "\" title=\"" . __('Toggle', 'heritagepress') . "\" alt=\"" . __('Toggle', 'heritagepress') . "\" width=\"15\" height=\"15\" border=\"0\" id=\"$id\">";
+  $rval = "<span class=\"subhead\"><a href=\"#\" onclick=\"return toggleSection('$target','$id');\" class=\"togglehead\" style=\"color:black\"><img src=\"../../../public/images/" . ($state ? "collapse.gif" : "expand.gif") . "\" title=\"" . __('Toggle', 'heritagepress') . "\" alt=\"" . __('Toggle', 'heritagepress') . "\" width=\"15\" height=\"15\" border=\"0\" id=\"$id\">";
   $rval .= "<strong class=\"th-indent\">$headline</strong></a> $append</span><br />\n";
   if ($subhead) {
     $rval .= "<span class=\"normal tsh-indent\"><i>$subhead</i></span><br />\n";
