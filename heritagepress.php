@@ -125,11 +125,10 @@ class HeritagePress
 
     // GEDCOM functionality
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-adapter.php';
-
-    // Load admin functionality if in admin area
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-adapter.php';    // Load admin functionality if in admin area
     if (is_admin()) {
-      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin-new.php';
+      new HP_Admin_New();
     }
 
     // Public facing functionality

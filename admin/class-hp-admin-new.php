@@ -44,27 +44,30 @@ class HP_Admin_New
    * - FamiliesController: Family management
    * - TreesController: Tree management
    * - SettingsController: Plugin settings
-   */
-  private function load_controllers()
+   */  private function load_controllers()
   {
     // Load controller base class
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-base-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-base-controller.php';    // Load specific controllers that exist
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-import-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-people-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-trees-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-dna-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-citation-controller.php';
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-media-collection-controller.php';
 
-    // Load specific controllers that exist
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-import-controller.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-people-controller.php';
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-trees-controller.php';
-
-    // Load handlers that exist
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/handlers/class-hp-import-handler.php';
+    // Load handlers that exist (skip if none exist)
+    // require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/handlers/class-hp-import-handler.php';
 
     // Initialize controllers that exist
     new HP_Import_Controller();
     new HP_People_Controller();
     new HP_Trees_Controller();
+    new HP_DNA_Controller();
+    new HP_Citation_Controller();
+    new HP_Media_Collection_Controller();
 
-    // Initialize handlers that exist
-    new HP_Import_Handler();
+    // Initialize handlers that exist (skip if none exist)
+    // new HP_Import_Handler();
   }
 
   /**
@@ -125,6 +128,76 @@ class HP_Admin_New
       'manage_options',
       'heritagepress-trees',
       array($this, 'trees_page')
+    );
+    add_submenu_page(
+      'heritagepress',
+      __('DNA Groups', 'heritagepress'),
+      __('DNA Groups', 'heritagepress'),
+      'manage_options',
+      'heritagepress-dna-groups',
+      array($this, 'dna_groups_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('DNA Tests', 'heritagepress'),
+      __('DNA Tests', 'heritagepress'),
+      'manage_options',
+      'heritagepress-dna-tests',
+      array($this, 'dna_tests_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Citations', 'heritagepress'),
+      __('Citations', 'heritagepress'),
+      'manage_options',
+      'hp-citations',
+      array($this, 'citations_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Add Citation', 'heritagepress'),
+      __('Add Citation', 'heritagepress'),
+      'manage_options',
+      'hp-citations-add',
+      array($this, 'citations_add_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Edit Citation', 'heritagepress'),
+      null, // Hidden from menu
+      'manage_options',
+      'hp-citations-edit',
+      array($this, 'citations_edit_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Search Citations', 'heritagepress'),
+      __('Search Citations', 'heritagepress'),
+      'manage_options',
+      'hp-citations-search',
+      array($this, 'citations_search_page')
+    );
+    add_submenu_page(
+      'heritagepress',
+      __('Manage Citations', 'heritagepress'),
+      null, // Hidden from menu
+      'manage_options',
+      'hp-citations-manage',
+      array($this, 'citations_manage_page')
+    );
+
+    add_submenu_page(
+      'heritagepress',
+      __('Media Collections', 'heritagepress'),
+      __('Media Collections', 'heritagepress'),
+      'manage_options',
+      'hp-media-collections',
+      array($this, 'media_collections_page')
     );
 
     add_submenu_page(
@@ -188,6 +261,31 @@ class HP_Admin_New
   }
 
   /**
+   * DNA Groups page - delegates to DNA Controller
+   */
+  public function dna_groups_page()
+  {
+    // Handle form submissions first
+    $controller = new HP_DNA_Controller();
+    $controller->handle_form_submission();
+
+    // Then display the page
+    $controller->display_page();
+  }
+
+  /**
+   * DNA Tests page - delegates to DNA Controller
+   */
+  public function dna_tests_page()
+  {
+    // Handle form submissions first
+    $controller = new HP_DNA_Controller();
+    $controller->handle_form_submission();
+
+    // Then display the page with DNA tests view
+    $controller->display_page();
+  }
+  /**
    * Settings page - delegates to SettingsController
    */
   public function settings_page()
@@ -196,6 +294,65 @@ class HP_Admin_New
     echo '<h1>' . __('Settings', 'heritagepress') . '</h1>';
     echo '<p>' . __('Settings controller not yet implemented.', 'heritagepress') . '</p>';
     echo '</div>';
+  }
+
+  /**
+   * Citations main page - delegates to CitationController
+   */
+  public function citations_page()
+  {
+    $controller = new HP_Citation_Controller();
+    $controller->handle_form_submission();
+    $controller->display_page();
+  }
+
+  /**
+   * Add citation page - delegates to CitationController
+   */
+  public function citations_add_page()
+  {
+    $controller = new HP_Citation_Controller();
+    $controller->handle_form_submission();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-add.php';
+  }
+
+  /**
+   * Edit citation page - delegates to CitationController
+   */
+  public function citations_edit_page()
+  {
+    $controller = new HP_Citation_Controller();
+    $controller->handle_form_submission();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-edit.php';
+  }
+
+  /**
+   * Search citations page - delegates to CitationController
+   */
+  public function citations_search_page()
+  {
+    $controller = new HP_Citation_Controller();
+    $controller->handle_form_submission();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-search.php';
+  }
+  /**
+   * Manage citations page - delegates to CitationController
+   */
+  public function citations_manage_page()
+  {
+    $controller = new HP_Citation_Controller();
+    $controller->handle_form_submission();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-manage.php';
+  }
+
+  /**
+   * Media collections page - delegates to Media Collection Controller
+   */
+  public function media_collections_page()
+  {
+    $controller = new HP_Media_Collection_Controller();
+    $controller->handle_form_submission();
+    $controller->display_page();
   }
 
   /**
