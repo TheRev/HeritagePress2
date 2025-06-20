@@ -59,12 +59,11 @@ $trees_query = "
     t.description,
     t.owner,
     t.email,
-    t.secret,
-    t.disallowgedcreate,
+    t.secret,    t.disallowgedcreate,
     t.disallowpdf,
     t.lastimportdate,
     t.importfilename,
-    t.date_created,
+    t.created,
     COUNT(DISTINCT p.personID) as people_count,
     COUNT(DISTINCT f.familyID) as families_count,
     COUNT(DISTINCT s.sourceID) as sources_count,
@@ -258,9 +257,9 @@ if (empty($where_params)) {
               </td>
               <td class="created column-created">
                 <div class="created-info">
-                  <?php if (!empty($tree['date_created']) && $tree['date_created'] !== '0000-00-00 00:00:00'): ?>
-                    <div class="created-date"><?php echo esc_html(mysql2date('M j, Y', $tree['date_created'])); ?></div>
-                    <div class="created-time"><?php echo esc_html(mysql2date('g:i a', $tree['date_created'])); ?></div>
+                  <?php if (!empty($tree['created']) && $tree['created'] !== '0000-00-00 00:00:00' && $tree['created'] !== '1970-01-01 00:00:00'): ?>
+                    <div class="created-date"><?php echo esc_html(mysql2date('M j, Y', $tree['created'])); ?></div>
+                    <div class="created-time"><?php echo esc_html(mysql2date('g:i a', $tree['created'])); ?></div>
                   <?php else: ?>
                     <div class="no-created"><?php _e('Unknown', 'heritagepress'); ?></div>
                   <?php endif; ?>

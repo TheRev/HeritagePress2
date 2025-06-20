@@ -22,6 +22,9 @@ require_once __DIR__ . '/../../helpers/class-hp-date-utils.php';
 wp_enqueue_script('jquery-ui-tooltip');
 wp_enqueue_script('heritagepress-browse-people-enhanced', plugin_dir_url(__FILE__) . '../../../public/js/browse-people-enhanced.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
 
+// Enqueue horizontal search layout CSS
+wp_enqueue_style('hp-horizontal-search', plugin_dir_url(__FILE__) . 'horizontal-search.css', array(), HERITAGEPRESS_VERSION . '-' . time());
+
 global $wpdb;
 
 // Table references

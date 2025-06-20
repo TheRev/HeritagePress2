@@ -174,12 +174,12 @@ class HP_Import_Controller
         echo '<div class="notice notice-success">';
         echo '<p><strong>GEDCOM import completed successfully!</strong></p>';
         echo '<ul>';
-        echo '<li>Individuals imadapted: ' . ($result['stats']['individuals'] ?? 0) . '</li>';
-        echo '<li>Families imadapted: ' . ($result['stats']['families'] ?? 0) . '</li>';
-        echo '<li>Sources imadapted: ' . ($result['stats']['sources'] ?? 0) . '</li>';
-        echo '<li>Media imadapted: ' . ($result['stats']['media'] ?? 0) . '</li>';
-        echo '<li>Events imadapted: ' . ($result['stats']['events'] ?? 0) . '</li>';
-        echo '<li>Notes imadapted: ' . ($result['stats']['notes'] ?? 0) . '</li>';
+        echo '<li>Individuals imported: ' . ($result['stats']['individuals'] ?? 0) . '</li>';
+        echo '<li>Families imported: ' . ($result['stats']['families'] ?? 0) . '</li>';
+        echo '<li>Sources imported: ' . ($result['stats']['sources'] ?? 0) . '</li>';
+        echo '<li>Media imported: ' . ($result['stats']['media'] ?? 0) . '</li>';
+        echo '<li>Events imported: ' . ($result['stats']['events'] ?? 0) . '</li>';
+        echo '<li>Notes imported: ' . ($result['stats']['notes'] ?? 0) . '</li>';
         echo '</ul>';
         echo '</div>';
 

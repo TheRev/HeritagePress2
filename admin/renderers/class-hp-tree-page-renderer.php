@@ -54,6 +54,9 @@ class HP_Tree_Page_Renderer
     echo '<div class="wrap">';
     echo '<h1>' . esc_html__('Edit Tree', 'heritagepress') . ': ' . esc_html($tree['gedcom']) . '</h1>';
 
+    // Render tabs
+    $this->render_tree_tabs('edit', $tree['gedcom']);
+
     // Display any messages
     if (isset($_GET['message'])) {
       echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(sanitize_text_field($_GET['message'])) . '</p></div>';
@@ -99,6 +102,29 @@ class HP_Tree_Page_Renderer
     echo '</p>';
     echo '</form>';
     echo '</div>';
+  }
+
+  /**
+   * Render the tree tabs (Browse, Add, Edit)
+   */
+  private function render_tree_tabs($active_tab = 'browse', $tree_id = '')
+  {
+    $tabs = [
+      'browse' => __('Browse Trees', 'heritagepress'),
+      'add' => __('Add New Tree', 'heritagepress'),
+    ];
+    // If editing, add Edit tab
+    if ($active_tab === 'edit' && $tree_id) {
+      $tabs['edit'] = __('Edit Tree', 'heritagepress');
+    }
+    echo '<nav class="nav-tab-wrapper">';
+    foreach ($tabs as $tab => $label) {
+      $class = ($active_tab === $tab) ? ' nav-tab-active' : '';
+      $url = 'browse' === $tab ? admin_url('admin.php?page=heritagepress-trees&tab=browse') : ('add' === $tab ? admin_url('admin.php?page=heritagepress-trees&tab=add') :
+          admin_url('admin.php?page=heritagepress-edittree&tree=' . urlencode($tree_id)));
+      echo '<a href="' . esc_url($url) . '" class="nav-tab' . $class . '">' . esc_html($label) . '</a>';
+    }
+    echo '</nav>';
   }
 
   /**

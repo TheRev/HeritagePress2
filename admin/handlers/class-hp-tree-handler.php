@@ -80,7 +80,9 @@ class HP_Tree_Handler
       error_log("Validation failed - empty tree_id or tree_name");
       wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=add&message=' . urlencode(__('Tree ID and Tree Name are required.', 'heritagepress'))));
       exit;
-    }
+    }    // Get current MySQL timestamp
+    $now = $wpdb->get_var("SELECT NOW()");
+    error_log("Setting created timestamp to: $now");
 
     // Insert new tree
     $insert_data = [
@@ -100,6 +102,7 @@ class HP_Tree_Handler
       'disallowpdf' => $disallowpdf,
       'lastimportdate' => '1970-01-01 00:00:00',
       'importfilename' => '',
+      'created' => $now, // Explicitly set created timestamp
     ];
 
     error_log("Insert data: " . print_r($insert_data, true));
@@ -112,9 +115,21 @@ class HP_Tree_Handler
       error_log('HeritagePress Add Tree DB Error: ' . $error);
       error_log('Last query: ' . $wpdb->last_query);
       wp_die('Database error: ' . esc_html($error));
-    }
+    }    // Also make sure to run a direct update to set the created timestamp as a failsafe
+    $original_sql_mode = $wpdb->get_var("SELECT @@sql_mode");
+    $wpdb->query("SET sql_mode = ''");
 
+    $update_result = $wpdb->query($wpdb->prepare(
+      "UPDATE $trees_table SET created = NOW() WHERE gedcom = %s",
+      $tree_id
+    ));
+
+    error_log("Additional direct update result: " . ($update_result === false ? 'FALSE' : $update_result));
+
+    // Restore original SQL mode
+    $wpdb->query("SET sql_mode = '$original_sql_mode'");
     error_log("Insert successful, redirecting...");
+    // Redirect without refresh parameter to avoid infinite loop
     wp_redirect(admin_url('admin.php?page=heritagepress-trees&tab=browse&message=' . urlencode(__('Tree added successfully.', 'heritagepress'))));
     exit;
   }

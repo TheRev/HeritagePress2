@@ -18,6 +18,25 @@ class HP_People_Controller extends HP_Base_Controller
   public function __construct()
   {
     parent::__construct('people');
+
+    // Add action to enqueue our custom styles
+    add_action('admin_enqueue_scripts', array($this, 'enqueue_people_styles'));
+  }
+
+  /**
+   * Enqueue styles for the People admin pages
+   */
+  public function enqueue_people_styles($hook)
+  {
+    if (isset($_GET['page']) && $_GET['page'] === 'heritagepress-people') {
+      // Enqueue horizontal search layout CSS
+      wp_enqueue_style(
+        'hp-horizontal-search',
+        plugin_dir_url(dirname(dirname(__FILE__))) . 'admin/views/people/horizontal-search.css',
+        array(),
+        HERITAGEPRESS_VERSION
+      );
+    }
   }
 
   // List all people
