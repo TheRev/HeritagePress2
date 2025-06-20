@@ -20,20 +20,6 @@ class HP_People_Controller extends HP_Base_Controller
     parent::__construct('people');
   }
 
-  public function register_hooks()
-  {
-    parent::register_hooks();
-    add_action('wp_ajax_hp_list_people', array($this, 'ajax_list_people'));
-    add_action('wp_ajax_hp_add_person', array($this, 'ajax_add_person'));
-    add_action('wp_ajax_hp_edit_person', array($this, 'ajax_edit_person'));
-    add_action('wp_ajax_hp_delete_person', array($this, 'ajax_delete_person'));
-    add_action('wp_ajax_hp_person_lookup', array($this, 'ajax_person_lookup'));
-    add_action('wp_ajax_hp_add_person_event', array($this, 'ajax_add_person_event'));
-    add_action('wp_ajax_hp_add_person_note', array($this, 'ajax_add_person_note'));
-    add_action('wp_ajax_hp_add_person_citation', array($this, 'ajax_add_person_citation'));
-    add_action('wp_ajax_hp_add_child_to_family', array($this, 'ajax_add_child_to_family'));
-  }
-
   // List all people
   public function ajax_list_people()
   {
@@ -51,8 +37,12 @@ class HP_People_Controller extends HP_Base_Controller
   // Edit an existing person
   public function ajax_edit_person()
   {
-    // TODO: Implement logic
-    wp_send_json_success(['message' => 'Person updated']);
+    // Forward to the main controller's AJAX update logic
+    if (!class_exists('HP_People_Controller')) {
+      require_once dirname(__FILE__) . '/../../includes/controllers/class-hp-people-controller.php';
+    }
+    $main_controller = new \HP_People_Controller();
+    $main_controller->ajax_update_person();
   }
 
   // Delete a person
@@ -60,6 +50,48 @@ class HP_People_Controller extends HP_Base_Controller
   {
     // TODO: Implement logic
     wp_send_json_success(['message' => 'Person deleted']);
+  }
+
+  // Get a single person by ID
+  public function ajax_get_person()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['person' => null]);
+  }
+
+  // Search people (advanced search)
+  public function ajax_search_people()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['results' => []]);
+  }
+
+  // Duplicate a person (for quick entry)
+  public function ajax_duplicate_person()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['message' => 'Person duplicated']);
+  }
+
+  // Validate person ID (for uniqueness)
+  public function ajax_validate_person_id()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['valid' => true]);
+  }
+
+  // Bulk delete people
+  public function ajax_bulk_delete_people()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['message' => 'People deleted']);
+  }
+
+  // Bulk update people (e.g., living/private flags)
+  public function ajax_bulk_update_people()
+  {
+    // TODO: Implement logic
+    wp_send_json_success(['message' => 'People updated']);
   }
 
   // Person lookup (for linking, search, etc.)
@@ -114,5 +146,25 @@ class HP_People_Controller extends HP_Base_Controller
       'mrel' => $mrel,
       'child_data' => $child_data
     ]);
+  }
+
+  public function register_hooks()
+  {
+    parent::register_hooks();
+    add_action('wp_ajax_hp_list_people', array($this, 'ajax_list_people'));
+    add_action('wp_ajax_hp_add_person', array($this, 'ajax_add_person'));
+    add_action('wp_ajax_hp_edit_person', array($this, 'ajax_edit_person'));
+    add_action('wp_ajax_hp_delete_person', array($this, 'ajax_delete_person'));
+    add_action('wp_ajax_hp_get_person', array($this, 'ajax_get_person'));
+    add_action('wp_ajax_hp_search_people', array($this, 'ajax_search_people'));
+    add_action('wp_ajax_hp_duplicate_person', array($this, 'ajax_duplicate_person'));
+    add_action('wp_ajax_hp_validate_person_id', array($this, 'ajax_validate_person_id'));
+    add_action('wp_ajax_hp_bulk_delete_people', array($this, 'ajax_bulk_delete_people'));
+    add_action('wp_ajax_hp_bulk_update_people', array($this, 'ajax_bulk_update_people'));
+    add_action('wp_ajax_hp_person_lookup', array($this, 'ajax_person_lookup'));
+    add_action('wp_ajax_hp_add_person_event', array($this, 'ajax_add_person_event'));
+    add_action('wp_ajax_hp_add_person_note', array($this, 'ajax_add_person_note'));
+    add_action('wp_ajax_hp_add_person_citation', array($this, 'ajax_add_person_citation'));
+    add_action('wp_ajax_hp_add_child_to_family', array($this, 'ajax_add_child_to_family'));
   }
 }

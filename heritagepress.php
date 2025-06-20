@@ -149,6 +149,7 @@ class HeritagePress
       require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/helpers/entity-transfer-integration.php';
       require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/handlers/class-hp-clear-tree-handler.php';
       require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/helpers/citation-modal-helpers.php';
+      require_once plugin_dir_path(__FILE__) . 'admin/controllers/class-hp-whatsnew-controller.php';
       HeritagePress_Admin::instance(); // Only instantiate the new admin
       // new HP_Admin_New(); // Disabled legacy admin
     }

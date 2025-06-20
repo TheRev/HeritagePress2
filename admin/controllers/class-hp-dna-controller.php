@@ -223,7 +223,13 @@ class HP_DNA_Controller extends HP_Base_Controller
 
     switch ($action) {
       case 'delete':
-        $callback = function ($dna_group_id) use ($gedcom) {
+        $callback = function ($dna_group_id) use ($gedcom, $wpdb) {
+          // Remove group from related DNA tests and links (TNG logic)
+          $dna_tests_table = $wpdb->prefix . 'hp_dna_tests';
+          $dna_links_table = $wpdb->prefix . 'hp_dna_links';
+          $wpdb->update($dna_tests_table, ['dna_group' => '', 'dna_group_desc' => ''], ['dna_group' => $dna_group_id]);
+          $wpdb->update($dna_links_table, ['dna_group' => ''], ['dna_group' => $dna_group_id]);
+          // Now delete the group itself
           return $this->delete_dna_group($dna_group_id, $gedcom);
         };
         $this->handle_bulk_action($action, $dna_group_ids, $callback);

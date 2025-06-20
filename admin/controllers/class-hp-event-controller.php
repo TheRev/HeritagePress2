@@ -48,6 +48,7 @@ class HP_Event_Controller extends HP_Base_Controller
     add_action('wp_ajax_hp_get_person_events', array($this, 'ajax_get_person_events'));
     add_action('wp_ajax_hp_get_family_events', array($this, 'ajax_get_family_events'));
     add_action('wp_ajax_hp_get_event_types', array($this, 'ajax_get_event_types'));
+    add_action('wp_ajax_hp_update_event_with_address', array($this, 'ajax_update_event_with_address'));
   }
 
   /**
@@ -1186,6 +1187,120 @@ class HP_Event_Controller extends HP_Base_Controller
       error_log('HeritagePress Event Error: ' . $e->getMessage());
       wp_send_json_error('An error occurred while retrieving event types');
     }
+  }
+
+  /**
+   * AJAX: Update event and address in a single call (TNG compatibility)
+   */
+  public function ajax_update_event_with_address()
+  {
+    if (!$this->verify_nonce($_POST['nonce'])) {
+      wp_send_json_error('Security check failed');
+    }
+    if (!$this->check_capability('edit_genealogy')) {
+      wp_send_json_error('Insufficient permissions');
+    }
+    global $wpdb;
+    $events_table = $wpdb->prefix . 'hp_events';
+    $address_table = $wpdb->prefix . 'hp_addresses';
+    $rval = 0;
+    $addressID = intval($_POST['addressID'] ?? 0);
+    $eventID = intval($_POST['eventID'] ?? 0);
+    $tree = sanitize_text_field($_POST['gedcom'] ?? '');
+    $persfamID = sanitize_text_field($_POST['persfamID'] ?? '');
+    $eventtypeID = intval($_POST['eventtypeID'] ?? 0);
+    $info = sanitize_text_field($_POST['info'] ?? '');
+    $age = sanitize_text_field($_POST['age'] ?? '');
+    $agency = sanitize_text_field($_POST['agency'] ?? '');
+    $cause = sanitize_text_field($_POST['cause'] ?? '');
+    $address1 = sanitize_text_field($_POST['address1'] ?? '');
+    $address2 = sanitize_text_field($_POST['address2'] ?? '');
+    $city = sanitize_text_field($_POST['city'] ?? '');
+    $state = sanitize_text_field($_POST['state'] ?? '');
+    $zip = sanitize_text_field($_POST['zip'] ?? '');
+    $country = sanitize_text_field($_POST['country'] ?? '');
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $www = esc_url_raw($_POST['www'] ?? '');
+    // Address logic
+    if ($addressID) {
+      if ($address1 || $address2 || $city || $state || $zip || $country || $phone || $email || $www) {
+        $wpdb->update(
+          $address_table,
+          [
+            'address1' => $address1,
+            'address2' => $address2,
+            'city' => $city,
+            'state' => $state,
+            'zip' => $zip,
+            'country' => $country,
+            'phone' => $phone,
+            'email' => $email,
+            'www' => $www
+          ],
+          ['addressID' => $addressID],
+          ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'],
+          ['%d']
+        );
+        $rval = 1;
+      } else {
+        $wpdb->delete($address_table, ['addressID' => $addressID], ['%d']);
+        $addressID = 0;
+      }
+    } elseif ($address1 || $address2 || $city || $state || $zip || $country || $phone || $email || $www) {
+      $wpdb->insert($address_table, [
+        'address1' => $address1,
+        'address2' => $address2,
+        'city' => $city,
+        'state' => $state,
+        'zip' => $zip,
+        'country' => $country,
+        'gedcom' => $tree,
+        'phone' => $phone,
+        'email' => $email,
+        'www' => $www
+      ], ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']);
+      $addressID = $wpdb->insert_id;
+      $rval = 1;
+    }
+    // Event logic
+    if ($eventID) {
+      if ($age || $agency || $cause || $addressID || $info) {
+        $wpdb->update(
+          $events_table,
+          [
+            'age' => $age,
+            'agency' => $agency,
+            'cause' => $cause,
+            'addressID' => $addressID,
+            'info' => $info
+          ],
+          ['eventID' => $eventID],
+          ['%s', '%s', '%s', '%d', '%s'],
+          ['%d']
+        );
+        $rval = 1;
+      } else {
+        $wpdb->delete($events_table, ['eventID' => $eventID], ['%d']);
+      }
+    } else {
+      $wpdb->insert($events_table, [
+        'eventtypeID' => $eventtypeID,
+        'persfamID' => $persfamID,
+        'age' => $age,
+        'agency' => $agency,
+        'cause' => $cause,
+        'addressID' => $addressID,
+        'info' => $info,
+        'gedcom' => $tree,
+        'parenttag' => sanitize_text_field($_POST['parenttag'] ?? ''),
+        'eventdate' => sanitize_text_field($_POST['eventdate'] ?? ''),
+        'eventdatetr' => sanitize_text_field($_POST['eventdatetr'] ?? ''),
+        'eventplace' => sanitize_text_field($_POST['eventplace'] ?? '')
+      ], ['%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s']);
+      $rval = 1;
+    }
+    wp_send_json_success(['result' => $rval, 'addressID' => $addressID]);
   }
 
   /**

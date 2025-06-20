@@ -48,6 +48,7 @@ class HP_Media_Controller extends HP_Base_Controller
     // Register new AJAX endpoints
     add_action('wp_ajax_hp_get_media_events_xml', array($this, 'ajax_get_media_events_xml'));
     add_action('wp_ajax_hp_get_media_link_targets', array($this, 'ajax_get_media_link_targets'));
+    add_action('wp_ajax_hp_get_media_caption', array($this, 'ajax_get_media_caption'));
   }
 
   /**
@@ -1092,5 +1093,41 @@ class HP_Media_Controller extends HP_Base_Controller
     header('Content-Type: text/html; charset=' . get_option('blog_charset'));
     echo '<table class="wp-list-table widefat fixed striped">' . $lines . '</table>';
     wp_die();
+  }
+
+  /**
+   * AJAX: Get media caption (for overlays/popups)
+   * Accepts media_id or medialink_id, returns formatted HTML caption
+   */
+  public function ajax_get_media_caption()
+  {
+    if (!current_user_can('edit_genealogy')) {
+      wp_send_json_error(__('Insufficient permissions.', 'heritagepress'));
+    }
+    global $wpdb;
+    $media_id = isset($_POST['media_id']) ? intval($_POST['media_id']) : 0;
+    $medialink_id = isset($_POST['medialink_id']) ? intval($_POST['medialink_id']) : 0;
+    $caption = '';
+    if ($medialink_id) {
+      $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT m.description, m.notes, ml.altdescription, ml.altnotes FROM {$wpdb->prefix}hp_media m INNER JOIN {$wpdb->prefix}hp_medialinks ml ON m.mediaID = ml.mediaID WHERE ml.medialinkID = %d",
+        $medialink_id
+      ), ARRAY_A);
+      $title = !empty($row['altdescription']) ? $row['altdescription'] : $row['description'];
+      $desc = !empty($row['altnotes']) ? $row['altnotes'] : $row['notes'];
+    } elseif ($media_id) {
+      $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT description, notes FROM {$wpdb->prefix}hp_media WHERE mediaID = %d",
+        $media_id
+      ), ARRAY_A);
+      $title = $row ? $row['description'] : '';
+      $desc = $row ? $row['notes'] : '';
+    } else {
+      wp_send_json_error(__('No media_id or medialink_id provided.', 'heritagepress'));
+    }
+    $title = $title ? '<strong>' . esc_html($title) . '</strong>' : '';
+    $desc = $desc ? esc_html(mb_strimwidth($desc, 0, 200, '…')) : '';
+    $caption = $title && $desc ? $title . '<br/>' . $desc : $title . $desc;
+    wp_send_json_success(['caption' => $caption]);
   }
 }

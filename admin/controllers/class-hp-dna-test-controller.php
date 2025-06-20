@@ -27,6 +27,8 @@ class HP_DNA_Test_Controller extends HP_Base_Controller
     add_action('wp_ajax_hp_add_dna_test', array($this, 'ajax_add_dna_test'));
     add_action('wp_ajax_hp_edit_dna_test', array($this, 'ajax_edit_dna_test'));
     add_action('wp_ajax_hp_delete_dna_test', array($this, 'ajax_delete_dna_test'));
+    // Bulk delete selected DNA tests (AJAX endpoint)
+    add_action('wp_ajax_hp_bulk_delete_dna_tests', array($this, 'ajax_bulk_delete_dna_tests'));
   }
 
   // List all DNA tests
@@ -55,5 +57,33 @@ class HP_DNA_Test_Controller extends HP_Base_Controller
   {
     // TODO: Implement logic
     wp_send_json_success(['message' => 'DNA test deleted']);
+  }
+
+  /**
+   * Bulk delete selected DNA tests
+   * Expects POST: test_ids[] (array of test IDs), _wpnonce
+   */
+  public function ajax_bulk_delete_dna_tests()
+  {
+    if (!current_user_can('delete_genealogy')) {
+      wp_send_json_error(['message' => __('Insufficient permissions.', 'heritagepress')]);
+    }
+    if (!isset($_POST['test_ids'], $_POST['_wpnonce']) || !is_array($_POST['test_ids'])) {
+      wp_send_json_error(['message' => __('Invalid request.', 'heritagepress')]);
+    }
+    if (!wp_verify_nonce($_POST['_wpnonce'], 'hp_bulk_delete_dna_tests')) {
+      wp_send_json_error(['message' => __('Security check failed.', 'heritagepress')]);
+    }
+    global $wpdb;
+    $test_ids = array_map('sanitize_text_field', $_POST['test_ids']);
+    $deleted = 0;
+    foreach ($test_ids as $test_id) {
+      // Delete links first (as in TNG)
+      $wpdb->delete($wpdb->prefix . 'hp_dna_links', ['testID' => $test_id]);
+      // Delete the DNA test
+      $result = $wpdb->delete($wpdb->prefix . 'hp_dna_tests', ['testID' => $test_id]);
+      if ($result) $deleted++;
+    }
+    wp_send_json_success(['deleted' => $deleted, 'message' => sprintf(_n('%d DNA test deleted.', '%d DNA tests deleted.', $deleted, 'heritagepress'), $deleted)]);
   }
 }
