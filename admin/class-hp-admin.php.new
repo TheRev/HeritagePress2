@@ -1,0 +1,337 @@
+<?php
+
+/**
+ * HeritagePress Admin Class
+ * Handles admin-related functionality for the HeritagePress plugin.
+ * Refactored version with proper separation of concerns.
+ *
+ * Changes:
+ * - June 2025: Extracted tree functionality to separate handler and renderer classes
+ * - June 2025: Added safe_string helper to prevent PHP 8.1+ deprecation warnings
+ * - June 2025: Made submenu arguments null-safe to prevent WordPress core deprecation warnings
+ */
+class HeritagePress_Admin
+{
+    /**
+     * Single instance of class
+     */
+    private static $instance = null;
+
+    /**
+     * Tree handler instance
+     */
+    private $tree_handler = null;
+
+    /**
+     * Tree page renderer instance
+     */
+    private $tree_page_renderer = null;
+
+    /**
+     * Get class instance
+     */
+    public static function instance()
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * Constructor
+     */
+    private function __construct()
+    {
+        $this->init_hooks();
+        $this->load_dependencies();
+    }
+
+    /**
+     * Load dependencies
+     */
+    private function load_dependencies()
+    {
+        // Load tree handler
+        require_once dirname(__FILE__) . '/handlers/class-hp-tree-handler.php';
+        $this->tree_handler = HP_Tree_Handler::instance();
+
+        // Load tree page renderer
+        require_once dirname(__FILE__) . '/renderers/class-hp-tree-page-renderer.php';
+        $this->tree_page_renderer = HP_Tree_Page_Renderer::instance();
+    }
+
+    /**
+     * Initialize hooks
+     */
+    private function init_hooks()
+    {
+        add_action('admin_init', array($this, 'init_admin'));
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_init', array($this, 'handle_export_request'));
+    }
+
+    /**
+     * Add admin menu items
+     */
+    public function add_admin_menu()
+    {
+        require_once dirname(__FILE__) . '/admin_trees.php';
+
+        // Main menu: HeritagePress Dashboard
+        add_menu_page(
+            $this->safe_string(__('HeritagePress Dashboard', 'heritagepress')),
+            $this->safe_string(__('HeritagePress', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-dashboard'),
+            array($this->tree_page_renderer, 'render_dashboard_page'),
+            $this->safe_string('dashicons-admin-home'),
+            2
+        );
+
+        // Submenus
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Trees', 'heritagepress')),
+            $this->safe_string(__('Trees', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-trees'),
+            array($this, 'render_trees_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('People', 'heritagepress')),
+            $this->safe_string(__('People', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-people'),
+            array($this, 'render_people_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Families', 'heritagepress')),
+            $this->safe_string(__('Families', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-families'),
+            array($this, 'render_families_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Media', 'heritagepress')),
+            $this->safe_string(__('Media', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-media'),
+            array($this, 'render_media_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Sources', 'heritagepress')),
+            $this->safe_string(__('Sources', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-sources'),
+            array($this, 'render_sources_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Repositories', 'heritagepress')),
+            $this->safe_string(__('Repositories', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-repositories'),
+            array($this, 'render_repositories_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Import / Export', 'heritagepress')),
+            $this->safe_string(__('Import / Export', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-import-export'),
+            array($this, 'render_import_export_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Review Data', 'heritagepress')),
+            $this->safe_string(__('Review Data', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-review'),
+            array($this, 'render_review_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Users', 'heritagepress')),
+            $this->safe_string(__('Users', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-users'),
+            array($this, 'render_users_page')
+        );
+        add_submenu_page(
+            $this->safe_string('heritagepress-dashboard'),
+            $this->safe_string(__('Global Configuration', 'heritagepress')),
+            $this->safe_string(__('Global Configuration', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-config'),
+            array($this, 'render_config_page')
+        );
+        add_submenu_page(
+            '', // Empty string instead of null for hidden menu
+            $this->safe_string(__('Edit Tree', 'heritagepress')),
+            $this->safe_string(__('Edit Tree', 'heritagepress')),
+            $this->safe_string('manage_options'),
+            $this->safe_string('heritagepress-edittree'),
+            array($this->tree_page_renderer, 'render_edit_tree_page')
+        );
+    }
+
+    // Renderers for each submenu page
+    public function render_trees_page()
+    {
+        if (function_exists('heritagepress_admin_trees_page')) {
+            heritagepress_admin_trees_page();
+        } else {
+            echo '<div class="notice notice-error"><p>Trees admin page function not found.</p></div>';
+        }
+    }
+
+    public function render_people_page()
+    {
+        if (class_exists('HP_People_Controller')) {
+            (new HP_People_Controller())->display_page();
+        } else {
+            echo '<div class="notice notice-error"><p>People controller not found.</p></div>';
+        }
+    }
+
+    public function render_families_page()
+    {
+        if (class_exists('HP_Families_Controller')) {
+            (new HP_Families_Controller())->display_page();
+        } else {
+            echo '<h2>Families</h2><p>Families management coming soon.</p>';
+        }
+    }
+
+    public function render_media_page()
+    {
+        if (class_exists('HP_Media_Controller')) {
+            (new HP_Media_Controller())->display_page();
+        } else {
+            echo '<h2>Media</h2><p>Media management coming soon.</p>';
+        }
+    }
+
+    public function render_sources_page()
+    {
+        if (class_exists('HP_Source_Controller')) {
+            (new HP_Source_Controller())->display_page();
+        } else {
+            echo '<h2>Sources</h2><p>Sources management coming soon.</p>';
+        }
+    }
+
+    public function render_repositories_page()
+    {
+        if (class_exists('HP_Repository_Controller')) {
+            (new HP_Repository_Controller())->display_page();
+        } else {
+            echo '<h2>Repositories</h2><p>Repositories management coming soon.</p>';
+        }
+    }
+
+    public function render_import_export_page()
+    {
+        if (class_exists('HP_Import_Controller')) {
+            (new HP_Import_Controller())->display_page();
+        } else {
+            echo '<h2>Import/Export</h2><p>Import/Export functionality coming soon.</p>';
+        }
+    }
+
+    public function render_review_page()
+    {
+        echo '<div class="wrap"><h1>' . esc_html__('Data Review', 'heritagepress') . '</h1>';
+        echo '<p>' . esc_html__('Review data functionality coming soon.', 'heritagepress') . '</p></div>';
+    }
+
+    public function render_users_page()
+    {
+        if (class_exists('HP_User_Controller')) {
+            (new HP_User_Controller())->display_page();
+        } else {
+            echo '<div class="notice notice-error"><p>Users controller not found.</p></div>';
+        }
+    }
+
+    public function render_config_page()
+    {
+        if (class_exists('HeritagePress_Config_Controller')) {
+            (new HeritagePress_Config_Controller())->display_page();
+        } else {
+            echo '<div class="notice notice-error"><p>Config controller not found.</p></div>';
+        }
+    }
+
+    /**
+     * Initialize admin
+     */
+    public function init_admin()
+    {
+        // Load admin dependencies
+        $this->load_files();
+
+        // Initialize controllers
+        $this->init_controllers();
+    }
+
+    /**
+     * Load required files
+     */
+    private function load_files()
+    {
+        // Load controllers
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-people-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-trees-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-import-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/controllers/class-hp-export-controller.php';
+
+        // Load admin controllers
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-admin-trees-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-branch-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-id-checker-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-id-checker-endpoint.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-entity-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-media-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-source-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-repository-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-user-controller.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-config-controller.php';
+        require_once dirname(__FILE__) . '/controllers/class-hp-families-controller.php';
+
+        // Load handlers
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-ajax-handler.php';
+        require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/handlers/class-hp-form-handler.php';
+    }
+
+    /**
+     * Initialize controllers
+     */
+    private function init_controllers()
+    {
+        new HP_People_Controller();
+        new HP_Trees_Controller();
+        new HP_Import_Controller();
+    }
+
+    /**
+     * Handle export request
+     */
+    public function handle_export_request()
+    {
+        $export_controller = new HP_Export_Controller();
+        $export_controller->handle_export_request();
+    }
+
+    /**
+     * Safely return a string, never null
+     */
+    private function safe_string($value) {
+        return is_string($value) ? $value : '';
+    }
+}

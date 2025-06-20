@@ -1,33 +1,40 @@
 # HeritagePress Admin Architecture
 
-## IMPORTANT: Controller-Based Architecture
+## Overview
 
-This plugin uses a **controller-based architecture**.
+The admin functionality uses a **modular architecture** with clear separation of concerns.
 
-### DO NOT CREATE:
+### Architecture Components:
 
-- `class-hp-admin.php`
-- `class-hp-admin-new.php` (except the loader)
-- Any monolithic admin files
+1. **Main Admin Class** (`class-hp-admin.php`):
 
-### INSTEAD USE:
+   - Handles menu registration and initialization
+   - Loads handlers, renderers, and controllers
+   - Acts as the entry point for admin functionality
 
-#### Controllers (`admin/controllers/`)
+2. **Controllers** (`admin/controllers/`):
 
-Handle business logic and coordinate between models and views:
+   - Handle business logic
+   - Coordinate between models and views
+   - Examples:
+     - `class-hp-import-controller.php` - GEDCOM import logic
+     - `class-hp-people-controller.php` - People management
+     - `class-hp-families-controller.php` - Family management
+     - `class-hp-trees-controller.php` - Tree management
+     - `class-hp-settings-controller.php` - Plugin settings
 
-- `class-hp-import-controller.php` - GEDCOM import logic
-- `class-hp-people-controller.php` - People management
-- `class-hp-families-controller.php` - Family management
-- `class-hp-trees-controller.php` - Tree management
-- `class-hp-settings-controller.php` - Plugin settings
+3. **Handlers** (`admin/handlers/`):
 
-#### Handlers (`admin/handlers/`)
+   - Process form submissions and AJAX requests
+   - Examples:
+     - `class-hp-import-handler.php` - Import form processing
+     - `class-hp-ajax-handler.php` - AJAX endpoints
+     - `class-hp-tree-handler.php` - Tree form processing
 
-Handle form submissions and AJAX requests:
-
-- `class-hp-import-handler.php` - Import form processing
-- `class-hp-ajax-handler.php` - AJAX endpoints
+4. **Renderers** (`admin/renderers/`):
+   - Render UI components and admin pages
+   - Examples:
+     - `class-hp-tree-page-renderer.php` - Tree admin pages
 
 #### Views (`admin/views/`)
 
