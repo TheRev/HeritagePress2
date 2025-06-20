@@ -1,6 +1,6 @@
 /**
  * Import/Export JavaScript functionality
- * Based on TNG admin.js and dataimport.js
+ * Based on genealogy software admin.js and dataimport.js
  */
 
 // Global variables for import/export

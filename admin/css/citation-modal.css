@@ -1,0 +1,344 @@
+/**
+ * Citation Modal Styles
+ * Replicates TNG admin_citations.php modal appearance
+ */
+
+/* Modal Overlay */
+.citation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal Content */
+.citation-modal-content {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  max-height: 90%;
+  width: 800px;
+  height: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Header */
+.citation-modal-header {
+  background: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.citation-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.citation-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.citation-modal-close:hover {
+  color: #333;
+}
+
+/* Modal Body */
+.citation-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Prevent body scroll when modal is open */
+body.citation-modal-open {
+  overflow: hidden;
+}
+
+/* Citation sections (replicating TNG databack ajaxwindow) */
+.databack.ajaxwindow {
+  background: #fff;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  padding: 15px;
+}
+
+.databack.ajaxwindow .subhead {
+  margin: 0 0 15px 0;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.databack.ajaxwindow .subhead strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Citation action buttons */
+.citation-actions {
+  margin-bottom: 15px;
+}
+
+.citation-actions input[type="button"] {
+  background: #0073aa;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.citation-actions input[type="button"]:hover {
+  background: #005a87;
+}
+
+/* Citations table */
+#citationstbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#citationstbl td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.fieldnameback {
+  background: #f9f9f9;
+  font-weight: 600;
+  color: #333;
+}
+
+.lightback {
+  background: #fafafa;
+}
+
+/* Sortable rows */
+.sortrow {
+  cursor: move;
+}
+
+.sortrow:hover {
+  background: #f0f0f0;
+}
+
+.dragarea {
+  text-align: center;
+  padding: 4px !important;
+  cursor: grab;
+}
+
+.dragarea:active {
+  cursor: grabbing;
+}
+
+.dragarea img {
+  display: block;
+  margin: 2px auto;
+}
+
+/* Action icons */
+.smallicon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  text-decoration: none;
+}
+
+.admin-edit-icon:before {
+  content: "✏️";
+  font-size: 12px;
+}
+
+.admin-delete-icon:before {
+  content: "🗑️";
+  font-size: 12px;
+}
+
+/* Form styles */
+.citation-form table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.citation-form table td {
+  padding: 8px;
+  vertical-align: top;
+}
+
+.citation-form table td:first-child {
+  width: 120px;
+  font-weight: 600;
+  color: #333;
+}
+
+.citation-form input[type="text"],
+.citation-form textarea,
+.citation-form select {
+  width: 100%;
+  max-width: 400px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.citation-form textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Form buttons */
+.citation-form input[type="submit"],
+.citation-form input[type="button"] {
+  background: #0073aa;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.citation-form input[type="submit"]:hover,
+.citation-form input[type="button"]:hover {
+  background: #005a87;
+}
+
+.citation-form .btn {
+  background: #0073aa;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.citation-form .btn:hover {
+  background: #005a87;
+}
+
+/* Source search results */
+#sourceresults {
+  border: 1px solid #ddd;
+  background: #fff;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.source-result-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  color: #0073aa;
+}
+
+.source-result-item:hover {
+  background: #f0f0f0;
+  color: #005a87;
+}
+
+.source-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Source title display */
+#sourceTitle {
+  margin-top: 5px;
+  font-style: italic;
+  color: #666;
+  font-size: 13px;
+}
+
+/* Spinner */
+#lastspinner {
+  vertical-align: middle;
+}
+
+/* Reliability explanation */
+.reliability-explanation {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Radio button styling */
+.citation-form input[type="radio"] {
+  width: auto;
+  margin-right: 5px;
+}
+
+/* Multiple select styling */
+.citation-form select[multiple] {
+  height: 120px;
+}
+
+/* Help links */
+.citation-form a {
+  color: #0073aa;
+  text-decoration: none;
+}
+
+.citation-form a:hover {
+  color: #005a87;
+  text-decoration: underline;
+}
+
+/* Cancel links */
+.cancel-link {
+  color: #666;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.cancel-link:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .citation-modal-content {
+    width: 95%;
+    height: 95%;
+  }
+
+  .citation-modal-body {
+    padding: 15px;
+  }
+
+  .citation-form table td:first-child {
+    width: 100px;
+  }
+}

@@ -993,7 +993,7 @@ input[type="file"]:focus {
   }
 }
 
-/* Legacy TNG Compatibility */
+/* Legacy Compatibility */
 .admin-main {
   margin-top: 20px;
   max-width: 1200px;

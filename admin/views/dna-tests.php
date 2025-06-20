@@ -3,7 +3,7 @@
 /**
  * DNA Tests Management Interface
  *
- * Complete replication of TNG admin_dna_tests.php and admin_new_dna_test.php functionality
+ * Complete replication of genealogy admin DNA tests functionality
  * Provides tabbed interface for listing, adding, and editing DNA tests
  */
 

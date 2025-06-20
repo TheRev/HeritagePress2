@@ -3,7 +3,7 @@
 /**
  * Enhanced GEDCOM Parser for HeritagePress
  *
- * This enhanced parser handles complex GEDCOM fields including:
+ * This enhanced parser handles more complex GEDCOM fields including:
  * - Family records (HUSB, WIFE, CHIL)
  * - Sources and citations
  * - Events with dates and places
@@ -25,12 +25,6 @@ class HP_Enhanced_GEDCOM_Parser
   private $line_info;
   private $save_state;
   private $import_options;
-  private $header_info;
-
-  /**
-   * Submitter records storage
-   */
-  private $submitters = array();
 
   public function __construct($file_path, $tree_id, $import_options = array())
   {
@@ -48,8 +42,8 @@ class HP_Enhanced_GEDCOM_Parser
       'useroffset' => 0,
       'branch' => ''
     ), $import_options);
+
     $this->init_stats();
-    $this->header_info = array();
     $this->errors = array();
     $this->warnings = array();
     $this->save_state = array(
@@ -76,6 +70,7 @@ class HP_Enhanced_GEDCOM_Parser
       throw new Exception('Cannot open GEDCOM file: ' . $file_path);
     }
   }
+
   private function init_stats()
   {
     $this->stats = array(
@@ -86,16 +81,16 @@ class HP_Enhanced_GEDCOM_Parser
       'notes' => 0,
       'events' => 0,
       'start_time' => time(),
-      'end_time' => 0,
-      'header_info' => array()
+      'end_time' => 0
     );
   }
 
   /**
-   * Parse GEDCOM file line by line (Enhanced)
+   * Parse GEDCOM file line by line (Enhanced style)
    */  public function parse()
   {
     global $wpdb;
+
     try {
       // Start transaction
       $wpdb->query('START TRANSACTION');
@@ -105,27 +100,13 @@ class HP_Enhanced_GEDCOM_Parser
         $this->clear_all_data();
       }
 
-      // Parse header information first
+      // Main parsing loop
       $this->line_info = $this->get_line();
-      if ($this->line_info['tag'] === 'HEAD') {
-        $this->parse_header();
-      }      // Main parsing loop
-      $line_count = 0;
-      $max_lines = 50000; // Safety limit
-
-      while ($this->line_info['tag'] && $line_count < $max_lines) {
-        $line_count++;
-
+      while ($this->line_info['tag']) {
         if ($this->line_info['level'] == 0) {
           preg_match('/^@(\S+)@/', $this->line_info['tag'], $matches);
           $id = isset($matches[1]) ? $matches[1] : '';
           $rest = trim($this->line_info['rest']);
-
-          // Skip header if we encounter it again
-          if ($this->line_info['tag'] === 'HEAD') {
-            $this->skip_record();
-            continue;
-          }
 
           // Handle "Events only" mode
           if ($this->import_options['eventsonly'] === 'yes') {
@@ -157,28 +138,19 @@ class HP_Enhanced_GEDCOM_Parser
                 $this->parse_repository($id);
                 break;
               case 'SUBM':
-                $this->parse_submitter($id);
-                break;
               case 'SUBN':
-                // Skip submission records
+                // Skip these for now but count them
                 $this->skip_record();
                 break;
               default:
-                // Skip unknown record types or handle more loosely
-                $this->warnings[] = "Unknown record type: $rest (ID: $id)";
+                // Skip unknown record types
                 $this->skip_record();
                 break;
             }
           }
         } else {
-          // If we encounter a non-level 0 line at the top level, skip it
-          // This can happen with malformed GEDCOM files or parsing errors
           $this->line_info = $this->get_line();
         }
-      }
-
-      if ($line_count >= $max_lines) {
-        $this->warnings[] = "Parsing stopped at maximum line limit ($max_lines) for safety";
       }
 
       // Commit transaction
@@ -206,14 +178,14 @@ class HP_Enhanced_GEDCOM_Parser
   }
 
   /**
-   * Parse a GEDCOM line
+   * Parse a GEDCOM line (standard style)
    */
   private function get_line()
   {
     $line_info = array();
 
     if ($line = ltrim(fgets($this->file_handle, 1024))) {
-      // Clean up the line
+      // Clean up the line (standard style)
       $patterns = array('/��.*��/', '/��.*/', '/.*��/', '/@@/');
       $replacements = array('', '', '', '@');
       $line = preg_replace($patterns, $replacements, $line);
@@ -239,151 +211,9 @@ class HP_Enhanced_GEDCOM_Parser
   }
 
   /**
-   * Parse GEDCOM header information
+   * Parse individual record (enhanced with more fields)
    */
-  private function parse_header()
-  {
-    $header_info = array(
-      'source_program' => '',
-      'source_version' => '',
-      'destination' => '',
-      'submitter' => '',
-      'gedcom_version' => '',
-      'gedcom_form' => '',
-      'character_set' => '',
-      'date' => '',
-      'time' => '',
-      'filename' => '',
-      'copyright' => ''
-    );
-
-    $prev_level = 0;
-    $this->line_info = $this->get_line();
-
-    while ($this->line_info['tag'] && $this->line_info['level'] > $prev_level) {
-      if ($this->line_info['level'] == 1) {
-        $tag = $this->line_info['tag'];
-        $value = trim($this->line_info['rest']);
-
-        switch ($tag) {
-          case 'SOUR':
-            $header_info['source_program'] = $value;
-            // Parse all source sub-records
-            $next_line = $this->get_line();
-            while ($next_line['level'] == 2) {
-              switch ($next_line['tag']) {
-                case 'VERS':
-                  $header_info['source_version'] = trim($next_line['rest']);
-                  break;
-                case 'NAME':
-                  $header_info['source_name'] = trim($next_line['rest']);
-                  break;
-                case 'CORP':
-                  $header_info['source_corporation'] = trim($next_line['rest']);
-                  // Check for address and phone under CORP
-                  $corp_line = $this->get_line();
-                  while ($corp_line['level'] == 3) {
-                    if ($corp_line['tag'] == 'ADDR') {
-                      $header_info['source_address'] = trim($corp_line['rest']);
-                      // Check for continuation lines
-                      $addr_line = $this->get_line();
-                      while ($addr_line['level'] == 4 && ($addr_line['tag'] == 'CONT' || $addr_line['tag'] == 'CONC')) {
-                        if ($addr_line['tag'] == 'CONT') {
-                          $header_info['source_address'] .= "\n" . trim($addr_line['rest']);
-                        } else {
-                          $header_info['source_address'] .= " " . trim($addr_line['rest']);
-                        }
-                        $addr_line = $this->get_line();
-                      }
-                      $corp_line = $addr_line;
-                    } else if ($corp_line['tag'] == 'PHON') {
-                      $header_info['source_phone'] = trim($corp_line['rest']);
-                      $corp_line = $this->get_line();
-                    } else {
-                      $corp_line = $this->get_line();
-                    }
-                  }
-                  $next_line = $corp_line;
-                  continue 2; // Skip the normal increment
-                default:
-                  break;
-              }
-              $next_line = $this->get_line();
-            }
-            $this->line_info = $next_line;
-            break;
-          case 'DEST':
-            $header_info['destination'] = $value;
-            $this->line_info = $this->get_line();
-            break;
-          case 'SUBM':
-            $header_info['submitter'] = $value;
-            $this->line_info = $this->get_line();
-            break;
-          case 'GEDC':
-            // Parse GEDCOM version info
-            $gedc_line = $this->get_line();
-            while ($gedc_line['level'] == 2) {
-              if ($gedc_line['tag'] == 'VERS') {
-                $header_info['gedcom_version'] = trim($gedc_line['rest']);
-              } else if ($gedc_line['tag'] == 'FORM') {
-                $header_info['gedcom_form'] = trim($gedc_line['rest']);
-              }
-              $gedc_line = $this->get_line();
-            }
-            $this->line_info = $gedc_line;
-            break;
-          case 'CHAR':
-            $header_info['character_set'] = $value;
-            $this->line_info = $this->get_line();
-            break;
-          case 'DATE':
-            $header_info['date'] = $value;
-            // Check for time on next line
-            $next_line = $this->get_line();
-            if ($next_line['level'] == 2 && $next_line['tag'] == 'TIME') {
-              $header_info['time'] = trim($next_line['rest']);
-              $this->line_info = $this->get_line();
-            } else {
-              $this->line_info = $next_line;
-            }
-            break;
-          case 'FILE':
-            $header_info['filename'] = $value;
-            $this->line_info = $this->get_line();
-            break;
-          case 'COPR':
-            $header_info['copyright'] = $value;
-            $this->line_info = $this->get_line();
-            break;
-          default:
-            // Skip unknown header tags
-            $this->skip_to_next_level($this->line_info['level']);
-            break;
-        }
-      } else {
-        break;
-      }
-    }
-
-    $this->stats['header_info'] = $header_info;
-    $this->header_info = $header_info;
-  }
-
-  /**
-   * Skip to next record at same or lower level
-   */
-  private function skip_to_next_level($current_level)
-  {
-    $this->line_info = $this->get_line();
-    while ($this->line_info['tag'] && $this->line_info['level'] > $current_level) {
-      $this->line_info = $this->get_line();
-    }
-  }
-
-  /**
-   * Parse individual record (enhanced)
-   */  private function parse_individual($person_id)
+  private function parse_individual($person_id)
   {
     global $wpdb;
 
@@ -406,44 +236,35 @@ class HP_Enhanced_GEDCOM_Parser
             $info['sex'] = strtoupper(trim($this->line_info['rest']));
             $this->line_info = $this->get_line();
             break;
+
           case 'BIRT':
             $birth_info = $this->parse_event($prev_level);
             $info['birthdate'] = $birth_info['date'];
             $info['birthplace'] = $birth_info['place'];
-            // Save birth event to hp_events table
-            $this->save_event($person_id, 'BIRT', $birth_info);
             break;
 
           case 'DEAT':
             $death_info = $this->parse_event($prev_level);
             $info['deathdate'] = $death_info['date'];
             $info['deathplace'] = $death_info['place'];
-            // Save death event to hp_events table
-            $this->save_event($person_id, 'DEAT', $death_info);
             break;
 
           case 'BURI':
             $burial_info = $this->parse_event($prev_level);
             $info['burialdate'] = $burial_info['date'];
             $info['burialplace'] = $burial_info['place'];
-            // Save burial event to hp_events table
-            $this->save_event($person_id, 'BURI', $burial_info);
             break;
           case 'RESI':
             $residence_info = $this->parse_event($prev_level);
-            // Save residence event to hp_events table
-            $this->save_event($person_id, 'RESI', $residence_info);
+            // For now, just count the event (could be saved to events table)
             $this->stats['events']++;
             break;
+
           case 'EVEN':
           case 'EDUC':
           case 'OCCU':
           case 'RELI':
           case 'BAPM':
-          case 'BARM':
-          case 'BASM':
-          case 'CHR':
-          case 'CHRA':
           case 'CONF':
           case 'FCOM':
           case 'ORDN':
@@ -455,12 +276,8 @@ class HP_Enhanced_GEDCOM_Parser
           case 'WILL':
           case 'GRAD':
           case 'RETI':
-          case 'ADOP':
-          case 'SLGC':
-          case 'CREM':
-            // Handle individual life events according to GEDCOM 5.5.1
+            // Handle other individual events
             $event_info = $this->parse_event($prev_level);
-            $this->save_event($person_id, $tag, $event_info);
             $this->stats['events']++;
             break;
 
@@ -475,6 +292,7 @@ class HP_Enhanced_GEDCOM_Parser
             }
             $this->line_info = $this->get_line();
             break;
+
           case 'FAMC':
             // Family as child - extract family ID
             preg_match('/^@(\S+)@/', $this->line_info['rest'], $matches);
@@ -484,21 +302,20 @@ class HP_Enhanced_GEDCOM_Parser
             $this->skip_sub_record($prev_level);
             break;
 
-          case 'NOTE':
-            // Handle note references for individuals (TODO: implement)
+          case 'ADOP':
+          case 'SLGC':
+            // Skip these events for now
             $this->skip_sub_record($prev_level);
             break;
+
+          case 'NOTE':
+            // Handle note references for individuals
+            $this->handle_note_reference($person_id, 'general');
+            break;
+
           default:
-            // Handle unknown tags as custom events if they look like events
-            // Only handle if it's a proper event (not CONT, CONC, etc.)
-            if (strlen($tag) >= 3 && !in_array($tag, array('CONT', 'CONC', 'SOUR', 'NOTE', 'CHAN', 'RFN', 'AFN', 'REFN', 'RIN', 'RESN', '_UID', 'OBJE', '_PHOTO', 'FAMS', 'FAMC'))) {
-              $event_info = $this->parse_event($prev_level);
-              $this->save_event($person_id, $tag, $event_info);
-              $this->stats['events']++;
-            } else {
-              // Skip non-event tags
-              $this->skip_sub_record($prev_level);
-            }
+            // Skip unknown tags
+            $this->line_info = $this->get_line();
             break;
         }
       } else {
@@ -512,7 +329,7 @@ class HP_Enhanced_GEDCOM_Parser
   }
 
   /**
-   * Parse NAME field
+   * Parse NAME field (standard style)
    */  private function parse_name(&$info)
   {
     preg_match('/(.*)\s*\/(.*)\/\s*(.*)/', $this->line_info['rest'], $matches);
@@ -589,8 +406,6 @@ class HP_Enhanced_GEDCOM_Parser
             $marriage_info = $this->parse_event($prev_level);
             $info['marrdate'] = $marriage_info['date'];
             $info['marrplace'] = $marriage_info['place'];
-            // Save marriage event to hp_events table
-            $this->save_event($family_id, 'MARR', $marriage_info);
             break;
           case 'DIV':
           case 'ANUL':
@@ -598,22 +413,13 @@ class HP_Enhanced_GEDCOM_Parser
           case 'MARB':
           case 'MARS':
           case 'SLGS':
-            // Handle family events according to GEDCOM 5.5.1
+            // Handle family events
             $event_info = $this->parse_event($prev_level);
-            $this->save_event($family_id, $tag, $event_info);
             $this->stats['events']++;
             break;
 
           default:
-            // Handle unknown tags as custom family events if they look like events
-            if (strlen($tag) >= 3 && !in_array($tag, array('CONT', 'CONC', 'SOUR', 'NOTE', 'CHAN', 'RFN', 'AFN', 'REFN', 'RIN', 'RESN', '_UID', 'OBJE', '_PHOTO'))) {
-              $event_info = $this->parse_event($prev_level);
-              $this->save_event($family_id, $tag, $event_info);
-              $this->stats['events']++;
-            } else {
-              // Skip non-event tags
-              $this->skip_sub_record($prev_level);
-            }
+            $this->line_info = $this->get_line();
             break;
         }
       } else {
@@ -624,210 +430,6 @@ class HP_Enhanced_GEDCOM_Parser
     // Save family to database
     $this->save_family($family_id, $info, $children);
     $this->stats['families']++;
-  }
-
-  /**
-   * Save event to hp_events table
-   */  private function save_event($persfam_id, $event_type, $event_info)
-  {
-    global $wpdb;
-
-    // Skip if we're in events only mode and this isn't an event import
-    if ($this->import_options['eventsonly'] && !$this->import_options['allevents']) {
-      return;
-    }
-
-    $table_name = $wpdb->prefix . 'hp_events'; // Determine if this is a family or individual event
-    $is_family_event = in_array($event_type, array('MARR', 'DIV', 'ANUL', 'ENGA', 'MARB', 'MARS', 'SLGS'));
-    $offset_type = $is_family_event ? 'family' : 'individual';
-    $parent_tag = $is_family_event ? 'FAM' : 'INDI';
-
-    // Apply offset for append mode
-    $persfam_id = $this->apply_offset($persfam_id, $offset_type);    // Get event type ID (simplified mapping)
-    $event_type_id = $this->get_event_type_id($event_type);
-
-    $event_data = array(
-      'gedcom' => $this->tree_id,
-      'persfamID' => $persfam_id,
-      'eventtypeID' => $event_type_id,
-      'eventdate' => isset($event_info['date']) ? $event_info['date'] : '',
-      'eventplace' => isset($event_info['place']) ? $event_info['place'] : '',
-      'info' => isset($event_info['info']) ? $event_info['info'] : '',
-      'parenttag' => $parent_tag
-    );
-
-    // Handle "do not replace" option
-    if ($this->import_options['del'] === 'no') {
-      $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table_name WHERE gedcom = %s AND persfamID = %s AND eventtypeID = %d",
-        $this->tree_id,
-        $persfam_id,
-        $event_type_id
-      ));
-
-      if ($existing) {
-        return; // Don't replace existing events
-      }
-    }
-
-    $result = $wpdb->insert($table_name, $event_data);
-
-    if ($result === false) {
-      $this->warnings[] = "Failed to insert event: $event_type for $persfam_id";
-    } else {
-      // Save citations for this event
-      if (isset($event_info['sources']) && is_array($event_info['sources'])) {
-        foreach ($event_info['sources'] as $citation) {
-          $this->save_citation($persfam_id, '', $citation);
-        }
-      }
-    }
-  }
-  /**
-   * Get event type ID from eventtypes table
-   */
-  private function get_event_type_id($event_type)
-  {
-    global $wpdb;
-
-    // Cache event types to avoid repeated database queries
-    static $event_type_cache = array();
-
-    if (isset($event_type_cache[$event_type])) {
-      return $event_type_cache[$event_type];
-    }
-
-    // Query the eventtypes table for the event type ID
-    $table_name = $wpdb->prefix . 'hp_eventtypes';
-    $event_type_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT eventtypeID FROM $table_name WHERE tag = %s",
-      $event_type
-    ));
-
-    // If not found, create a new event type entry
-    if (!$event_type_id) {
-      // Determine if it's an individual or family event
-      $family_events = array('MARR', 'DIV', 'ANUL', 'ENGA', 'MARB', 'MARS', 'MARL', 'DIVF', 'SLGS');
-      $type = in_array($event_type, $family_events) ? 'F' : 'I';
-
-      // Create display name from event type
-      $display_names = array(
-        'BIRT' => 'Birth',
-        'DEAT' => 'Death',
-        'BURI' => 'Burial',
-        'CREM' => 'Cremation',
-        'ADOP' => 'Adoption',
-        'BAPM' => 'Baptism',
-        'BARM' => 'Bar Mitzvah',
-        'BASM' => 'Bas Mitzvah',
-        'CHR' => 'Christening',
-        'CHRA' => 'Adult Christening',
-        'CONF' => 'Confirmation',
-        'FCOM' => 'First Communion',
-        'ORDN' => 'Ordination',
-        'NATU' => 'Naturalization',
-        'EMIG' => 'Emigration',
-        'IMMI' => 'Immigration',
-        'CENS' => 'Census',
-        'PROB' => 'Probate',
-        'WILL' => 'Will',
-        'GRAD' => 'Graduation',
-        'RETI' => 'Retirement',
-        'RESI' => 'Residence',
-        'OCCU' => 'Occupation',
-        'EDUC' => 'Education',
-        'RELI' => 'Religion',
-        'EVEN' => 'Event',
-        'MARR' => 'Marriage',
-        'DIV' => 'Divorce',
-        'ANUL' => 'Annulment',
-        'ENGA' => 'Engagement',
-        'MARB' => 'Marriage Banns',
-        'MARS' => 'Marriage Settlement',
-        'MARL' => 'Marriage License',
-        'DIVF' => 'Divorce Filed',
-        'SLGC' => 'LDS Sealing Child',
-        'SLGS' => 'LDS Sealing Spouse'
-      );
-
-      $display = isset($display_names[$event_type]) ? $display_names[$event_type] : ucfirst(strtolower($event_type));
-
-      // Get next available order number
-      $max_order = $wpdb->get_var("SELECT MAX(ordernum) FROM $table_name");
-      $ordernum = ($max_order ? $max_order : 0) + 1;
-
-      // Insert new event type using existing table structure
-      $result = $wpdb->insert(
-        $table_name,
-        array(
-          'tag' => $event_type,
-          'description' => $display,
-          'display' => $display,
-          'keep' => 1,
-          'collapse' => 0,
-          'ordernum' => $ordernum,
-          'ldsevent' => (strpos($event_type, 'SLG') === 0) ? 1 : 0,
-          'type' => $type
-        )
-      );
-
-      if ($result !== false) {
-        $event_type_id = $wpdb->insert_id;
-      } else {
-        // Fallback: return a default ID if insert fails
-        $event_type_id = 1;
-      }
-    }
-
-    // Cache the result
-    $event_type_cache[$event_type] = $event_type_id;
-
-    return $event_type_id;
-  }
-
-  /**
-   * Save citation to database
-   */
-  private function save_citation($person_or_family_id, $event_id, $citation_info)
-  {
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'hp_citations';
-
-    // Apply offset for append mode
-    $person_or_family_id = $this->apply_offset($person_or_family_id, 'individual');
-    $source_id = isset($citation_info['source_id']) ? $this->apply_offset($citation_info['source_id'], 'source') : '';
-
-    $citation_data = array(
-      'gedcom' => $this->tree_id,
-      'persfamID' => $person_or_family_id,
-      'eventID' => $event_id,
-      'sourceID' => $source_id,
-      'page' => isset($citation_info['page']) ? $citation_info['page'] : '',
-      'citetext' => isset($citation_info['text']) ? $citation_info['text'] : '',
-      'description' => isset($citation_info['description']) ? $citation_info['description'] : '',
-      'ordernum' => 1
-    );
-
-    // Handle "do not replace" option
-    if ($this->import_options['del'] === 'no') {
-      $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table_name WHERE gedcom = %s AND persfamID = %s AND sourceID = %s",
-        $this->tree_id,
-        $person_or_family_id,
-        $source_id
-      ));
-
-      if ($existing) {
-        return; // Don't replace existing citations
-      }
-    }
-
-    $result = $wpdb->insert($table_name, $citation_data);
-
-    if ($result === false) {
-      $this->warnings[] = "Failed to insert citation for $person_or_family_id";
-    }
   }
 
   /**
@@ -850,10 +452,6 @@ class HP_Enhanced_GEDCOM_Parser
           case 'PLAC':
             $event['place'] = addslashes($this->line_info['rest']);
             $this->line_info = $this->get_line();
-            // Skip any sub-records of PLAC (like MAP, LATI, LONG)
-            while ($this->line_info['tag'] && $this->line_info['level'] > $event_level) {
-              $this->line_info = $this->get_line();
-            }
             break;
           case 'SOUR':
             // Parse source citation
@@ -1097,6 +695,7 @@ class HP_Enhanced_GEDCOM_Parser
             $media_data['datetaken'] = trim($this->line_info['rest']);
             $this->line_info = $this->get_line();
             break;
+
           default:
             $this->line_info = $this->get_line();
             break;
@@ -1104,12 +703,12 @@ class HP_Enhanced_GEDCOM_Parser
       } else {
         $this->line_info = $this->get_line();
       }
-    }    // Determine media type from file extension
-    if ($media_data['form']) {
-      $media_data['mediatypeID'] = $this->get_media_type($media_data['form']);
     }
 
-    // Insert into media table (handle duplicates for append mode)
+    // Determine media type from file extension
+    if ($media_data['form']) {
+      $media_data['mediatypeID'] = $this->get_media_type($media_data['form']);
+    }    // Insert into media table (handle duplicates for append mode)
     $table_name = $wpdb->prefix . 'hp_media';
 
     if ($this->import_options['del'] === 'append') {
@@ -1200,10 +799,12 @@ class HP_Enhanced_GEDCOM_Parser
             $note_data['note'] .= ' ' . trim($this->line_info['rest']);
             $this->line_info = $this->get_line();
             break;
+
           case 'CONT':
             $note_data['note'] .= "\n" . trim($this->line_info['rest']);
             $this->line_info = $this->get_line();
             break;
+
           default:
             $this->line_info = $this->get_line();
             break;
@@ -1225,11 +826,375 @@ class HP_Enhanced_GEDCOM_Parser
   }
 
   /**
-   * Get header information
+   * Parse repository record (full implementation)
    */
-  public function get_header_info()
+  private function parse_repository($repo_id)
   {
-    return $this->header_info;
+    global $wpdb;
+
+    $repo_data = array(
+      'repoID' => $repo_id,
+      'reponame' => '',
+      'gedcom' => $this->tree_id,
+      'addressID' => 0,
+      'changedate' => date('Y-m-d H:i:s'),
+      'changedby' => 'GEDCOM Import'
+    );
+
+    $prev_level = 1;
+    $this->line_info = $this->get_line();
+
+    while ($this->line_info['tag'] && $this->line_info['level'] >= $prev_level) {
+      if ($this->line_info['level'] == $prev_level) {
+        $tag = $this->line_info['tag'];
+
+        switch ($tag) {
+          case 'NAME':
+            $repo_data['reponame'] = trim($this->line_info['rest']);
+            $this->line_info = $this->get_line();
+            break;
+
+          case 'ADDR':
+            // For now, just skip address parsing - could be enhanced later
+            $this->skip_sub_record($prev_level);
+            break;
+
+          default:
+            $this->line_info = $this->get_line();
+            break;
+        }
+      } else {
+        $this->line_info = $this->get_line();
+      }
+    }    // Insert into repositories table (handle duplicates for append mode)
+    $table_name = $wpdb->prefix . 'hp_repositories';
+
+    if ($this->import_options['del'] === 'append') {
+      // Check if repository already exists
+      $existing = $wpdb->get_var($wpdb->prepare(
+        "SELECT ID FROM $table_name WHERE gedcom = %s AND repoID = %s",
+        $repo_data['gedcom'],
+        $repo_data['repoID']
+      ));
+
+      if ($existing) {
+        // Skip if already exists in append mode
+        return;
+      }
+    }
+
+    $result = $wpdb->insert($table_name, $repo_data);
+
+    if ($result === false) {
+      $this->warnings[] = "Failed to insert repository: $repo_id";
+    }
+    // Note: No stats increment for repositories as they're not counted in the original stats
+  }
+
+  /**
+   * Skip an entire record
+   */
+  private function skip_record()
+  {
+    $start_level = 0;
+    $this->line_info = $this->get_line();
+
+    while ($this->line_info['tag'] && $this->line_info['level'] > $start_level) {
+      $this->line_info = $this->get_line();
+    }
+  }
+
+  /**
+   * Initialize individual data structure
+   */
+  private function init_individual()
+  {
+    return array(
+      'lastname' => '',
+      'firstname' => '',
+      'suffix' => '',
+      'sex' => 'U',
+      'birthdate' => '',
+      'birthplace' => '',
+      'deathdate' => '',
+      'deathplace' => '',
+      'burialdate' => '',
+      'burialplace' => '',
+      'famc' => '',
+      'spouse_families' => array(),
+      'living' => 0,
+      'private' => 0
+    );
+  }
+
+  /**
+   * Initialize family data structure
+   */
+  private function init_family()
+  {
+    return array(
+      'husband' => '',
+      'wife' => '',
+      'marrdate' => '',
+      'marrplace' => '',
+      'living' => 0,
+      'private' => 0
+    );
+  }
+
+  /**
+   * Save individual to database (enhanced)
+   */  private function save_individual($person_id, $info)
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'hp_people';
+
+    // Apply offset for append mode
+    $person_id = $this->apply_offset($person_id, 'individual');
+
+    // Check if individual already exists
+    $existing = $wpdb->get_var($wpdb->prepare(
+      "SELECT COUNT(*) FROM $table_name WHERE personID = %s AND gedcom = %s",
+      $person_id,
+      $this->tree_id
+    ));
+
+    // Handle replacement options (standard)
+    if ($existing) {
+      switch ($this->save_state['del']) {
+        case 'no':
+          return; // Don't replace existing records
+        case 'match':
+          // Only replace if this is a matching record
+          break;
+        case 'yes':
+          // Replace all current data
+          break;
+        case 'append':
+          // Should not happen since we applied offset
+          return;
+      }
+
+      // For newer only option, check dates
+      if ($this->import_options['neweronly']) {
+        $existing_changedate = $wpdb->get_var($wpdb->prepare(
+          "SELECT changedate FROM $table_name WHERE personID = %s AND gedcom = %s",
+          $person_id,
+          $this->tree_id
+        ));
+
+        // Skip if existing record is newer (simplified date comparison)
+        if ($existing_changedate && $existing_changedate > date('Y-m-d H:i:s', strtotime('-1 day'))) {
+          return;
+        }
+      }
+    }
+
+    // Apply name transformations
+    $lastname = $info['lastname'];
+    $firstname = $info['firstname'];
+
+    // Uppercase surnames option
+    if ($this->import_options['ucaselast']) {
+      $lastname = strtoupper($lastname);
+    }
+
+    $data = array(
+      'personID' => $person_id,
+      'lastname' => $lastname,
+      'firstname' => $firstname,
+      'suffix' => $info['suffix'],
+      'sex' => $info['sex'],
+      'birthdate' => $info['birthdate'],
+      'birthplace' => $info['birthplace'],
+      'deathdate' => $info['deathdate'],
+      'deathplace' => $info['deathplace'],
+      'burialdate' => $info['burialdate'],
+      'burialplace' => $info['burialplace'],
+      'famc' => $info['famc'],
+      'living' => $info['living'],
+      'private' => $info['private'],
+      'gedcom' => $this->tree_id,
+      'changedate' => date('Y-m-d H:i:s')
+    );
+
+    if ($existing) {
+      // Update existing record
+      $wpdb->update($table_name, $data, array(
+        'personID' => $person_id,
+        'gedcom' => $this->tree_id
+      ));
+    } else {
+      // Insert new record
+      $wpdb->insert($table_name, $data);
+    }
+
+    $this->stats['individuals']++;
+  }
+
+  /**
+   * Save family to database
+   */  private function save_family($family_id, $info, $children)
+  {
+    global $wpdb;
+
+    $families_table = $wpdb->prefix . 'hp_families';
+    $children_table = $wpdb->prefix . 'hp_children';
+
+    // Apply offset for append mode
+    $family_id = $this->apply_offset($family_id, 'family');
+
+    // Check if family already exists
+    $existing = $wpdb->get_var($wpdb->prepare(
+      "SELECT COUNT(*) FROM $families_table WHERE familyID = %s AND gedcom = %s",
+      $family_id,
+      $this->tree_id
+    ));
+
+    // Handle replacement options (standard)
+    if ($existing) {
+      switch ($this->save_state['del']) {
+        case 'no':
+          return; // Don't replace existing records
+        case 'match':
+          // Only replace if this is a matching record
+          break;
+        case 'yes':
+          // Replace all current data
+          break;
+        case 'append':
+          // Should not happen since we applied offset
+          return;
+      }
+
+      // For newer only option, check dates
+      if ($this->import_options['neweronly']) {
+        $existing_changedate = $wpdb->get_var($wpdb->prepare(
+          "SELECT changedate FROM $families_table WHERE familyID = %s AND gedcom = %s",
+          $family_id,
+          $this->tree_id
+        ));
+
+        // Skip if existing record is newer (simplified date comparison)
+        if ($existing_changedate && $existing_changedate > date('Y-m-d H:i:s', strtotime('-1 day'))) {
+          return;
+        }
+      }
+    }
+
+    $family_data = array(
+      'familyID' => $family_id,
+      'husband' => $info['husband'],
+      'wife' => $info['wife'],
+      'marrdate' => $info['marrdate'],
+      'marrplace' => $info['marrplace'],
+      'living' => $info['living'],
+      'private' => $info['private'],
+      'gedcom' => $this->tree_id,
+      'changedate' => date('Y-m-d H:i:s')
+    );
+
+    if ($existing) {
+      // Update existing record
+      $wpdb->update($families_table, $family_data, array(
+        'familyID' => $family_id,
+        'gedcom' => $this->tree_id
+      ));
+
+      // Delete existing children relationships
+      $wpdb->delete($children_table, array(
+        'familyID' => $family_id,
+        'gedcom' => $this->tree_id
+      ));
+    } else {
+      $order = 1;
+      foreach ($children as $child_id) {
+        $wpdb->insert($children_table, array(
+          'familyID' => $family_id,
+          'personID' => $child_id,
+          'ordernum' => $order,
+          'gedcom' => $this->tree_id
+        ));
+        $order++;
+      }
+    }
+
+    $this->stats['families']++;
+  }
+
+  /**
+   * Calculate offsets for append mode (standard)
+   */
+  private function calculate_offsets()
+  {
+    global $wpdb;
+
+    // Calculate person ID offset
+    $max_person = $wpdb->get_var($wpdb->prepare(
+      "SELECT MAX(CAST(SUBSTRING(personID, 2) AS UNSIGNED)) FROM {$wpdb->prefix}hp_people WHERE gedcom = %s AND personID REGEXP '^I[0-9]+$'",
+      $this->tree_id
+    ));
+    $this->save_state['ioffset'] = $max_person ? $max_person : 0;
+
+    // Calculate family ID offset
+    $max_family = $wpdb->get_var($wpdb->prepare(
+      "SELECT MAX(CAST(SUBSTRING(familyID, 2) AS UNSIGNED)) FROM {$wpdb->prefix}hp_families WHERE gedcom = %s AND familyID REGEXP '^F[0-9]+$'",
+      $this->tree_id
+    ));
+    $this->save_state['foffset'] = $max_family ? $max_family : 0;
+
+    // Calculate source ID offset
+    $max_source = $wpdb->get_var($wpdb->prepare(
+      "SELECT MAX(CAST(SUBSTRING(sourceID, 2) AS UNSIGNED)) FROM {$wpdb->prefix}hp_sources WHERE gedcom = %s AND sourceID REGEXP '^S[0-9]+$'",
+      $this->tree_id
+    ));
+    $this->save_state['soffset'] = $max_source ? $max_source : 0;
+
+    // Calculate note ID offset
+    $max_note = $wpdb->get_var($wpdb->prepare(
+      "SELECT MAX(CAST(SUBSTRING(noteID, 2) AS UNSIGNED)) FROM {$wpdb->prefix}hp_xnotes WHERE gedcom = %s AND noteID REGEXP '^N[0-9]+$'",
+      $this->tree_id
+    ));
+    $this->save_state['noffset'] = $max_note ? $max_note : 0;
+
+    // Calculate media ID offset
+    $max_media = $wpdb->get_var($wpdb->prepare(
+      "SELECT MAX(CAST(SUBSTRING(mediaID, 2) AS UNSIGNED)) FROM {$wpdb->prefix}hp_media WHERE gedcom = %s AND mediaID REGEXP '^M[0-9]+$'",
+      $this->tree_id
+    ));
+    $this->save_state['roffset'] = $max_media ? $max_media : 0;
+  }
+
+  /**
+   * Apply offset to ID for append mode
+   */
+  private function apply_offset($id, $type)
+  {
+    if ($this->import_options['del'] !== 'append') {
+      return $id;
+    }
+
+    // Extract numeric part and apply offset
+    if (preg_match('/^([A-Z])(\d+)$/', $id, $matches)) {
+      $prefix = $matches[1];
+      $number = intval($matches[2]);
+
+      switch ($type) {
+        case 'individual':
+          return $prefix . ($number + $this->save_state['ioffset']);
+        case 'family':
+          return $prefix . ($number + $this->save_state['foffset']);
+        case 'source':
+          return $prefix . ($number + $this->save_state['soffset']);
+        case 'note':
+          return $prefix . ($number + $this->save_state['noffset']);
+        case 'media':
+          return $prefix . ($number + $this->save_state['roffset']);
+      }
+    }
+
+    return $id;
   }
 
   /**
@@ -1257,509 +1222,36 @@ class HP_Enhanced_GEDCOM_Parser
   }
 
   /**
-   * Get submitters information
-   */
-  public function get_submitters()
-  {
-    return $this->submitters;
-  }
-
-  /**
-   * Display import validation summary with header info
-   */
-  public function display_import_summary()
-  {
-    echo "\n" . str_repeat("=", 70) . "\n";
-    echo "  GEDCOM IMPORT VALIDATION SUMMARY\n";
-    echo str_repeat("=", 70) . "\n\n";
-
-    // Header Information
-    if (!empty($this->header_info)) {
-      echo "📄 SOURCE INFORMATION:\n";
-      if ($this->header_info['source_program']) {
-        echo "   Program: " . $this->header_info['source_program'] . "\n";
-      }
-      if ($this->header_info['source_name']) {
-        echo "   Name: " . $this->header_info['source_name'] . "\n";
-      }
-      if ($this->header_info['source_version']) {
-        echo "   Version: " . $this->header_info['source_version'] . "\n";
-      }
-      if ($this->header_info['source_corporation']) {
-        echo "   Company: " . $this->header_info['source_corporation'] . "\n";
-      }
-      if ($this->header_info['source_address']) {
-        echo "   Address: " . str_replace("\n", "\n            ", $this->header_info['source_address']) . "\n";
-      }
-      if ($this->header_info['source_phone']) {
-        echo "   Phone: " . $this->header_info['source_phone'] . "\n";
-      }
-      if ($this->header_info['date']) {
-        echo "   Export Date: " . $this->header_info['date'] . "\n";
-      }
-      if ($this->header_info['filename']) {
-        echo "   Filename: " . $this->header_info['filename'] . "\n";
-      }
-      if ($this->header_info['character_set']) {
-        echo "   Character Set: " . $this->header_info['character_set'] . "\n";
-      }
-      if ($this->header_info['gedcom_version']) {
-        echo "   GEDCOM Version: " . $this->header_info['gedcom_version'] . "\n";
-      }
-      echo "\n";
-    }
-
-    // Submitter Information
-    if (!empty($this->submitters)) {
-      echo "👤 SUBMITTER INFORMATION:\n";
-      foreach ($this->submitters as $submitter_id => $submitter) {
-        if ($submitter['name']) {
-          echo "   Name: " . $submitter['name'] . "\n";
-        }
-        if ($submitter['address']) {
-          echo "   Address: " . str_replace("\n", "\n            ", $submitter['address']) . "\n";
-        }
-        if ($submitter['email']) {
-          echo "   Email: " . $submitter['email'] . "\n";
-        }
-        if ($submitter['phone']) {
-          echo "   Phone: " . $submitter['phone'] . "\n";
-        }
-      }
-      echo "\n";
-    }
-
-    // Import Statistics
-    echo "📊 IMPORT RESULTS:\n";
-    echo "   Individuals: " . $this->stats['individuals'] . "\n";
-    echo "   Families: " . $this->stats['families'] . "\n";
-    echo "   Sources: " . $this->stats['sources'] . "\n";
-    echo "   Events: " . $this->stats['events'] . "\n";
-    echo "   Media: " . $this->stats['media'] . "\n";
-    echo "   Notes: " . $this->stats['notes'] . "\n";
-
-    // Database verification
-    global $wpdb;
-    if (isset($this->tree_id)) {
-      echo "\n📋 DATABASE VERIFICATION:\n";
-      $tables = array(
-        'People' => $wpdb->prefix . 'hp_people',
-        'Families' => $wpdb->prefix . 'hp_families',
-        'Sources' => $wpdb->prefix . 'hp_sources',
-        'Events' => $wpdb->prefix . 'hp_events',
-        'Citations' => $wpdb->prefix . 'hp_citations',
-        'Repositories' => $wpdb->prefix . 'hp_repositories'
-      );
-
-      foreach ($tables as $name => $table) {
-        $count = $wpdb->get_var($wpdb->prepare(
-          "SELECT COUNT(*) FROM $table WHERE gedcom = %s",
-          $this->tree_id
-        ));
-        echo "   $name: $count records\n";
-      }
-    }
-
-    // Errors and warnings
-    if (!empty($this->errors)) {
-      echo "\n❌ ERRORS:\n";
-      foreach ($this->errors as $error) {
-        echo "   • $error\n";
-      }
-    }
-
-    if (!empty($this->warnings)) {
-      echo "\n⚠️  WARNINGS:\n";
-      foreach ($this->warnings as $warning) {
-        echo "   • $warning\n";
-      }
-    }
-
-    // Success indicator
-    if (empty($this->errors)) {
-      echo "\n✅ IMPORT COMPLETED SUCCESSFULLY!\n";
-    } else {
-      echo "\n❌ IMPORT COMPLETED WITH ERRORS\n";
-    }
-
-    echo str_repeat("=", 70) . "\n";
-  }
-
-  /**
-   * Skip current record and all its sub-records
-   */
-  private function skip_record()
-  {
-    $current_level = $this->line_info['level'];
-    $this->line_info = $this->get_line();
-
-    // Skip all lines at higher level than current record
-    while ($this->line_info['tag'] && $this->line_info['level'] > $current_level) {
-      $this->line_info = $this->get_line();
-    }
-  }
-
-  /**
-   * Initialize individual record structure
-   */  private function init_individual()
-  {
-    return array(
-      'personID' => '',
-      'firstname' => '',
-      'lastname' => '',
-      'suffix' => '',
-      'title' => '',
-      'sex' => '',
-      'birthdate' => '',
-      'birthplace' => '',
-      'deathdate' => '',
-      'deathplace' => '',
-      'burialdate' => '',
-      'burialplace' => '',
-      'famc' => '',
-      'changedate' => date('Y-m-d H:i:s'),
-      'living' => 1,
-      'private' => 0,
-      'gedcom' => $this->tree_id,
-      'changedby' => 'GEDCOM Import'
-    );
-  }
-
-  /**
-   * Initialize family record structure
-   */  private function init_family()
-  {
-    return array(
-      'familyID' => '',
-      'husband' => '',
-      'wife' => '',
-      'marrdate' => '',
-      'marrplace' => '',
-      'divdate' => '',
-      'divplace' => '',
-      'changedate' => date('Y-m-d H:i:s'),
-      'living' => 1,
-      'private' => 0,
-      'gedcom' => $this->tree_id,
-      'changedby' => 'GEDCOM Import'
-    );
-  }
-
-  /**
-   * Save individual record to database
-   */  private function save_individual($person_id, $info)
-  {
-    global $wpdb;
-
-    // Apply offset if in append mode
-    $person_id = $this->apply_offset($person_id, 'individual');
-
-    $info['personID'] = $person_id;
-    $info['gedcom'] = $this->tree_id;
-
-    // Remove fields that don't exist in the database table
-    unset($info['spouse_families']);
-
-    // Check if record exists for matching mode
-    if ($this->import_options['del'] === 'match') {
-      $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT personID FROM {$wpdb->prefix}hp_people WHERE personID = %s AND gedcom = %s",
-        $person_id,
-        $this->tree_id
-      ));
-
-      if ($existing) {
-        $wpdb->update(
-          $wpdb->prefix . 'hp_people',
-          $info,
-          array('personID' => $person_id, 'gedcom' => $this->tree_id)
-        );
-        return;
-      }
-    }
-
-    // Insert new record
-    $wpdb->insert($wpdb->prefix . 'hp_people', $info);
-  }
-
-  /**
-   * Save family record to database
-   */
-  private function save_family($family_id, $info, $children = array())
-  {
-    global $wpdb;
-
-    // Apply offset if in append mode
-    $family_id = $this->apply_offset($family_id, 'family');
-    $info['familyID'] = $family_id;
-    $info['gedcom'] = $this->tree_id;
-
-    // Apply offsets to husband/wife IDs
-    if ($info['husband']) {
-      $info['husband'] = $this->apply_offset($info['husband'], 'individual');
-    }
-    if ($info['wife']) {
-      $info['wife'] = $this->apply_offset($info['wife'], 'individual');
-    }
-
-    // Check if record exists for matching mode
-    if ($this->import_options['del'] === 'match') {
-      $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT familyID FROM {$wpdb->prefix}hp_families WHERE familyID = %s AND gedcom = %s",
-        $family_id,
-        $this->tree_id
-      ));
-
-      if ($existing) {
-        $wpdb->update(
-          $wpdb->prefix . 'hp_families',
-          $info,
-          array('familyID' => $family_id, 'gedcom' => $this->tree_id)
-        );
-        return;
-      }
-    }
-    // Insert new record
-    $wpdb->insert($wpdb->prefix . 'hp_families', $info);
-  }
-
-  /**
-   * Parse repository record
-   */
-  private function parse_repository($repo_id)
-  {
-    global $wpdb;
-    $repo_data = array(
-      'repoID' => $repo_id,
-      'gedcom' => $this->tree_id,
-      'reponame' => '',
-      'changedate' => date('Y-m-d H:i:s'),
-      'changedby' => 'GEDCOM Import'
-    );
-
-    $prev_level = 1;
-    $this->line_info = $this->get_line();
-
-    while ($this->line_info['tag'] && $this->line_info['level'] >= $prev_level) {
-      if ($this->line_info['level'] == $prev_level) {
-        $tag = $this->line_info['tag'];
-        switch ($tag) {
-          case 'NAME':
-            $repo_data['reponame'] = trim($this->line_info['rest']);
-            $this->line_info = $this->get_line();
-            break;
-          default:
-            $this->line_info = $this->get_line();
-            break;
-        }
-      } else {
-        break;
-      }
-    }
-
-    // Check for duplicates in append mode
-    $table_name = $wpdb->prefix . 'hp_repositories';
-
-    if ($this->import_options['del'] === 'append') {
-      $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT repoID FROM $table_name WHERE gedcom = %s AND repoID = %s",
-        $this->tree_id,
-        $repo_id
-      ));
-
-      if ($existing) {
-        return; // Skip if already exists
-      }
-    }
-
-    $result = $wpdb->insert($table_name, $repo_data);
-
-    if ($result === false) {
-      $this->warnings[] = "Failed to insert repository: $repo_id";
-    }
-  }
-
-  /**
-   * Parse submitter record
-   */
-  private function parse_submitter($subm_id)
-  {
-    $submitter = array(
-      'id' => $subm_id,
-      'name' => '',
-      'address' => '',
-      'email' => '',
-      'phone' => ''
-    );
-
-    $prev_level = 1;
-    $this->line_info = $this->get_line();
-
-    while ($this->line_info['tag'] && $this->line_info['level'] >= $prev_level) {
-      if ($this->line_info['level'] == $prev_level) {
-        $tag = $this->line_info['tag'];
-
-        switch ($tag) {
-          case 'NAME':
-            $submitter['name'] = trim($this->line_info['rest']);
-            $this->line_info = $this->get_line();
-            break;
-          case 'ADDR':
-            $submitter['address'] = trim($this->line_info['rest']);
-            // Handle continuation lines
-            $this->line_info = $this->get_line();
-            while ($this->line_info['tag'] && $this->line_info['level'] > $prev_level) {
-              if ($this->line_info['tag'] === 'CONT') {
-                $submitter['address'] .= "\n" . trim($this->line_info['rest']);
-              } else if ($this->line_info['tag'] === 'CONC') {
-                $submitter['address'] .= " " . trim($this->line_info['rest']);
-              }
-              $this->line_info = $this->get_line();
-            }
-            break;
-          case 'EMAIL':
-            $submitter['email'] = trim($this->line_info['rest']);
-            $this->line_info = $this->get_line();
-            break;
-          case 'PHON':
-            $submitter['phone'] = trim($this->line_info['rest']);
-            $this->line_info = $this->get_line();
-            break;
-          default:
-            $this->line_info = $this->get_line();
-            break;
-        }
-      } else {
-        break;
-      }
-    }
-
-    // Store in submitters array for header display
-    $this->submitters[$subm_id] = $submitter;
-  }
-
-  /**
-   * Apply offset for append mode
-   */
-  private function apply_offset($id, $type)
-  {
-    if ($this->import_options['del'] !== 'append') {
-      return $id;
-    }
-
-    switch ($type) {
-      case 'individual':
-        return $id + $this->save_state['ioffset'];
-      case 'family':
-        return $id + $this->save_state['foffset'];
-      case 'source':
-        return $id + $this->save_state['soffset'];
-      case 'note':
-        return $id + $this->save_state['noffset'];
-      case 'repository':
-        return $id + $this->save_state['roffset'];
-      default:
-        return $id;
-    }
-  }
-
-  /**
-   * Calculate offsets for append mode
-   */
-  private function calculate_offsets()
-  {
-    global $wpdb;
-
-    if ($this->import_options['del'] !== 'append') {
-      return;
-    }
-
-    // Calculate individual offset
-    $max_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT MAX(personID) FROM {$wpdb->prefix}hp_people WHERE gedcom = %s",
-      $this->tree_id
-    ));
-    $this->save_state['ioffset'] = $max_id ? $max_id : 0;
-
-    // Calculate family offset
-    $max_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT MAX(familyID) FROM {$wpdb->prefix}hp_families WHERE gedcom = %s",
-      $this->tree_id
-    ));
-    $this->save_state['foffset'] = $max_id ? $max_id : 0;
-
-    // Calculate source offset
-    $max_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT MAX(sourceID) FROM {$wpdb->prefix}hp_sources WHERE gedcom = %s",
-      $this->tree_id
-    ));
-    $this->save_state['soffset'] = $max_id ? $max_id : 0;
-
-    // Calculate note offset
-    $max_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT MAX(noteID) FROM {$wpdb->prefix}hp_xnotes WHERE gedcom = %s",
-      $this->tree_id
-    ));
-    $this->save_state['noffset'] = $max_id ? $max_id : 0;
-
-    // Calculate repository offset
-    $max_id = $wpdb->get_var($wpdb->prepare(
-      "SELECT MAX(repoID) FROM {$wpdb->prefix}hp_repositories WHERE gedcom = %s",
-      $this->tree_id
-    ));
-    $this->save_state['roffset'] = $max_id ? $max_id : 0;
-  }
-
-  /**
-   * Clear all data for tree (when del = 'yes')
+   * Clear all data for "All current data" replacement mode
    */
   private function clear_all_data()
   {
     global $wpdb;
 
+    // Delete all records for this tree
     $tables = array(
-      'hp_people',
-      'hp_families',
-      'hp_sources',
-      'hp_events',
-      'hp_citations',
-      'hp_media',
-      'hp_xnotes',
-      'hp_notelinks',
-      'hp_repositories'
+      $wpdb->prefix . 'hp_people',
+      $wpdb->prefix . 'hp_families',
+      $wpdb->prefix . 'hp_children',
+      $wpdb->prefix . 'hp_sources',
+      $wpdb->prefix . 'hp_media',
+      $wpdb->prefix . 'hp_xnotes',
+      $wpdb->prefix . 'hp_events'
     );
 
     foreach ($tables as $table) {
-      $wpdb->delete($wpdb->prefix . $table, array('gedcom' => $this->tree_id));
+      $wpdb->delete($table, array('gedcom' => $this->tree_id));
     }
   }
 
   /**
    * Process events only mode
    */
-  private function process_events_only($id, $record_type)
+  private function process_events_only($id, $type)
   {
-    // In events only mode, we only process events from individuals and families
-    // but skip the actual individual/family creation
-
-    $prev_level = 1;
-    $this->line_info = $this->get_line();
-
-    while ($this->line_info['tag'] && $this->line_info['level'] >= $prev_level) {
-      if ($this->line_info['level'] == $prev_level) {
-        $tag = $this->line_info['tag'];
-
-        // Process event tags
-        if (in_array($tag, array('BIRT', 'DEAT', 'BURI', 'MARR', 'DIV', 'EVEN', 'RESI', 'OCCU', 'EDUC', 'RELI', 'BAPM', 'CONF', 'FCOM', 'ORDN', 'NATU', 'EMIG', 'IMMI', 'CENS', 'PROB', 'WILL', 'GRAD', 'RETI', 'ADOP'))) {
-          $event_info = $this->parse_event($prev_level);
-          $this->save_event($id, $tag, $event_info);
-          $this->stats['events']++;
-        } else {
-          $this->line_info = $this->get_line();
-        }
-      } else {
-        break;
-      }
-    }
+    // In events only mode, we extract and update only event information
+    // This is a simplified implementation - in full genealogy software this would update
+    // existing records with new event data only
+    $this->skip_record(); // For now, just skip - this would need more complex logic
   }
 }

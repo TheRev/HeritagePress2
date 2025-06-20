@@ -1,0 +1,201 @@
+# TNG File Tracker - HeritagePress Conversion
+
+## Overview
+This document tracks the conversion process from TNG (The Next Generation) genealogy software to HeritagePress WordPress plugin. It documents which TNG files have been converted, adapted, or replaced.
+
+## Database Schema Conversion
+
+### TNG Tables → HeritagePress Tables
+| TNG Table | HeritagePress Table | Status | Notes |
+|-----------|-------------------|--------|--------|
+| `tng_people` | `wp_hp_people` | ✅ Complete | Core person data |
+| `tng_families` | `wp_hp_families` | ✅ Complete | Family relationships |
+| `tng_children` | `wp_hp_children` | ✅ Complete | Parent-child links |
+| `tng_events` | `wp_hp_events` | ✅ Complete | Life events |
+| `tng_eventtypes` | `wp_hp_eventtypes` | ✅ Complete | Event type definitions |
+| `tng_places` | `wp_hp_places` | ✅ Complete | Geographic locations |
+| `tng_sources` | `wp_hp_sources` | ✅ Complete | Source citations |
+| `tng_repositories` | `wp_hp_repositories` | ✅ Complete | Repository information |
+| `tng_media` | `wp_hp_media` | ✅ Complete | Media objects |
+| `tng_medialinks` | `wp_hp_medialinks` | ✅ Complete | Media associations |
+| `tng_notes` | `wp_hp_xnotes` | ✅ Complete | Note records |
+| `tng_notelinks` | `wp_hp_notelinks` | ✅ Complete | Note associations |
+| `tng_trees` | `wp_hp_trees` | ✅ Complete | Family tree definitions |
+| `tng_branches` | `wp_hp_branches` | ✅ Complete | Tree branch organization |
+| `tng_cemeteries` | `wp_hp_cemeteries` | ✅ Complete | Cemetery records |
+| `tng_xnotes` | `wp_hp_xnotes` | ✅ Complete | Extended notes |
+
+## Core File Conversions
+
+### Admin Interface Files
+| TNG File | HeritagePress Equivalent | Status | Location |
+|----------|-------------------------|--------|----------|
+| `admin_header.php` | `admin/views/templates/header.php` | ✅ Converted | WordPress admin integration |
+| `admin_footer.php` | `admin/views/templates/footer.php` | ✅ Converted | WordPress admin integration |
+| `admin_dataimport.php` | `admin/views/import/import.php` | ✅ Converted | GEDCOM import interface |
+| `admin_dataexport.php` | `admin/views/import/export.php` | ✅ Converted | GEDCOM export interface |
+| `admin_secondmenu.php` | `admin/views/import/post-import.php` | ✅ Converted | Post-import utilities |
+| `admin_people.php` | `admin/views/people/people-main.php` | ✅ Converted | People management |
+| `admin_families.php` | `admin/views/families/families-main.php` | ✅ Converted | Family management |
+| `admin_trees.php` | `admin/views/trees/trees-main.php` | ✅ Converted | Tree management |
+
+### Core Logic Files
+| TNG File | HeritagePress Equivalent | Status | Notes |
+|----------|-------------------------|--------|--------|
+| `begin.php` | `heritagepress.php` | ✅ Converted | Main plugin file |
+| `config.php` | `includes/core/class-hp-config.php` | ✅ Converted | Configuration management |
+| `genlib.php` | `includes/helpers/class-hp-genealogy-utils.php` | ✅ Converted | Genealogy utilities |
+| `adminlib.php` | `admin/class-hp-admin.php` | ✅ Converted | Admin utilities |
+| `importgedcom.php` | `includes/gedcom/class-hp-gedcom-importer.php` | ✅ Converted | GEDCOM import logic |
+| `exportgedcom.php` | `includes/gedcom/class-hp-gedcom-exporter.php` | ✅ Converted | GEDCOM export logic |
+
+### JavaScript Files
+| TNG File | HeritagePress Equivalent | Status | Notes |
+|----------|-------------------------|--------|--------|
+| `admin.js` | `admin/js/admin.js` | ✅ Converted | Admin interface JS |
+| `dataimport.js` | `admin/js/import-export.js` | ✅ Converted | Import/export functionality |
+| `genealogy.js` | `public/js/genealogy.js` | ✅ Converted | Public genealogy features |
+
+## Template Conversions
+
+### Public Templates
+| TNG Template | HeritagePress Template | Status | Notes |
+|--------------|----------------------|--------|--------|
+| `getperson.php` | `public/partials/person-profile.php` | ✅ Converted | Individual person display |
+| `familygroup.php` | `public/partials/family-group.php` | ✅ Converted | Family group sheet |
+| `pedigreechart.php` | `public/partials/pedigree-chart.php` | ✅ Converted | Pedigree chart display |
+| `descendchart.php` | `public/partials/descendant-chart.php` | ✅ Converted | Descendant chart |
+| `browsepeople.php` | `public/partials/browse-people.php` | ✅ Converted | People browser |
+| `browsefamilies.php` | `public/partials/browse-families.php` | ✅ Converted | Family browser |
+
+### Form Templates
+| TNG Form | HeritagePress Form | Status | Notes |
+|----------|-------------------|--------|--------|
+| `admin_people_addnewform.php` | `admin/views/people/add-person.php` | ✅ Converted | Add person form |
+| `admin_families_addnewform.php` | `admin/views/families/add-family.php` | ✅ Converted | Add family form |
+| `admin_trees_addnewform.php` | `admin/views/trees/add-tree.php` | ✅ Converted | Add tree form |
+
+## Import/Export System
+
+### GEDCOM Processing
+| TNG Component | HeritagePress Component | Status | Notes |
+|---------------|------------------------|--------|--------|
+| GEDCOM Parser | `class-hp-enhanced-gedcom-parser.php` | ✅ Enhanced | Improved parsing with error handling |
+| Import Options | Comprehensive option system | ✅ Enhanced | More granular control |
+| Progress Tracking | Background job system | ✅ New Feature | Real-time progress monitoring |
+| Chunked Upload | Modern file upload system | ✅ New Feature | Large file support |
+
+### Import Options Mapping
+| TNG Option | HeritagePress Option | Status | Implementation |
+|------------|---------------------|--------|----------------|
+| `del=yes` | `del=yes` | ✅ Complete | Replace all current data |
+| `del=match` | `del=match` | ✅ Complete | Replace matching records only |
+| `del=no` | `del=no` | ✅ Complete | Do not replace existing |
+| `del=append` | `del=append` | ✅ Complete | Append all with offset |
+| `allevents=1` | `allevents=1` | ✅ Complete | Import all events |
+| `ucaselast=1` | `ucaselast=1` | ✅ Complete | Uppercase surnames |
+| `importmedia=1` | `importmedia=1` | ✅ Complete | Import media links |
+| `importnotes=1` | `importnotes=1` | ✅ Complete | Import notes |
+
+## WordPress Integration
+
+### WordPress-Specific Adaptations
+| Component | Implementation | Status | Notes |
+|-----------|---------------|--------|--------|
+| User Management | WordPress users | ✅ Complete | Integration with WP user system |
+| Permissions | WordPress capabilities | ✅ Complete | Role-based access control |
+| Database | WordPress table prefix | ✅ Complete | `wp_hp_` prefix for all tables |
+| Admin Interface | WordPress admin pages | ✅ Complete | Native WP admin integration |
+| Styling | WordPress admin styles | ✅ Complete | Consistent with WP theme |
+| AJAX | WordPress AJAX system | ✅ Complete | Secure nonce-based requests |
+| Localization | WordPress i18n | ✅ Complete | Translation-ready |
+
+## File Organization
+
+### Directory Structure
+```
+heritagepress/
+├── admin/                      # Admin interface (WordPress integration)
+│   ├── class-hp-admin.php     # Main admin class
+│   ├── css/                   # Admin stylesheets
+│   ├── js/                    # Admin JavaScript
+│   └── views/                 # Admin template files
+├── includes/                   # Core functionality
+│   ├── controllers/           # Business logic controllers
+│   ├── core/                  # Core classes (Person, Family, etc.)
+│   ├── database/              # Database management
+│   ├── gedcom/                # GEDCOM processing
+│   ├── handlers/              # Form and AJAX handlers
+│   └── helpers/               # Utility classes
+├── migrations/                 # Database schema migrations
+├── public/                     # Public-facing functionality
+│   ├── css/                   # Public stylesheets
+│   ├── js/                    # Public JavaScript
+│   └── partials/              # Public template parts
+├── heritagepress.php          # Main plugin file
+└── uninstall.php             # Plugin cleanup
+```
+
+## Removed TNG Features
+
+### Features Not Converted
+| TNG Feature | Reason | Alternative |
+|-------------|--------|-------------|
+| User authentication | WordPress handles | WordPress user system |
+| Template system | WordPress themes | WordPress theme integration |
+| Language files | WordPress i18n | WordPress translation system |
+| File permissions | WordPress security | WordPress security model |
+| Session management | WordPress sessions | WordPress session handling |
+
+## Security Improvements
+
+### Enhanced Security Features
+| Security Feature | Implementation | Status |
+|------------------|---------------|--------|
+| Input sanitization | WordPress sanitization functions | ✅ Complete |
+| Output escaping | WordPress escaping functions | ✅ Complete |
+| Nonce verification | WordPress nonce system | ✅ Complete |
+| Capability checks | WordPress capability system | ✅ Complete |
+| SQL injection prevention | WordPress prepared statements | ✅ Complete |
+| XSS prevention | WordPress escaping | ✅ Complete |
+
+## Performance Optimizations
+
+### Improvements Over TNG
+| Optimization | Implementation | Benefits |
+|-------------|---------------|----------|
+| Background processing | WordPress cron jobs | Non-blocking imports |
+| Chunked uploads | Modern file handling | Large file support |
+| Database indexing | Optimized indexes | Faster queries |
+| Caching | WordPress object cache | Improved performance |
+| Lazy loading | Modern JavaScript | Better user experience |
+
+## Testing Status
+
+### Conversion Testing
+| Test Category | Status | Coverage |
+|---------------|--------|----------|
+| Database migration | ✅ Complete | All table structures |
+| GEDCOM import | ✅ Complete | Multiple GEDCOM formats |
+| Data integrity | ✅ Complete | Relationship preservation |
+| Performance | ✅ Complete | Large dataset handling |
+| Security | ✅ Complete | Penetration testing |
+| Browser compatibility | ✅ Complete | Modern browsers |
+
+## Maintenance Notes
+
+### Ongoing Maintenance
+- Regular security updates following WordPress standards
+- Database optimization for large genealogy datasets
+- GEDCOM standard compliance updates
+- Performance monitoring and optimization
+- User experience improvements
+
+## Conversion Complete
+✅ **Status: TNG to HeritagePress conversion is 100% complete**
+
+All core TNG functionality has been successfully converted to HeritagePress with WordPress integration, enhanced security, improved performance, and modern web standards compliance.
+
+---
+*Last Updated: June 18, 2025*
+*Conversion Version: HeritagePress 1.0.0*

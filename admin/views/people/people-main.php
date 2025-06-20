@@ -2,7 +2,9 @@
 
 /**
  * People Main Admin Interface
- * Complete facsimile of TNG people management with tabbed navigation
+ * Handles the main interface for managing people in HeritagePress.
+ * Provides tabs for browsing, adding, editing, and reporting on people.
+ * * @package HeritagePress
  */
 
 if (!defined('ABSPATH')) {

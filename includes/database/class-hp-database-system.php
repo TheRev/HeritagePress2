@@ -45,10 +45,9 @@ class HP_Database_System
 
   /**
    * Drop all system tables
-   */
-  public function drop_tables()
+   */  public function drop_tables()
   {
-    $tables = ['users', 'trees', 'languages', 'branches', 'branchlinks', 'templates', 'reports'];
+    $tables = ['trees', 'languages', 'branches', 'branchlinks', 'templates', 'reports'];
 
     foreach ($tables as $table) {
       $table_name = $this->table_prefix . $table;
@@ -58,10 +57,9 @@ class HP_Database_System
 
   /**
    * Check if all system tables exist
-   */
-  public function tables_exist()
+   */  public function tables_exist()
   {
-    $tables = ['users', 'trees', 'languages', 'branches', 'branchlinks', 'templates', 'reports'];
+    $tables = ['trees', 'languages', 'branches', 'branchlinks', 'templates', 'reports'];
 
     foreach ($tables as $table) {
       $table_name = $this->table_prefix . $table;
@@ -99,54 +97,9 @@ class HP_Database_System
   /**
    * Get system table structures
    * Table structures for HeritagePress genealogy system, adapted with hp_ prefix
-   */
-  private function get_table_structures()
+   */  private function get_table_structures()
   {
     return [
-      'users' => "
-                `userID` int(11) NOT NULL AUTO_INCREMENT,
-                `description` varchar(50) NOT NULL,
-                `username` varchar(100) NOT NULL,
-                `password` varchar(128) NOT NULL,
-                `password_type` varchar(10) NOT NULL,
-                `gedcom` varchar(128) DEFAULT NULL,
-                `mygedcom` varchar(20) NOT NULL,
-                `personID` varchar(22) NOT NULL,
-                `role` varchar(15) NOT NULL,
-                `allow_edit` tinyint(4) NOT NULL,
-                `allow_add` tinyint(4) NOT NULL,
-                `tentative_edit` tinyint(4) NOT NULL,
-                `allow_delete` tinyint(4) NOT NULL,
-                `allow_lds` tinyint(4) NOT NULL,
-                `allow_ged` tinyint(4) NOT NULL,
-                `allow_pdf` tinyint(4) NOT NULL,
-                `allow_living` tinyint(4) NOT NULL,
-                `allow_private` tinyint(4) NOT NULL,
-                `allow_private_notes` tinyint(4) NOT NULL,
-                `allow_private_media` tinyint(4) NOT NULL,
-                `allow_profile` tinyint(4) NOT NULL,
-                `branch` varchar(20) DEFAULT NULL,
-                `realname` varchar(50) DEFAULT NULL,
-                `phone` varchar(30) DEFAULT NULL,
-                `email` varchar(50) DEFAULT NULL,
-                `address` varchar(100) DEFAULT NULL,
-                `city` varchar(64) DEFAULT NULL,
-                `state` varchar(64) DEFAULT NULL,
-                `zip` varchar(10) DEFAULT NULL,
-                `country` varchar(64) DEFAULT NULL,
-                `website` varchar(128) DEFAULT NULL,
-                `languageID` smallint(6) NOT NULL,
-                `lastlogin` datetime NOT NULL,
-                `disabled` tinyint(4) NOT NULL,
-                `dt_registered` datetime NOT NULL,
-                `dt_activated` datetime NOT NULL,
-                `dt_consented` datetime NOT NULL,
-                `no_email` tinyint(4) DEFAULT NULL,
-                `notes` text,
-                `reset_pwd_code` varchar(30) DEFAULT NULL,
-                PRIMARY KEY (`userID`),
-                UNIQUE KEY `username` (`username`)
-            ",
       'trees' => "
                 `gedcom` varchar(20) NOT NULL,
                 `treename` varchar(100) NOT NULL,

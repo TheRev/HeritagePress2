@@ -444,7 +444,7 @@ input[type="file"]:focus {
   background: linear-gradient(135deg, #00a0d2 0%, #0087b3 100%);
 }
 
-/* Legacy TNG Compatibility */
+/* Legacy Compatibility */
 .admin-main {
   margin-top: 20px;
   max-width: 1200px;

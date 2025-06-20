@@ -2,7 +2,7 @@
 
 /**
  * Export Admin View
- * GEDCOM data export interface (Based on TNG admin_export.php)
+ * GEDCOM data export interface (Based on admin export)
  */
 
 if (!defined('ABSPATH')) {

@@ -29,17 +29,7 @@ if (!defined('ABSPATH')) {
               </p>
 
               <h4><?php _e('Database Version', 'heritagepress'); ?></h4>
-              <p><?php echo esc_html($database->get_db_version()); ?></p>
-
-              <?php if ($database->needs_update()): ?>
-                <p class="status-warning">
-                  <span class="dashicons dashicons-warning"></span>
-                  <?php _e('Database needs updating.', 'heritagepress'); ?>
-                  <a href="<?php echo admin_url('admin.php?page=heritagepress-tables'); ?>" class="button button-secondary">
-                    <?php _e('Update Now', 'heritagepress'); ?>
-                  </a>
-                </p>
-              <?php endif; ?>
+              <p><?php echo esc_html(get_option('heritagepress_db_version', 'Unknown')); ?></p>
             <?php else: ?>
               <p class="status-error">
                 <span class="dashicons dashicons-warning"></span>

@@ -1,8 +1,9 @@
 <?php
 
 /**
- * Add New Person Tab - Complete TNG Facsimile
- * Complete replication of TNG admin_newperson.php functionality
+ * Add New Person Tab - HeritagePress Plugin
+ * Handles adding a new person to the genealogy database
+ * Provides a modern, elegant interface
  */
 
 if (!defined('ABSPATH')) {
@@ -32,10 +33,10 @@ $branches_result = $wpdb->get_results($branches_query, ARRAY_A);
 
 // Check user permissions
 $allow_add = current_user_can('edit_genealogy');
-$allow_lds = get_option('heritagepress_allow_lds_events', true); // Default to true to match TNG
+$allow_lds = get_option('heritagepress_allow_lds_events', true); // Default to true for heritage records
 $lnprefixes = get_option('heritagepress_enable_name_prefixes', true);
 
-// Default values for new person - Complete TNG field set
+// Default values for new person - Complete field set
 $person_data = array(
   'personID' => '',
   'gedcom' => $first_tree,
@@ -47,7 +48,7 @@ $person_data = array(
   'nickname' => '',
   'title' => '',
   'nameorder' => '0', // 0=Default, 1=First Name First, 2=Surname First (Without Commas), 3=Surname First (With Commas)
-  'sex' => 'U', // TNG default: U=Unknown
+  'sex' => 'U', // Default: U=Unknown
   'other_gender' => '',
   'living' => get_option('heritagepress_living_default', '1'),
   'private' => '0',
@@ -91,7 +92,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_person') {  // Pre-fill
   }
 }
 
-// Enqueue TNG-style CSS for this page
+// Enqueue CSS for this page
 wp_enqueue_style(
   'heritagepress-add-person',
   plugin_dir_url(__FILE__) . '../../../public/css/add-person.css',
@@ -99,7 +100,7 @@ wp_enqueue_style(
   '1.0.0'
 );
 
-// Enqueue TNG-style JavaScript for enhanced functionality
+// Enqueue JavaScript for enhanced functionality
 wp_enqueue_script(
   'heritagepress-add-person',
   plugin_dir_url(__FILE__) . '../../../public/js/add-person.js',
@@ -482,9 +483,8 @@ wp_localize_script('heritagepress-add-person', 'hp_ajax_object', array(
 </div>
 
 <?php
-/**
- * TNG-style Event Row Function - Complete TNG Facsimile
- * Exact replication of TNG's showEventRow functionality
+/** * Heritage Press Event Row Function - Complete Genealogy Interface
+ * Exact replication of genealogy showEventRow functionality
  */
 function showEventRow($datefield, $placefield, $label, $persfamID, $person_data = array())
 {
@@ -550,9 +550,8 @@ function showEventRow($datefield, $placefield, $label, $persfamID, $person_data 
   return $tr;
 }
 
-/**
- * TNG-style Alternative Birth Types Selector
- * Replicates TNG's getAltBirthTypes functionality
+/** * Heritage Press Alternative Birth Types Selector
+ * Replicates genealogy software getAltBirthTypes functionality
  */
 function getAltBirthTypes($currentType)
 {
@@ -588,9 +587,8 @@ function getAltBirthTypes($currentType)
   return $typestr;
 }
 
-/**
- * TNG-style Toggle Display Function - Exact TNG Facsimile
- * Creates collapsible sections exactly like TNG
+/** * Heritage Press Toggle Display Function - Complete Implementation
+ * Creates collapsible sections for genealogy forms
  */
 function displayToggle($id, $state, $target, $headline, $subhead, $append = "")
 {
@@ -806,7 +804,7 @@ function displayToggle($id, $state, $target, $headline, $subhead, $append = "")
     return str.replace(/^\s+|\s+$/g, '');
   }
 
-  // TNG-style event functions (placeholders for future functionality)
+  // Heritage Press event functions (placeholders for future functionality)
   function openFindPlaceForm(placefield, isTemple) {
     // Placeholder for place finder functionality
     alert('<?php _e('Place finder will be implemented in a future version', 'heritagepress'); ?>');

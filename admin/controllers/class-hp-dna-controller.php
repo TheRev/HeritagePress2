@@ -277,7 +277,7 @@ class HP_DNA_Controller extends HP_Base_Controller
       'gedcom' => $dna_group_data['gedcom'],
       'description' => $dna_group_data['description'] ?? '',
       'test_type' => $dna_group_data['test_type'] ?? '',
-      'action' => '2' // TNG compatibility (2 = active)
+      'action' => '2' // Compatibility (2 = active)
     );
 
     $result = $wpdb->insert($dna_groups_table, $insert_data);
@@ -307,7 +307,7 @@ class HP_DNA_Controller extends HP_Base_Controller
       array('dna_group' => $dna_group_id, 'gedcom' => $gedcom)
     );
 
-    // Update related DNA tests table (TNG compatibility)
+    // Update related DNA tests table (compatibility)
     if ($result !== false) {
       $wpdb->update(
         $dna_tests_table,
@@ -655,7 +655,7 @@ class HP_DNA_Controller extends HP_Base_Controller
       }
     }
 
-    // Prepare insert data (matching TNG fields exactly)
+    // Prepare insert data (matching standard fields exactly)
     $insert_data = array(
       'test_type' => $test_data['test_type'] ?? '',
       'test_number' => $test_data['test_number'] ?? '',
@@ -852,7 +852,7 @@ class HP_DNA_Controller extends HP_Base_Controller
   }
 
   /**
-   * Convert date format (based on TNG datelib.php)
+   * Convert date format (based on datelib.php)
    */
   private function convert_date($date_string)
   {
@@ -860,7 +860,7 @@ class HP_DNA_Controller extends HP_Base_Controller
       return '0000-00-00';
     }
 
-    // Basic date conversion - could be enhanced with TNG's datelib functionality
+    // Basic date conversion - could be enhanced with datelib functionality
     $date = date_create($date_string);
     if ($date) {
       return date_format($date, 'Y-m-d');

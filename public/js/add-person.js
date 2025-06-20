@@ -194,7 +194,7 @@
 
   function toggleGenderSpecificFields(gender) {
     // Future implementation for gender-specific field visibility
-    // Currently TNG doesn't have specific gender-based field hiding
+    // Currently no specific gender-based field hiding implemented
   }
 
   function capitalizeNames(field) {

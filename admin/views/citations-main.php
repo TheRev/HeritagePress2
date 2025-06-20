@@ -3,7 +3,7 @@
 /**
  * Citations Main Admin Interface
  * Complete citation management with tabbed navigation
- * Based on TNG admin_citations.php and admin_addcitation.php
+ * Based on genealogy admin citations and add citation
  */
 
 if (!defined('ABSPATH')) {
@@ -49,21 +49,20 @@ if ($is_managing_specific && $current_tab === 'browse') {
 
   <!-- Tab Navigation -->
   <h2 class="nav-tab-wrapper">
-    <?php if ($is_managing_specific): ?>
-      <a href="?page=heritagepress-citations&tab=manage&personID=<?php echo esc_attr($person_id); ?>&familyID=<?php echo esc_attr($family_id); ?>&eventID=<?php echo esc_attr($event_id); ?>&tree=<?php echo esc_attr($tree); ?>&noteID=<?php echo esc_attr($note_id); ?>" class="nav-tab <?php echo $current_tab === 'manage' ? 'nav-tab-active' : ''; ?>">
+    <?php if ($is_managing_specific): ?> <a href="?page=hp-citations&tab=manage&personID=<?php echo esc_attr($person_id); ?>&familyID=<?php echo esc_attr($family_id); ?>&eventID=<?php echo esc_attr($event_id); ?>&tree=<?php echo esc_attr($tree); ?>&noteID=<?php echo esc_attr($note_id); ?>" class="nav-tab <?php echo $current_tab === 'manage' ? 'nav-tab-active' : ''; ?>">
         <?php _e('Manage Citations', 'heritagepress'); ?>
       </a>
-      <a href="?page=heritagepress-citations&tab=add&personID=<?php echo esc_attr($person_id); ?>&familyID=<?php echo esc_attr($family_id); ?>&eventID=<?php echo esc_attr($event_id); ?>&tree=<?php echo esc_attr($tree); ?>&noteID=<?php echo esc_attr($note_id); ?>" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
+      <a href="?page=hp-citations&tab=add&personID=<?php echo esc_attr($person_id); ?>&familyID=<?php echo esc_attr($family_id); ?>&eventID=<?php echo esc_attr($event_id); ?>&tree=<?php echo esc_attr($tree); ?>&noteID=<?php echo esc_attr($note_id); ?>" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
         <?php _e('Add Citation', 'heritagepress'); ?>
       </a>
     <?php else: ?>
-      <a href="?page=heritagepress-citations&tab=browse" class="nav-tab <?php echo $current_tab === 'browse' ? 'nav-tab-active' : ''; ?>">
+      <a href="?page=hp-citations&tab=browse" class="nav-tab <?php echo $current_tab === 'browse' ? 'nav-tab-active' : ''; ?>">
         <?php _e('Browse Citations', 'heritagepress'); ?>
       </a>
-      <a href="?page=heritagepress-citations&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">
+      <a href="?page=hp-citations&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">
         <?php _e('Search Citations', 'heritagepress'); ?>
       </a>
-      <a href="?page=heritagepress-citations&tab=add" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
+      <a href="?page=hp-citations&tab=add" class="nav-tab <?php echo $current_tab === 'add' ? 'nav-tab-active' : ''; ?>">
         <?php _e('Add Citation', 'heritagepress'); ?>
       </a>
     <?php endif; ?>
@@ -164,7 +163,7 @@ if ($is_managing_specific && $current_tab === 'browse') {
 
       // Edit citation
       editCitation: function(citationID) {
-        window.location.href = '?page=heritagepress-citations&tab=edit&citationID=' + citationID;
+        window.location.href = '?page=hp-citations&tab=edit&citationID=' + citationID;
         return false;
       },
 
@@ -198,7 +197,7 @@ if ($is_managing_specific && $current_tab === 'browse') {
       }
     };
 
-    // Global citation functions for TNG compatibility
+    // Global citation functions for compatibility
     window.addCitation = function(formData) {
       return HeritagePress.Citations.addCitation(formData);
     };

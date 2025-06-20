@@ -3,7 +3,7 @@
 /**
  * DNA Test Form - Add/Edit
  *
- * Complete replication of TNG admin_new_dna_test.php form functionality
+ * Complete replication of admin_new_dna_test.php form functionality
  * Used for both adding new tests and editing existing ones
  */
 

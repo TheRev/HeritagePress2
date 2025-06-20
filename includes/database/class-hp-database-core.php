@@ -4,7 +4,7 @@
  * HeritagePress Database Core Tables
  *
  * Handles creation of core genealogy tables: people, families, children
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures extracted from genealogy SQL file and adapted for HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -97,7 +97,7 @@ class HP_Database_Core
   }
   /**
    * Get core table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Exact structures from genealogy SQL file, adapted with hp_ prefix
    */
   private function get_table_structures()
   {

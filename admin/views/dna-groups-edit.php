@@ -3,7 +3,7 @@
 /**
  * Edit DNA Group Template
  *
- * Complete replication of TNG admin_edit_dna_group.php interface
+ * Complete replication of genealogy admin edit DNA group interface
  *
  * @package HeritagePress
  */

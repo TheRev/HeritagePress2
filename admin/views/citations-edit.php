@@ -4,7 +4,17 @@
  * Edit Citation View for HeritagePress
  *
  * This file provides the edit citation interface for the WordPress admin.
- * Ported from TNG admin_editcitation.php
+ * It allows users to edit existing citations, including selecting a source, entering description, page number, quality, citation text, and date.
+ * It also includes a modal for finding sources and AJAX handling for form submission.
+ * It ensures that all required fields are validated and provides user feedback on success or failure.
+ * * The view is designed to be user-friendly and integrates seamlessly with the HeritagePress plugin.
+ * * It includes features such as:
+ * * - Source selection with a dropdown and a modal for searching sources
+ * * - Input fields for description, page number, quality, citation text, and date
+ * * - AJAX form submission with validation
+ * * - User feedback messages for success or error
+ * * This view is part of the HeritagePress plugin, which provides tools for managing genealogical data in WordPress.
+ *
  *
  * @package HeritagePress
  */
@@ -323,7 +333,7 @@ $sources = $wpdb->get_results("SELECT sourceID, title, author FROM {$wpdb->prefi
     $('#source-search-btn').click(function() {
       var searchTerm = $('#source-search-input').val();
       if (searchTerm.length < 2) {
-        alert('<?php esc_js_e('Please enter at least 2 characters to search.', 'heritagepress'); ?>');
+        alert('<?php echo esc_js(__('Please enter at least 2 characters to search.', 'heritagepress')); ?>');
         return;
       }
 
@@ -343,7 +353,7 @@ $sources = $wpdb->get_results("SELECT sourceID, title, author FROM {$wpdb->prefi
           }
         },
         error: function() {
-          $('#source-search-results').html('<p><?php esc_js_e('Error searching sources.', 'heritagepress'); ?></p>');
+          $('#source-search-results').html('<p><?php echo esc_js(__('Error searching sources.', 'heritagepress')); ?></p>');
         }
       });
     });
@@ -351,16 +361,16 @@ $sources = $wpdb->get_results("SELECT sourceID, title, author FROM {$wpdb->prefi
     function displaySourceResults(sources) {
       var html = '';
       if (sources.length === 0) {
-        html = '<p><?php esc_js_e('No sources found.', 'heritagepress'); ?></p>';
+        html = '<p><?php echo esc_js(__('No sources found.', 'heritagepress')); ?></p>';
       } else {
         $.each(sources, function(index, source) {
           html += '<div class="source-result" data-source-id="' + source.sourceID + '">';
           html += '<h4>' + escapeHtml(source.title) + '</h4>';
           if (source.author) {
-            html += '<p><strong><?php esc_js_e('Author:', 'heritagepress'); ?></strong> ' + escapeHtml(source.author) + '</p>';
+            html += '<p><strong><?php echo esc_js(__('Author:', 'heritagepress')); ?></strong> ' + escapeHtml(source.author) + '</p>';
           }
           if (source.publisher) {
-            html += '<p><strong><?php esc_js_e('Publisher:', 'heritagepress'); ?></strong> ' + escapeHtml(source.publisher) + '</p>';
+            html += '<p><strong><?php echo esc_js(__('Publisher:', 'heritagepress')); ?></strong> ' + escapeHtml(source.publisher) + '</p>';
           }
           html += '</div>';
         });
@@ -382,7 +392,7 @@ $sources = $wpdb->get_results("SELECT sourceID, title, author FROM {$wpdb->prefi
       e.preventDefault();
 
       if (!$('#source_id').val()) {
-        alert('<?php esc_js_e('Please select a source.', 'heritagepress'); ?>');
+        alert('<?php echo esc_js(__('Please select a source.', 'heritagepress')); ?>');
         return;
       }
 
@@ -401,7 +411,7 @@ $sources = $wpdb->get_results("SELECT sourceID, title, author FROM {$wpdb->prefi
           }
         },
         error: function() {
-          $('#citation-messages').html('<div class="notice notice-error"><p><?php esc_js_e('Error updating citation.', 'heritagepress'); ?></p></div>');
+          $('#citation-messages').html('<div class="notice notice-error"><p><?php echo esc_js(__('Error updating citation.', 'heritagepress')); ?></p></div>');
         }
       });
     });

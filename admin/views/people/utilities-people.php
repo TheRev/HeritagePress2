@@ -77,6 +77,12 @@ $utilities = array(
     'description' => __('Check and verify family relationships for consistency.', 'heritagepress'),
     'icon' => 'dashicons-networking',
     'category' => 'data_quality'
+  ),
+  'assign_default_photos' => array(
+    'title' => __('Assign Default Photos', 'heritagepress'),
+    'description' => __('Automatically assign the first available photo as the default for each person who does not already have one. Optionally overwrite existing defaults.', 'heritagepress'),
+    'icon' => 'dashicons-format-image',
+    'category' => 'maintenance'
   )
 );
 
@@ -354,7 +360,8 @@ $utility_categories = array(
         'cleanup_orphans': '<h5><?php _e('Clean Orphaned Data', 'heritagepress'); ?></h5><p><?php _e('Removes orphaned records and fixes data consistency issues. This includes unused media references, broken family links, and invalid relationships.', 'heritagepress'); ?></p>',
         'export_people': '<h5><?php _e('Export People Data', 'heritagepress'); ?></h5><p><?php _e('Exports people data in various formats including CSV for spreadsheets, Excel files, or GEDCOM for genealogy programs.', 'heritagepress'); ?></p>',
         'import_corrections': '<h5><?php _e('Import Corrections', 'heritagepress'); ?></h5><p><?php _e('Imports bulk corrections from properly formatted spreadsheet files. Useful for making many changes at once.', 'heritagepress'); ?></p>',
-        'verify_relationships': '<h5><?php _e('Verify Relationships', 'heritagepress'); ?></h5><p><?php _e('Checks family relationships for logical consistency, such as impossible birth dates, circular relationships, and missing connections.', 'heritagepress'); ?></p>'
+        'verify_relationships': '<h5><?php _e('Verify Relationships', 'heritagepress'); ?></h5><p><?php _e('Checks family relationships for logical consistency, such as impossible birth dates, circular relationships, and missing connections.', 'heritagepress'); ?></p>',
+        'assign_default_photos': '<h5><?php _e('Assign Default Photos', 'heritagepress'); ?></h5><p><?php _e('Automatically assigns the first available photo as the default for each person who does not already have one. Optionally overwrites existing defaults.', 'heritagepress'); ?></p>'
       };
 
       return info[utility] || '<p><?php _e('Information not available for this utility.', 'heritagepress'); ?></p>';

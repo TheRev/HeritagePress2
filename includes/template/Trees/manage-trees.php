@@ -2,7 +2,7 @@
 
 /**
  * Manage Trees Tab
- * Administrative tree management based on TNG admin_trees.php
+ * Administrative tree management based on admin trees
  */
 
 if (!defined('ABSPATH')) {

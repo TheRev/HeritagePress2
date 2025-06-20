@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Enhanced TNG-Style GEDCOM Parser for HeritagePress
+ * Enhanced GEDCOM Parser for HeritagePress
  *
  * This enhanced parser handles more complex GEDCOM fields including:
  * - Family records (HUSB, WIFE, CHIL)
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-class HP_Enhanced_TNG_GEDCOM_Parser
+class HP_Enhanced_GEDCOM_Parser
 {
   private $file_handle;
   private $tree_id;
@@ -86,7 +86,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
   }
 
   /**
-   * Parse GEDCOM file line by line (Enhanced TNG style)
+   * Parse GEDCOM file line by line (Enhanced style)
    */  public function parse()
   {
     global $wpdb;
@@ -178,14 +178,14 @@ class HP_Enhanced_TNG_GEDCOM_Parser
   }
 
   /**
-   * Parse a GEDCOM line (TNG style)
+   * Parse a GEDCOM line (standard style)
    */
   private function get_line()
   {
     $line_info = array();
 
     if ($line = ltrim(fgets($this->file_handle, 1024))) {
-      // Clean up the line (TNG style)
+      // Clean up the line (standard style)
       $patterns = array('/��.*��/', '/��.*/', '/.*��/', '/@@/');
       $replacements = array('', '', '', '@');
       $line = preg_replace($patterns, $replacements, $line);
@@ -329,7 +329,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
   }
 
   /**
-   * Parse NAME field (TNG style)
+   * Parse NAME field (standard style)
    */  private function parse_name(&$info)
   {
     preg_match('/(.*)\s*\/(.*)\/\s*(.*)/', $this->line_info['rest'], $matches);
@@ -960,7 +960,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
       $this->tree_id
     ));
 
-    // Handle replacement options (TNG-style)
+    // Handle replacement options (standard)
     if ($existing) {
       switch ($this->save_state['del']) {
         case 'no':
@@ -1052,7 +1052,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
       $this->tree_id
     ));
 
-    // Handle replacement options (TNG-style)
+    // Handle replacement options (standard)
     if ($existing) {
       switch ($this->save_state['del']) {
         case 'no':
@@ -1124,7 +1124,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
   }
 
   /**
-   * Calculate offsets for append mode (TNG-style)
+   * Calculate offsets for append mode (standard)
    */
   private function calculate_offsets()
   {
@@ -1250,7 +1250,7 @@ class HP_Enhanced_TNG_GEDCOM_Parser
   private function process_events_only($id, $type)
   {
     // In events only mode, we extract and update only event information
-    // This is a simplified implementation - in full TNG this would update
+    // This is a simplified implementation - in a full system this would update
     // existing records with new event data only
     $this->skip_record(); // For now, just skip - this would need more complex logic
   }

@@ -2,7 +2,7 @@
 
 /**
  * Trees Main Interface
- * Complete facsimile of TNG Trees section with tabbed navigation
+ * Complete facsimile of Trees section with tabbed navigation
  */
 
 if (!defined('ABSPATH')) {

@@ -4,6 +4,8 @@
  * Association Management Admin Template
  *
  * Provides interface for managing associations between people and families
+ * This includes adding new associations, viewing existing ones, and filtering by tree or person.
+ * This file handles the display and functionality for managing person associations in HeritagePress.
  *
  * @package HeritagePress
  */

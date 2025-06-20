@@ -4,7 +4,7 @@
  * Media Collections View for HeritagePress
  *
  * This file provides the media collection management interface for the WordPress admin.
- * Ported from TNG admin_addcollection.php functionality
+ * Ported from admin_addcollection.php functionality
  *
  * @package HeritagePress
  */
@@ -297,9 +297,9 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
       e.preventDefault();
       resetForm();
       $('#collection-form-container').show();
-      $('#form-title').text('<?php esc_js_e('Add New Collection', 'heritagepress'); ?>');
+      $('#form-title').text('<?php echo esc_js(__('Add New Collection', 'heritagepress')); ?>');
       $('#form-action').val('hp_add_collection');
-      $('#submit-collection').val('<?php esc_js_e('Add Collection', 'heritagepress'); ?>');
+      $('#submit-collection').val('<?php echo esc_js(__('Add Collection', 'heritagepress')); ?>');
       $('#disabled-row').hide();
       $('#collection_id').prop('readonly', false).css('background-color', '');
     });
@@ -326,9 +326,9 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
           if (response.success) {
             populateForm(response.data);
             $('#collection-form-container').addClass('editing').show();
-            $('#form-title').text('<?php esc_js_e('Edit Collection', 'heritagepress'); ?>');
+            $('#form-title').text('<?php echo esc_js(__('Edit Collection', 'heritagepress')); ?>');
             $('#form-action').val('hp_update_collection');
-            $('#submit-collection').val('<?php esc_js_e('Update Collection', 'heritagepress'); ?>');
+            $('#submit-collection').val('<?php echo esc_js(__('Update Collection', 'heritagepress')); ?>');
             $('#disabled-row').show();
             $('#collection_id').prop('readonly', true).css('background-color', '#f0f0f1');
 
@@ -339,7 +339,7 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
           }
         },
         error: function() {
-          showMessage('<?php esc_js_e('Error loading collection data.', 'heritagepress'); ?>', 'error');
+          showMessage('<?php echo esc_js(__('Error loading collection data.', 'heritagepress')); ?>', 'error');
         }
       });
     });
@@ -349,7 +349,7 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
       var collectionId = $(this).data('collection-id');
       var $row = $(this).closest('tr');
 
-      if (!confirm('<?php esc_js_e('Are you sure you want to delete this collection?', 'heritagepress'); ?>')) {
+      if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this collection?', 'heritagepress')); ?>')) {
         return;
       }
 
@@ -372,7 +372,7 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
           }
         },
         error: function() {
-          showMessage('<?php esc_js_e('Error deleting collection.', 'heritagepress'); ?>', 'error');
+          showMessage('<?php echo esc_js(__('Error deleting collection.', 'heritagepress')); ?>', 'error');
         }
       });
     });
@@ -397,7 +397,7 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
           }
         },
         error: function() {
-          showMessage('<?php esc_js_e('Error saving collection.', 'heritagepress'); ?>', 'error');
+          showMessage('<?php echo esc_js(__('Error saving collection.', 'heritagepress')); ?>', 'error');
         }
       });
     });

@@ -3,7 +3,7 @@
 /**
  * DNA Groups Management Admin Template
  *
- * Complete replication of TNG admin_dna_groups.php interface
+ * Complete replication of genealogy admin DNA groups interface
  * Provides tabbed navigation with browse, add new, and help sections
  *
  * @package HeritagePress
@@ -41,7 +41,7 @@ if ($is_editing) {
     <?php _e('DNA Groups', 'heritagepress'); ?>
   </h1>
 
-  <!-- Tab Navigation (TNG Style) -->
+  <!-- Tab Navigation (Standard Style) -->
   <nav class="nav-tab-wrapper wp-clearfix">
     <a href="?page=heritagepress-dna-groups&tab=browse"
       class="nav-tab <?php echo $current_tab === 'browse' ? 'nav-tab-active' : ''; ?>">

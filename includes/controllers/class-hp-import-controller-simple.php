@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Import Controller - Based on TNG admin_dataimport.php
- * Handles GEDCOM import functionality using TNG structure
+ * Import Controller - Based on genealogy admin import
+ * Handles GEDCOM import functionality using genealogy structure
  */
 
 if (!defined('ABSPATH')) {
@@ -46,7 +46,7 @@ class HP_Import_Controller
       wp_die(__('Security check failed.', 'heritagepress'));
     }
 
-    // Get form data exactly as TNG expects
+    // Get form data exactly as expected
     $tree1 = sanitize_text_field($_POST['tree1'] ?? '');
     $branch1 = sanitize_text_field($_POST['branch1'] ?? '');
     $del = sanitize_text_field($_POST['del'] ?? '');
@@ -228,7 +228,7 @@ class HP_Import_Controller
 
     $importer = new HP_GEDCOM_Importer();
 
-    // Set import options exactly like TNG
+    // Set import options exactly as needed
     $import_options = array(
       'tree_id' => $tree1,
       'delete_mode' => $del,
@@ -257,14 +257,12 @@ class HP_Import_Controller
   }
 
   /**
-   * Render the import form exactly like TNG
+   * Render the import form with standard layout
    */
   private function render_import_form($trees_result)
   {
-    $numtrees = count($trees_result);
-
-    // Import configuration defaults (like TNG)
-    $tngimpcfg = array(
+    $numtrees = count($trees_result);    // Import configuration defaults (standard values)
+    $importcfg = array(
       'defimpopt' => 0  // Default import option
     );
 
@@ -337,10 +335,10 @@ class HP_Import_Controller
                 <tr id="replace">
                   <td colspan="2">
                     <p><strong><?php _e('Replace existing data:', 'heritagepress'); ?></strong></p>
-                    <input type="radio" name="del" value="yes" <?php if ($tngimpcfg['defimpopt'] == 1) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('All current data in tree', 'heritagepress'); ?> &nbsp;
-                    <input type="radio" name="del" value="match" <?php if (!$tngimpcfg['defimpopt']) echo " checked=\"checked\""; ?> onclick="toggleNorecalcdiv(1); toggleAppenddiv(0);"> <?php _e('Matching records only', 'heritagepress'); ?> &nbsp;
-                    <input type="radio" name="del" value="no" <?php if ($tngimpcfg['defimpopt'] == 2) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('Do not replace any data', 'heritagepress'); ?> &nbsp;
-                    <input type="radio" name="del" value="append" <?php if ($tngimpcfg['defimpopt'] == 3) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(1);"> <?php _e('Append all imported records', 'heritagepress'); ?><br /><br />
+                    <input type="radio" name="del" value="yes" <?php if ($importcfg['defimpopt'] == 1) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('All current data in tree', 'heritagepress'); ?> &nbsp;
+                    <input type="radio" name="del" value="match" <?php if (!$importcfg['defimpopt']) echo " checked=\"checked\""; ?> onclick="toggleNorecalcdiv(1); toggleAppenddiv(0);"> <?php _e('Matching records only', 'heritagepress'); ?> &nbsp;
+                    <input type="radio" name="del" value="no" <?php if ($importcfg['defimpopt'] == 2) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('Do not replace any data', 'heritagepress'); ?> &nbsp;
+                    <input type="radio" name="del" value="append" <?php if ($importcfg['defimpopt'] == 3) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(1);"> <?php _e('Append all imported records', 'heritagepress'); ?><br /><br />
                     <span><em><?php _e('Select the appropriate option for how you want to handle existing data.', 'heritagepress'); ?></em></span>
                   </td>
                 </tr>
@@ -348,7 +346,7 @@ class HP_Import_Controller
                   <td valign="top">
                     <br />
                     <div><input type="checkbox" name="ucaselast" value="1"> <?php _e('Uppercase last names', 'heritagepress'); ?></div>
-                    <div id="norecalcdiv" <?php if ($tngimpcfg['defimpopt']) echo " style=\"display:none\""; ?>>
+                    <div id="norecalcdiv" <?php if ($importcfg['defimpopt']) echo " style=\"display:none\""; ?>>
                       <input type="checkbox" name="norecalc" value="1"> <?php _e('Do not recalculate relationships', 'heritagepress'); ?><br>
                       <input type="checkbox" name="neweronly" value="1"> <?php _e('Import newer records only', 'heritagepress'); ?><br>
                     </div>
@@ -357,7 +355,7 @@ class HP_Import_Controller
                   </td>
                   <td valign="top">
                     <br />
-                    <div id="appenddiv" <?php if ($tngimpcfg['defimpopt'] != 3) echo " style=\"display:none;\""; ?>>
+                    <div id="appenddiv" <?php if ($importcfg['defimpopt'] != 3) echo " style=\"display:none;\""; ?>>
                       <input type="radio" name="offsetchoice" value="auto" checked> <?php _e('Auto calculate ID offset', 'heritagepress'); ?>&nbsp;<br />
                       <input type="radio" name="offsetchoice" value="user"> <?php _e('User defined offset:', 'heritagepress'); ?>&nbsp;<input type="text" name="useroffset" size="10" maxlength="9">
                     </div>

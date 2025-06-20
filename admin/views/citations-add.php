@@ -2,7 +2,10 @@
 
 /**
  * Add Citation Form View
- * Based on TNG admin_addcitation.php
+ * This file provides the form for adding new citations to the HeritagePress plugin.
+ * It includes fields for selecting a tree, person/family ID, event ID, source, description, page, reliability, citation date, actual text, and notes.
+ * The form supports AJAX submission and includes validation for required fields.
+ * * @package HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -161,7 +164,7 @@ $pre_event = isset($_GET['eventID']) ? sanitize_text_field($_GET['eventID']) : '
     <div class="form-actions">
       <button type="submit" class="button button-primary">Add Citation</button>
       <button type="reset" class="button button-secondary">Reset Form</button>
-      <a href="?page=heritagepress-citations" class="button button-secondary">Cancel</a>
+      <a href="?page=hp-citations" class="button button-secondary">Cancel</a>
     </div>
   </form>
 
@@ -351,7 +354,7 @@ $pre_event = isset($_GET['eventID']) ? sanitize_text_field($_GET['eventID']) : '
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('personID') || urlParams.get('familyID')) {
             // Return to manage view
-            window.location.href = '?page=heritagepress-citations&tab=manage' +
+            window.location.href = '?page=hp-citations&tab=manage' +
               '&personID=' + (urlParams.get('personID') || '') +
               '&familyID=' + (urlParams.get('familyID') || '') +
               '&eventID=' + (urlParams.get('eventID') || '') +

@@ -1,8 +1,7 @@
 <?php
 
-/**
- * Edit Family - Complete TNG admin_editfamily.php facsimile
- * Comprehensive family editing form with all TNG fields and functionality
+/** * Edit Family - Complete admin family editing facsimile
+ * Comprehensive family editing form with all genealogy fields and functionality
  */
 
 if (!defined('ABSPATH')) {

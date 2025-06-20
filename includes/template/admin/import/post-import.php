@@ -2,7 +2,7 @@
 
 /**
  * Post-Import Admin View
- * Post-import utilities interface (Based on TNG admin_secondmenu.php)
+ * Post-import utilities interface (Based on admin second menu)
  */
 
 if (!defined('ABSPATH')) {

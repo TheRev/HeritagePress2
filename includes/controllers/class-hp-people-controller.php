@@ -56,6 +56,7 @@ class HP_People_Controller extends HP_Base_Controller
 
     // AJAX handlers for people
     add_action('wp_ajax_hp_add_person', array($this, 'ajax_add_person'));
+    add_action('wp_ajax_hp_add_person_modal', array($this, 'ajax_add_person_modal'));
     add_action('wp_ajax_hp_update_person', array($this, 'ajax_update_person'));
     add_action('wp_ajax_hp_delete_person', array($this, 'ajax_delete_person'));
     add_action('wp_ajax_hp_generate_person_id', array($this, 'ajax_generate_person_id'));
@@ -66,6 +67,12 @@ class HP_People_Controller extends HP_Base_Controller
     add_action('wp_ajax_hp_add_association', array($this, 'ajax_add_association'));
     add_action('wp_ajax_hp_delete_association', array($this, 'ajax_delete_association'));
     add_action('wp_ajax_hp_get_person_associations', array($this, 'ajax_get_person_associations'));
+
+    // AJAX handler for people utilities
+    add_action('wp_ajax_hp_run_people_utility', array($this, 'ajax_run_people_utility'));
+
+    // Enqueue scripts for the person edit screen
+    add_action('admin_enqueue_scripts', array($this, 'enqueue_edit_person_scripts'));
   }
 
   /**
@@ -94,6 +101,35 @@ class HP_People_Controller extends HP_Base_Controller
           break;
       }
     }
+  }
+
+  /**
+   * Insert a pending person change for review
+   */
+  private function insert_pending_person($person_data, $action = 'add')
+  {
+    global $wpdb;
+    $temp_table = $wpdb->prefix . 'hp_temp_events';
+    $current_user = wp_get_current_user();
+    $pending_data = array(
+      'type' => 'I',
+      'personID' => $person_data['personID'],
+      'gedcom' => $person_data['gedcom'],
+      'eventID' => '',
+      'eventstr' => maybe_serialize($person_data),
+      'postdate' => current_time('mysql'),
+      'user' => $current_user ? $current_user->user_login : '',
+      'branch' => $person_data['branch'] ?? '',
+      'action' => $action,
+    );
+    $wpdb->insert($temp_table, $pending_data);
+    return $wpdb->insert_id;
+  }
+
+  private function is_review_required()
+  {
+    // You can enhance this logic to check plugin settings or user role
+    return !current_user_can('manage_options');
   }
 
   /**
@@ -130,13 +166,16 @@ class HP_People_Controller extends HP_Base_Controller
     // Parse and validate dates
     $person_data = $this->parse_person_dates($person_data);
 
-    // Create the person
-    $result = $this->create_person($person_data);
-
-    if ($result) {
-      $this->add_notice(__('Person created successfully!', 'heritagepress'), 'success');
+    if ($this->is_review_required()) {
+      $this->insert_pending_person($person_data, 'add');
+      $this->add_notice(__('Person submitted for review. An admin must approve this change.', 'heritagepress'), 'success');
     } else {
-      $this->add_notice(__('Failed to create person. Please try again.', 'heritagepress'), 'error');
+      $result = $this->create_person($person_data);
+      if ($result) {
+        $this->add_notice(__('Person created successfully!', 'heritagepress'), 'success');
+      } else {
+        $this->add_notice(__('Failed to create person. Please try again.', 'heritagepress'), 'error');
+      }
     }
   }
 
@@ -159,12 +198,18 @@ class HP_People_Controller extends HP_Base_Controller
     // Parse and validate dates
     $person_data = $this->parse_person_dates($person_data);
 
-    $result = $this->update_person($person_id, $gedcom, $person_data);
-
-    if ($result) {
-      $this->add_notice(__('Person updated successfully!', 'heritagepress'), 'success');
+    if ($this->is_review_required()) {
+      $person_data['personID'] = $person_id;
+      $person_data['gedcom'] = $gedcom;
+      $this->insert_pending_person($person_data, 'update');
+      $this->add_notice(__('Person update submitted for review. An admin must approve this change.', 'heritagepress'), 'success');
     } else {
-      $this->add_notice(__('Failed to update person. Please try again.', 'heritagepress'), 'error');
+      $result = $this->update_person($person_id, $gedcom, $person_data);
+      if ($result) {
+        $this->add_notice(__('Person updated successfully!', 'heritagepress'), 'success');
+      } else {
+        $this->add_notice(__('Failed to update person. Please try again.', 'heritagepress'), 'error');
+      }
     }
   }
 
@@ -225,7 +270,6 @@ class HP_People_Controller extends HP_Base_Controller
         $this->add_notice(__('Invalid bulk action.', 'heritagepress'), 'error');
     }
   }
-
   /**
    * Sanitize person form data
    */
@@ -236,30 +280,46 @@ class HP_People_Controller extends HP_Base_Controller
       'gedcom' => 'text',
       'firstname' => 'text',
       'lastname' => 'text',
+      'lnprefix' => 'text',
       'middlename' => 'text',
       'prefix' => 'text',
       'suffix' => 'text',
+      'title' => 'text',
       'nickname' => 'text',
       'nameorder' => 'text',
       'gender' => 'text',
+      'sex' => 'text', // Uses 'sex' field name
       'birthdate' => 'text',
       'birthplace' => 'text',
+      'altbirthtype' => 'text',
+      'altbirthdate' => 'text',
+      'altbirthplace' => 'text',
       'deathdate' => 'text',
       'deathplace' => 'text',
       'burialdate' => 'text',
       'burialplace' => 'text',
+      'burialtype' => 'int',
+      'baptdate' => 'text',
+      'baptplace' => 'text',
+      'confdate' => 'text',
+      'confplace' => 'text',
+      'initdate' => 'text',
+      'initplace' => 'text',
+      'endldate' => 'text',
+      'endlplace' => 'text',
+      'famc' => 'text',
+      'branch' => 'text',
       'notes' => 'textarea',
       'private' => 'int',
       'living' => 'int'
     ));
   }
-
   /**
    * Parse and validate person dates
    */
   private function parse_person_dates($person_data)
   {
-    $date_fields = array('birthdate', 'deathdate', 'burialdate');
+    $date_fields = array('birthdate', 'altbirthdate', 'deathdate', 'burialdate', 'baptdate', 'confdate', 'initdate', 'endldate');
 
     foreach ($date_fields as $field) {
       if (!empty($person_data[$field])) {
@@ -290,7 +350,6 @@ class HP_People_Controller extends HP_Base_Controller
 
     return $count > 0;
   }
-
   /**
    * Create a new person
    */
@@ -299,35 +358,87 @@ class HP_People_Controller extends HP_Base_Controller
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
 
-    // Prepare data for insertion
+    // Handle sex/gender field mapping
+    if (isset($person_data['gender']) && !isset($person_data['sex'])) {
+      $person_data['sex'] = $person_data['gender'];
+    }
+
+    // Generate metaphone for lastname with prefix
+    $lastname_with_prefix = trim(($person_data['lnprefix'] ?? '') . ' ' . ($person_data['lastname'] ?? ''));
+    $metaphone = metaphone($lastname_with_prefix);
+
+    // Handle branches
+    $branches = '';
+    if (isset($person_data['branch'])) {
+      if (is_array($person_data['branch'])) {
+        $branches = implode(',', array_filter($person_data['branch']));
+      } else {
+        $branches = $person_data['branch'];
+      }
+    }
+
+    // Prepare data for insertion - include all genealogy fields
     $insert_data = array(
       'personID' => $person_data['personID'],
       'gedcom' => $person_data['gedcom'],
       'firstname' => $person_data['firstname'] ?? '',
       'lastname' => $person_data['lastname'] ?? '',
+      'lnprefix' => $person_data['lnprefix'] ?? '',
       'middlename' => $person_data['middlename'] ?? '',
       'prefix' => $person_data['prefix'] ?? '',
       'suffix' => $person_data['suffix'] ?? '',
+      'title' => $person_data['title'] ?? '',
       'nickname' => $person_data['nickname'] ?? '',
       'nameorder' => $person_data['nameorder'] ?? '',
-      'gender' => $person_data['gender'] ?? '',
+      'sex' => $person_data['sex'] ?? '',
       'birthdate' => $person_data['birthdate'] ?? '',
+      'birthdatetr' => '0000-00-00', // Will be calculated from birthdate
       'birthplace' => $person_data['birthplace'] ?? '',
+      'altbirthtype' => $person_data['altbirthtype'] ?? '',
+      'altbirthdate' => $person_data['altbirthdate'] ?? '',
+      'altbirthdatetr' => '0000-00-00', // Will be calculated from altbirthdate
+      'altbirthplace' => $person_data['altbirthplace'] ?? '',
       'deathdate' => $person_data['deathdate'] ?? '',
+      'deathdatetr' => '0000-00-00', // Will be calculated from deathdate
       'deathplace' => $person_data['deathplace'] ?? '',
       'burialdate' => $person_data['burialdate'] ?? '',
+      'burialdatetr' => '0000-00-00', // Will be calculated from burialdate
       'burialplace' => $person_data['burialplace'] ?? '',
+      'burialtype' => $person_data['burialtype'] ?? 0,
+      'baptdate' => $person_data['baptdate'] ?? '',
+      'baptdatetr' => '0000-00-00', // Will be calculated from baptdate
+      'baptplace' => $person_data['baptplace'] ?? '',
+      'confdate' => $person_data['confdate'] ?? '',
+      'confdatetr' => '0000-00-00', // Will be calculated from confdate
+      'confplace' => $person_data['confplace'] ?? '',
+      'initdate' => $person_data['initdate'] ?? '',
+      'initdatetr' => '0000-00-00', // Will be calculated from initdate
+      'initplace' => $person_data['initplace'] ?? '',
+      'endldate' => $person_data['endldate'] ?? '',
+      'endldatetr' => '0000-00-00', // Will be calculated from endldate
+      'endlplace' => $person_data['endlplace'] ?? '',
+      'famc' => $person_data['famc'] ?? '',
+      'metaphone' => $metaphone,
+      'branch' => $branches,
       'notes' => $person_data['notes'] ?? '',
       'private' => $person_data['private'] ?? 0,
       'living' => $person_data['living'] ?? 0,
       'changedate' => current_time('mysql'),
-      'changedby' => get_current_user_id()
+      'changedby' => get_current_user_id(),
+      'edituser' => '',
+      'edittime' => 0
     );
 
     $result = $wpdb->insert($people_table, $insert_data);
+    if ($result !== false) {
+      // Log admin action
+      $person_id = $person_data['personID'];
+      $gedcom = $person_data['gedcom'];
+      $this->log_admin_action("Add person: $gedcom/$person_id");
+    }
+
     return $result !== false;
   }
-
   /**
    * Update an existing person
    */
@@ -336,22 +447,66 @@ class HP_People_Controller extends HP_Base_Controller
     global $wpdb;
     $people_table = $wpdb->prefix . 'hp_people';
 
-    // Prepare data for update
+    // Handle sex/gender field mapping
+    if (isset($person_data['gender']) && !isset($person_data['sex'])) {
+      $person_data['sex'] = $person_data['gender'];
+    }
+
+    // Generate metaphone for lastname with prefix
+    $lastname_with_prefix = trim(($person_data['lnprefix'] ?? '') . ' ' . ($person_data['lastname'] ?? ''));
+    $metaphone = metaphone($lastname_with_prefix);
+
+    // Handle branches
+    $branches = '';
+    if (isset($person_data['branch'])) {
+      if (is_array($person_data['branch'])) {
+        $branches = implode(',', array_filter($person_data['branch']));
+      } else {
+        $branches = $person_data['branch'];
+      }
+    }
+
+    // Prepare data for update - include all genealogy fields
     $update_data = array(
       'firstname' => $person_data['firstname'] ?? '',
       'lastname' => $person_data['lastname'] ?? '',
+      'lnprefix' => $person_data['lnprefix'] ?? '',
       'middlename' => $person_data['middlename'] ?? '',
       'prefix' => $person_data['prefix'] ?? '',
       'suffix' => $person_data['suffix'] ?? '',
+      'title' => $person_data['title'] ?? '',
       'nickname' => $person_data['nickname'] ?? '',
       'nameorder' => $person_data['nameorder'] ?? '',
-      'gender' => $person_data['gender'] ?? '',
+      'sex' => $person_data['sex'] ?? '',
       'birthdate' => $person_data['birthdate'] ?? '',
+      'birthdatetr' => '0000-00-00', // Will be calculated from birthdate
       'birthplace' => $person_data['birthplace'] ?? '',
+      'altbirthtype' => $person_data['altbirthtype'] ?? '',
+      'altbirthdate' => $person_data['altbirthdate'] ?? '',
+      'altbirthdatetr' => '0000-00-00', // Will be calculated from altbirthdate
+      'altbirthplace' => $person_data['altbirthplace'] ?? '',
       'deathdate' => $person_data['deathdate'] ?? '',
+      'deathdatetr' => '0000-00-00', // Will be calculated from deathdate
       'deathplace' => $person_data['deathplace'] ?? '',
       'burialdate' => $person_data['burialdate'] ?? '',
+      'burialdatetr' => '0000-00-00', // Will be calculated from burialdate
       'burialplace' => $person_data['burialplace'] ?? '',
+      'burialtype' => $person_data['burialtype'] ?? 0,
+      'baptdate' => $person_data['baptdate'] ?? '',
+      'baptdatetr' => '0000-00-00', // Will be calculated from baptdate
+      'baptplace' => $person_data['baptplace'] ?? '',
+      'confdate' => $person_data['confdate'] ?? '',
+      'confdatetr' => '0000-00-00', // Will be calculated from confdate
+      'confplace' => $person_data['confplace'] ?? '',
+      'initdate' => $person_data['initdate'] ?? '',
+      'initdatetr' => '0000-00-00', // Will be calculated from initdate
+      'initplace' => $person_data['initplace'] ?? '',
+      'endldate' => $person_data['endldate'] ?? '',
+      'endldatetr' => '0000-00-00', // Will be calculated from endldate
+      'endlplace' => $person_data['endlplace'] ?? '',
+      'famc' => $person_data['famc'] ?? '',
+      'metaphone' => $metaphone,
+      'branch' => $branches,
       'notes' => $person_data['notes'] ?? '',
       'private' => $person_data['private'] ?? 0,
       'living' => $person_data['living'] ?? 0,
@@ -364,6 +519,10 @@ class HP_People_Controller extends HP_Base_Controller
       $update_data,
       array('personID' => $person_id, 'gedcom' => $gedcom)
     );
+    if ($result !== false) {
+      // Log admin action
+      $this->log_admin_action("Update person: $gedcom/$person_id");
+    }
 
     return $result !== false;
   }
@@ -487,6 +646,158 @@ class HP_People_Controller extends HP_Base_Controller
   }
 
   /**
+   * AJAX: Add person from modal (for family integration)
+   */
+  public function ajax_add_person_modal()
+  {
+    if (!$this->verify_nonce($_POST['_wpnonce'])) {
+      wp_send_json_error('Security check failed');
+    }
+
+    if (!$this->check_capability('edit_genealogy')) {
+      wp_send_json_error('Insufficient permissions');
+    }
+
+    // Sanitize and validate data
+    $person_data = $this->sanitize_person_data($_POST);
+    $context_type = sanitize_text_field($_POST['type'] ?? '');
+    $family_id = sanitize_text_field($_POST['familyID'] ?? '');
+    $father_id = sanitize_text_field($_POST['father'] ?? '');
+    $mother_id = sanitize_text_field($_POST['mother'] ?? '');
+
+    if (empty($person_data['personID']) || empty($person_data['gedcom'])) {
+      wp_send_json_error('Person ID and Tree are required.');
+    }
+
+    if ($this->person_id_exists($person_data['personID'], $person_data['gedcom'])) {
+      wp_send_json_error('Person ID already exists in this tree.');
+    }
+
+    $person_data = $this->parse_person_dates($person_data);
+    $result = $this->create_person($person_data);
+
+    if (!$result) {
+      wp_send_json_error('Failed to create person');
+    }
+
+    // Handle family integration for children
+    if ($context_type === 'child' && $family_id) {
+      $this->link_child_to_family($person_data['personID'], $person_data['gedcom'], $family_id, $_POST);
+    }
+
+    // Prepare response data based on context
+    $response_data = array(
+      'personID' => $person_data['personID'],
+      'name' => trim($person_data['firstname'] . ' ' . $person_data['lastname']),
+      'context_type' => $context_type
+    );
+
+    // Add context-specific response data
+    if ($context_type === 'child') {
+      $response_data['html'] = $this->generate_child_html($person_data);
+    } elseif ($context_type === 'spouse') {
+      $response_data['display_name'] = $response_data['name'] . ' - ' . $person_data['personID'];
+    }
+
+    wp_send_json_success($response_data);
+  }
+
+  /**
+   * Link a child to a family
+   */
+  private function link_child_to_family($person_id, $gedcom, $family_id, $form_data)
+  {
+    global $wpdb;
+
+    $children_table = $wpdb->prefix . 'hp_children';
+    $families_table = $wpdb->prefix . 'hp_families';
+
+    // Get current number of children for ordering
+    $order_query = $wpdb->prepare(
+      "SELECT COUNT(*) FROM $children_table WHERE familyID = %s AND gedcom = %s",
+      $family_id,
+      $gedcom
+    );
+    $order = $wpdb->get_var($order_query) + 1;
+
+    // Insert child relationship
+    $child_data = array(
+      'familyID' => $family_id,
+      'personID' => $person_id,
+      'ordernum' => $order,
+      'gedcom' => $gedcom,
+      'frel' => sanitize_text_field($form_data['frel'] ?? ''),
+      'mrel' => sanitize_text_field($form_data['mrel'] ?? ''),
+      'haskids' => 0,
+      'parentorder' => 0,
+      'sealdate' => '',
+      'sealdatetr' => '0000-00-00',
+      'sealplace' => ''
+    );
+
+    $wpdb->insert($children_table, $child_data);
+
+    // Update parent records to show they have children
+    $family_query = $wpdb->prepare(
+      "SELECT husband, wife FROM $families_table WHERE familyID = %s AND gedcom = %s",
+      $family_id,
+      $gedcom
+    );
+    $family = $wpdb->get_row($family_query, ARRAY_A);
+
+    if ($family) {
+      $people_table = $wpdb->prefix . 'hp_people';
+
+      if ($family['husband']) {
+        $wpdb->update(
+          $people_table,
+          array('haskids' => 1),
+          array('personID' => $family['husband'], 'gedcom' => $gedcom)
+        );
+      }
+
+      if ($family['wife']) {
+        $wpdb->update(
+          $people_table,
+          array('haskids' => 1),
+          array('personID' => $family['wife'], 'gedcom' => $gedcom)
+        );
+      }
+    }
+  }
+
+  /**
+   * Generate HTML for child display in family context
+   */
+  private function generate_child_html($person_data)
+  {
+    $person_id = $person_data['personID'];
+    $name = trim($person_data['firstname'] . ' ' . $person_data['lastname']);
+
+    // Format birth information
+    $birth_info = '';
+    if (!empty($person_data['birthdate'])) {
+      $birth_info = __('b.', 'heritagepress') . ' ' . $person_data['birthdate'];
+    }
+
+    $html = '<div class="child-item" id="child_' . esc_attr($person_id) . '">';
+    $html .= '<div class="child-info">';
+    $html .= '<span class="child-name">' . esc_html($name) . '</span>';
+    $html .= '<span class="child-id"> - ' . esc_html($person_id) . '</span>';
+    if ($birth_info) {
+      $html .= '<br><span class="child-birth">' . esc_html($birth_info) . '</span>';
+    }
+    $html .= '</div>';
+    $html .= '<div class="child-actions">';
+    $html .= '<a href="#" onclick="editPerson(\'' . esc_js($person_id) . '\');">' . __('Edit', 'heritagepress') . '</a>';
+    $html .= ' | <a href="#" onclick="removeChild(\'' . esc_js($person_id) . '\');">' . __('Remove', 'heritagepress') . '</a>';
+    $html .= '</div>';
+    $html .= '</div>';
+
+    return $html;
+  }
+
+  /**
    * AJAX: Update person
    */
   public function ajax_update_person()
@@ -570,7 +881,6 @@ class HP_People_Controller extends HP_Base_Controller
 
     wp_send_json_success(array('people' => $results));
   }
-
   /**
    * Display the people management page
    */
@@ -581,13 +891,17 @@ class HP_People_Controller extends HP_Base_Controller
       wp_die(__('You do not have sufficient permissions to access this page.'));
     }
 
+    // Get current tab for form handling
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'browse';
+
+    // Handle form submissions for the current tab
+    $this->handle_people_actions($current_tab);
+
     // Display any notices
     $this->display_notices();
 
-    echo '<div class="wrap">';
-    echo '<h1>' . __('People Management', 'heritagepress') . '</h1>';
-    echo '<p>' . __('Manage people in your genealogy database.', 'heritagepress') . '</p>';
-    echo '</div>';
+    // Include the main people management interface
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/people/people-main.php';
   }
 
   /**
@@ -782,5 +1096,107 @@ class HP_People_Controller extends HP_Base_Controller
     }
 
     return substr($string, 0, $length - 3) . '...';
+  }
+
+  /**
+   * Log admin action for genealogy compatibility
+   */
+  private function log_admin_action($message)
+  {
+    // For now, we'll use WordPress's built-in activity log or custom logging
+    // This can be enhanced later to match genealogy admin logging exactly
+    if (function_exists('error_log')) {
+      error_log("HeritagePress Admin: $message");
+    }
+
+    // Could also add to a custom admin log table in the future
+    // or integrate with WordPress action logging plugins
+  }
+
+  /**
+   * AJAX handler for running people utilities
+   */
+  public function ajax_run_people_utility()
+  {
+    check_ajax_referer('hp_run_utility');
+    if (!current_user_can('manage_genealogy')) {
+      wp_send_json_error(['message' => __('Insufficient permissions.', 'heritagepress')]);
+    }
+    $utility = sanitize_text_field($_POST['utility'] ?? '');
+    $tree = sanitize_text_field($_POST['tree'] ?? '');
+    if ($utility === 'assign_default_photos') {
+      $result = $this->assign_default_photos($tree);
+      wp_send_json_success(['report' => $result]);
+    }
+    wp_send_json_error(['message' => __('Unknown utility.', 'heritagepress')]);
+  }
+
+  /**
+   * Assign default photos to people (bulk)
+   *
+   * @param string $tree Optional tree ID
+   * @return string HTML report
+   */
+  public function assign_default_photos($tree = '')
+  {
+    global $wpdb;
+    $people_table = $wpdb->prefix . 'hp_people';
+    $medialinks_table = $wpdb->prefix . 'hp_medialinks';
+    $media_table = $wpdb->prefix . 'hp_media';
+    $where = '';
+    if ($tree) {
+      $where = $wpdb->prepare('WHERE gedcom = %s', $tree);
+    }
+    $people = $wpdb->get_results("SELECT personID, gedcom FROM $people_table $where");
+    $defsdone = 0;
+    foreach ($people as $person) {
+      // Check if a default photo already exists
+      $def_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $medialinks_table WHERE gedcom = %s AND personID = %s AND defphoto = '1'",
+        $person->gedcom,
+        $person->personID
+      ));
+      if ($def_exists) continue;
+      // Find first media link with a thumbnail
+      $media = $wpdb->get_results($wpdb->prepare(
+        "SELECT medialinkID FROM $medialinks_table ml JOIN $media_table m ON ml.mediaID = m.mediaID WHERE ml.gedcom = %s AND ml.personID = %s AND m.thumbpath != '' ORDER BY ml.ordernum",
+        $person->gedcom,
+        $person->personID
+      ));
+      $count = 0;
+      foreach ($media as $ml) {
+        if ($count == 0) {
+          $wpdb->update($medialinks_table, ['defphoto' => '1'], ['medialinkID' => $ml->medialinkID]);
+        } else {
+          $wpdb->update($medialinks_table, ['defphoto' => '0'], ['medialinkID' => $ml->medialinkID]);
+        }
+        $count++;
+        $defsdone++;
+      }
+    }
+    return sprintf(__('Default photos assigned: %d', 'heritagepress'), $defsdone);
+  }
+
+  /**
+   * Enqueue scripts for the person edit screen
+   */
+  public function enqueue_edit_person_scripts($hook)
+  {
+    // Only load on the person edit screen
+    if (strpos($hook, 'heritagepress-people') === false) {
+      return;
+    }
+    wp_enqueue_script(
+      'hp-find-link-media',
+      plugins_url('../../admin/js/find-link-media.js', __FILE__),
+      array('jquery', 'underscore'),
+      '1.0',
+      true
+    );
+    wp_localize_script('hp-find-link-media', 'hpFindLinkMedia', array(
+      'nonce' => wp_create_nonce('hp_get_media_list'),
+      'linkNonce' => wp_create_nonce('hp_link_media_to_person'),
+      'getLinkedNonce' => wp_create_nonce('hp_get_linked_media_for_person')
+    ));
   }
 }

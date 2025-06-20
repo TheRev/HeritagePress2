@@ -2,7 +2,7 @@
 
 /**
  * Import Admin View
- * GEDCOM data import interface (Based on TNG admin_dataimport.php)
+ * GEDCOM data import interface (Based on admin data import)
  */
 
 if (!defined('ABSPATH')) {
@@ -771,4 +771,49 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
       }
     });
   }
+</script>
+
+<script type="text/javascript">
+  function openAddTreeModal() {
+    document.getElementById('add-tree-modal').style.display = 'block';
+  }
+  document.getElementById('close-add-tree-modal').onclick = function() {
+    document.getElementById('add-tree-modal').style.display = 'none';
+  };
+  document.getElementById('cancel-add-tree').onclick = function() {
+    document.getElementById('add-tree-modal').style.display = 'none';
+  };
+  document.getElementById('create-tree-btn').onclick = function() {
+    var treeId = document.getElementById('new-tree-id').value.trim();
+    var treeName = document.getElementById('new-tree-name').value.trim();
+    if (!treeId || !treeName) {
+      alert('Tree ID and Name are required.');
+      return;
+    }
+    var data = new FormData();
+    data.append('action', 'hp_add_tree');
+    data.append('tree_id', treeId);
+    data.append('tree_name', treeName);
+    data.append('nonce', '<?php echo wp_create_nonce('heritagepress_add_tree'); ?>');
+    fetch(ajaxurl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: data
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          var treeSelect = document.getElementById('tree1');
+          var option = document.createElement('option');
+          option.value = result.data.gedcom;
+          option.text = result.data.treename;
+          treeSelect.appendChild(option);
+          treeSelect.value = result.data.gedcom;
+          document.getElementById('add-tree-modal').style.display = 'none';
+          alert('Tree added successfully!');
+        } else {
+          alert(result.data || 'Failed to add tree.');
+        }
+      });
+  };
 </script>

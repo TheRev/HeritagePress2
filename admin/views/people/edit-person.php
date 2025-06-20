@@ -2,7 +2,9 @@
 
 /**
  * Edit Person Tab
- * Complete person editing form with all TNG fields
+ * Complete person editing form
+ * Handles person data retrieval, form submission, and validation
+ * @package HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -375,6 +377,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
       </div>
     </div>
 
+    <?php
+    // Add Change Tree functionality
+    heritagepress_add_change_tree_button('person', $person_data['personID'], $person_data['gedcom']);
+    ?>
+
     <!-- Submit Actions Card -->
     <div class="person-form-card" id="submit-actions-card">
       <div class="person-form-card-body">
@@ -415,8 +422,33 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
     <div class="panel">
       <h4><?php _e('Media', 'heritagepress'); ?></h4>
       <div class="media-list">
-        <!-- Media will be loaded here -->
-        <p><em><?php _e('Media management will be available in a future update.', 'heritagepress'); ?></em></p>
+        <button type="button" id="hp-find-link-media-btn" class="button button-secondary" style="margin-bottom:10px;">
+          <?php _e('Find and Link Media', 'heritagepress'); ?>
+        </button>
+        <div id="hp-linked-media-list"></div>
+        <!-- Modal -->
+        <div id="hp-find-link-media-modal" style="display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
+          <div style="background:#fff;max-width:600px;margin:60px auto;padding:20px;position:relative;box-shadow:0 2px 16px #333;">
+            <button type="button" id="hp-close-media-modal" style="position:absolute;top:10px;right:10px;" class="button">&times;</button>
+            <h3><?php _e('Find and Link Media', 'heritagepress'); ?></h3>
+            <form id="hp-media-search-form" style="margin-bottom:10px;">
+              <input type="text" id="hp-media-search-input" placeholder="<?php esc_attr_e('Search media...', 'heritagepress'); ?>" style="width:60%;">
+              <select id="hp-media-search-tree">
+                <option value=""><?php _e('All Trees', 'heritagepress'); ?></option>
+                <?php foreach ($trees_result as $tree_row): ?>
+                  <option value="<?php echo esc_attr($tree_row['gedcom']); ?>"><?php echo esc_html($tree_row['treename']); ?></option>
+                <?php endforeach; ?>
+              </select>
+              <select id="hp-media-search-type">
+                <option value=""><?php _e('All Types', 'heritagepress'); ?></option>
+                <!-- TODO: Populate with media types -->
+              </select>
+              <button type="submit" class="button">Search</button>
+            </form>
+            <div id="hp-media-search-results" style="max-height:300px;overflow:auto;"></div>
+            <button type="button" id="hp-link-media-btn" class="button button-primary" style="margin-top:10px;">Link Selected Media</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -638,6 +670,120 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_person') {
 
     $('#edit-person-form').on('submit', function() {
       formChanged = false; // Don't warn when actually submitting
+    });
+
+    // Media Find and Link functionality
+    $('#hp-find-link-media-btn').on('click', function() {
+      $('#hp-find-link-media-modal').fadeIn(200);
+    });
+
+    $('#hp-close-media-modal').on('click', function() {
+      $('#hp-find-link-media-modal').fadeOut(200);
+    });
+
+    // Media search form submission
+    $('#hp-media-search-form').on('submit', function(e) {
+      e.preventDefault();
+      var searchTerm = $('#hp-media-search-input').val().trim();
+      var tree = $('#hp-media-search-tree').val();
+      var type = $('#hp-media-search-type').val();
+
+      // AJAX call to search media
+      $.post(ajaxurl, {
+        action: 'hp_search_media',
+        term: searchTerm,
+        tree: tree,
+        type: type,
+        _wpnonce: '<?php echo wp_create_nonce('hp_search_media'); ?>'
+      }, function(response) {
+        if (response.success) {
+          var resultsContainer = $('#hp-media-search-results');
+          resultsContainer.empty();
+
+          if (response.data.length > 0) {
+            $.each(response.data, function(index, media) {
+              resultsContainer.append(
+                '<div class="media-result">' +
+                '<label>' +
+                '<input type="checkbox" class="media-select" value="' + media.id + '"> ' +
+                media.title +
+                '</label>' +
+                '</div>'
+              );
+            });
+          } else {
+            resultsContainer.append('<p><?php _e('No media found matching the criteria.', 'heritagepress'); ?></p>');
+          }
+        } else {
+          alert('<?php _e('Media search failed. Please try again.', 'heritagepress'); ?>');
+        }
+      });
+    });
+
+    // Link selected media
+    $('#hp-link-media-btn').on('click', function() {
+      var selectedMedia = [];
+      $('.media-select:checked').each(function() {
+        selectedMedia.push($(this).val());
+      });
+
+      if (selectedMedia.length === 0) {
+        alert('<?php _e('No media selected. Please select media to link.', 'heritagepress'); ?>');
+        return;
+      }
+
+      // AJAX call to link media to person
+      $.post(ajaxurl, {
+        action: 'hp_link_media_to_person',
+        personID: '<?php echo $person_id; ?>',
+        mediaIDs: selectedMedia,
+        _wpnonce: '<?php echo wp_create_nonce('hp_link_media_to_person'); ?>'
+      }, function(response) {
+        if (response.success) {
+          // Update linked media list
+          var linkedMediaContainer = $('#hp-linked-media-list');
+          linkedMediaContainer.empty();
+
+          $.each(response.data.linked_media, function(index, media) {
+            linkedMediaContainer.append(
+              '<div class="linked-media-item">' +
+              '<img src="' + media.thumbnail + '" alt="' + media.title + '" class="media-thumbnail">' +
+              '<span class="media-title">' + media.title + '</span>' +
+              '<button type="button" class="button button-small button-danger remove-linked-media" data-media-id="' + media.id + '"><?php _e('Remove', 'heritagepress'); ?></button>' +
+              '</div>'
+            );
+          });
+
+          alert('<?php _e('Media linked successfully.', 'heritagepress'); ?>');
+          $('#hp-find-link-media-modal').fadeOut(200);
+        } else {
+          alert('<?php _e('Failed to link media. Please try again.', 'heritagepress'); ?>');
+        }
+      });
+    });
+
+    // Remove linked media
+    $(document).on('click', '.remove-linked-media', function() {
+      var mediaID = $(this).data('media-id');
+      var confirmation = confirm('<?php _e('Are you sure you want to remove this media link?', 'heritagepress'); ?>');
+
+      if (confirmation) {
+        // AJAX call to remove media link
+        $.post(ajaxurl, {
+          action: 'hp_remove_linked_media',
+          personID: '<?php echo $person_id; ?>',
+          mediaID: mediaID,
+          _wpnonce: '<?php echo wp_create_nonce('hp_remove_linked_media'); ?>'
+        }, function(response) {
+          if (response.success) {
+            // Remove media item from the list
+            $('.linked-media-item').filter('[data-media-id="' + mediaID + '"]').remove();
+            alert('<?php _e('Media link removed.', 'heritagepress'); ?>');
+          } else {
+            alert('<?php _e('Failed to remove media link. Please try again.', 'heritagepress'); ?>');
+          }
+        });
+      }
     });
   });
 </script>

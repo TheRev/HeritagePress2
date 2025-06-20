@@ -80,7 +80,7 @@ class HP_Branch_Manager
         'dgens' => $descendant_generations,
         'dagens' => $descendant_ancestor_generations,
         'inclspouses' => $include_spouses,
-        'action' => 2  // TNG uses '2' for new/active branches
+        'action' => 2  // Uses '2' for new/active branches
       ],
       ['%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d']
     );

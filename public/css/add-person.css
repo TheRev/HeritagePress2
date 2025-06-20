@@ -657,13 +657,13 @@ input[type="button"]:hover {
 }
 
 /* Special styling for the person ID generation area */
-.add-person-section.tng-style #checkmsg span {
+.add-person-section.heritage-style #checkmsg span {
   font-size: 10px;
   font-weight: bold;
 }
 
 /* Ensure proper spacing in event rows */
-.add-person-section.tng-style .normal tr td:first-child {
+.add-person-section.heritage-style .normal tr td:first-child {
   text-align: right;
   padding-right: 8px;
   font-weight: normal;
@@ -671,7 +671,7 @@ input[type="button"]:hover {
   width: 100px;
 }
 
-/* TNG Event Row Icon Styles */
+/* Heritage Event Row Icon Styles */
 .smallicon {
   display: inline-block;
   width: 16px;
@@ -771,7 +771,7 @@ input[type="button"]:hover {
   width: 270px;
 }
 
-/* TNG Toggle Styles */
+/* Heritage Toggle Styles */
 .subhead {
   font-family: Arial, sans-serif;
   font-size: 11px;
@@ -829,22 +829,22 @@ input.valid {
 }
 
 /* Override WordPress admin styles that might interfere */
-.add-person-section.tng-style table {
+.add-person-section.heritage-style table {
   border-collapse: collapse;
   margin: 0;
 }
 
-.add-person-section.tng-style table td {
+.add-person-section.heritage-style table td {
   border: none;
   padding: 3px 5px;
 }
 
-.add-person-section.tng-style input {
+.add-person-section.heritage-style input {
   box-shadow: none;
   border-radius: 0;
 }
 
-.add-person-section.tng-style select {
+.add-person-section.heritage-style select {
   box-shadow: none;
   border-radius: 0;
   height: auto;
@@ -856,13 +856,13 @@ input.valid {
 }
 
 /* Link styling within the form */
-.add-person-section.tng-style a {
+.add-person-section.heritage-style a {
   color: #0066cc;
   text-decoration: none;
   font-size: 11px;
 }
 
-.add-person-section.tng-style a:hover {
+.add-person-section.heritage-style a:hover {
   text-decoration: underline;
 }
 

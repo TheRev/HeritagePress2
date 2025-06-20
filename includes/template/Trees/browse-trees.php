@@ -2,7 +2,7 @@
 
 /**
  * Browse Trees Tab - Admin Interface
- * Complete facsimile of TNG admin_trees.php with all administrative functions
+ * Complete facsimile of admin trees with all administrative functions
  */
 
 if (!defined('ABSPATH')) {
@@ -194,9 +194,8 @@ if (empty($where_params)) {
                     <a href="?page=heritagepress-trees&tree=<?php echo urlencode($tree['gedcom']); ?>&action=edit">
                       <?php _e('Edit', 'heritagepress'); ?>
                     </a> |
-                  </span>
-                  <span class="clear">
-                    <a href="#" onclick="clearTreeData('<?php echo esc_js($tree['gedcom']); ?>', '<?php echo esc_js($tree['treename']); ?>')" class="submitdelete">
+                  </span> <span class="clear">
+                    <a href="<?php echo HP_Clear_Tree_Handler::get_clear_tree_url($tree['gedcom'], $tree['treename']); ?>" class="submitdelete">
                       <?php _e('Clear', 'heritagepress'); ?>
                     </a> |
                   </span>

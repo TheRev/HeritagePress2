@@ -4,7 +4,7 @@
  * HeritagePress Database DNA Tables
  *
  * Handles creation of DNA-related tables: dna_tests, dna_links, dna_groups
- * Table structures extracted from TNG SQL file and adapted for HeritagePress
+ * Table structures extracted from genealogy SQL file and adapted for HeritagePress
  */
 
 if (!defined('ABSPATH')) {
@@ -98,7 +98,7 @@ class HP_Database_DNA
 
   /**
    * Get DNA table structures
-   * Exact structures from TNG SQL file, adapted with hp_ prefix
+   * Exact structures from genealogy SQL file, adapted with hp_ prefix
    */
   private function get_table_structures()
   {

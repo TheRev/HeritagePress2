@@ -40,7 +40,7 @@ class HP_Import_Controller
       return;
     }
 
-    // Get form data (using exact TNG field names)
+    // Get form data (using standard field names)
     $tree = sanitize_text_field($_POST['tree1'] ?? '');
     $remotefile = $_FILES['remotefile'] ?? null;
     $database = sanitize_text_field($_POST['database'] ?? '');
@@ -56,7 +56,7 @@ class HP_Import_Controller
     $useroffset = intval($_POST['useroffset'] ?? 0);
     $branch = sanitize_text_field($_POST['branch1'] ?? '');
 
-    // Build TNG-style import options
+    // Build genealogy-style import options
     $import_options = array(
       'del' => $del,
       'allevents' => $allevents,
@@ -71,7 +71,7 @@ class HP_Import_Controller
       'branch' => $branch
     );
 
-    // Validation (exact TNG logic)
+    // Validation (standard logic)
     if (empty($remotefile['name']) && empty($database)) {
       echo '<div class="notice notice-error"><p>Please select an import file.</p></div>';
       return;
@@ -151,13 +151,17 @@ class HP_Import_Controller
     return $this->import_gedcom_file($filepath, $tree, $import_options);
   }
   /**
-   * Import GEDCOM file using enhanced TNG parser with full validation
+   * Import GEDCOM file using enhanced genealogy parser with full validation
    */
   private function import_gedcom_file($file_path, $tree_id, $import_options = array())
   {
-    // Load the enhanced TNG GEDCOM parser
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-enhanced-gedcom-parser.php';
+    // Scan and auto-add event types before import
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/class-hp-gedcom-importer.php';
+    $importer = new HP_GEDCOM_Importer_Original();
+    $importer->scan_and_add_event_types($file_path, $tree_id);
 
+    // Load the enhanced genealogy GEDCOM parser
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-enhanced-gedcom-parser.php';
     try {
       // Create enhanced parser instance with options
       $parser = new HP_Enhanced_GEDCOM_Parser($file_path, $tree_id, $import_options);
@@ -221,7 +225,7 @@ class HP_Import_Controller
   }
 
   /**
-   * Display import form (exact TNG structure)
+   * Display import form (standard structure)
    */
   private function display_import_form()
   {
@@ -230,7 +234,7 @@ class HP_Import_Controller
     $trees_table = $wpdb->prefix . 'hp_trees';
     $trees = $wpdb->get_results("SELECT gedcom, treename FROM $trees_table ORDER BY treename", ARRAY_A);
 
-    // Import config (TNG defaults)
+    // Import config (default values)
     $import_config = array(
       'defimpopt' => 0
     );
@@ -389,7 +393,25 @@ class HP_Import_Controller
       }
 
       function getBranches(select, index) {
-        // Placeholder for branch loading
+        var tree = select.value;
+        var branchSelect = document.getElementById('branch1');
+        if (!tree) {
+          branchSelect.innerHTML = '<option value="">All branches</option>';
+          return;
+        }
+        var data = new FormData();
+        data.append('action', 'hp_get_branch_options');
+        data.append('tree', tree);
+        data.append('nonce', hp_ajax_vars.nonce);
+        fetch(ajaxurl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: data
+          })
+          .then(response => response.text())
+          .then(html => {
+            branchSelect.innerHTML = html || '<option value="">All branches</option>';
+          });
       }
 
       function selectServerFile() {
@@ -399,6 +421,13 @@ class HP_Import_Controller
       function addNewTree() {
         alert('Add new tree not yet implemented');
       }
+    </script>
+
+    <script type="text/javascript">
+      // Localize AJAX variables for security
+      window.hp_ajax_vars = {
+        nonce: '<?php echo wp_create_nonce('hp_ajax_nonce'); ?>',
+      };
     </script>
 <?php
   }

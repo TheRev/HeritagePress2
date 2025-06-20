@@ -22,7 +22,8 @@ class HP_Date_Config
   public static function init()
   {
     add_action('admin_init', [__CLASS__, 'register_settings']);
-    add_action('admin_menu', [__CLASS__, 'add_settings_page']);
+    // Removed admin menu for Date Settings to keep sidebar clean
+    // add_action('admin_menu', [__CLASS__, 'add_settings_page']);
   }
 
   /**

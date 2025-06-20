@@ -4,7 +4,9 @@
  * Media Collection Controller for HeritagePress
  *
  * Handles media collection/media type management functionality
- * Ported from TNG admin_addcollection.php
+ * including adding, updating, deleting, and retrieving media collections.
+ * This class extends the base controller and provides AJAX endpoints
+ * for client-side interactions.
  *
  * @package HeritagePress
  */
@@ -106,7 +108,7 @@ class HP_Media_Collection_Controller extends HP_Base_Controller
       return;
     }
 
-    // Clean collection ID (similar to TNG's cleanID function)
+    // Clean collection ID (clean ID function)
     $collection_id = $this->clean_collection_id($collection_id);
 
     // Check if collection ID already exists
@@ -285,7 +287,7 @@ class HP_Media_Collection_Controller extends HP_Base_Controller
       return;
     }
 
-    // Get data - mimics TNG's admin_addcollection.php behavior
+    // Get data - standard collection addition behavior
     $collection_id = sanitize_text_field($_POST['collid'] ?? '');
     $display = sanitize_text_field($_POST['display'] ?? '');
     $path = sanitize_text_field($_POST['path'] ?? '');
@@ -299,7 +301,7 @@ class HP_Media_Collection_Controller extends HP_Base_Controller
     // Clean collection ID
     $collection_id = $this->clean_collection_id($collection_id);
 
-    // Standard collections check (same as TNG)
+    // Standard collections check (standard check)
     $standard_collections = array('photos', 'histories', 'headstones', 'documents', 'recordings', 'videos');
     $new_collection_id = 0;
 
@@ -336,7 +338,7 @@ class HP_Media_Collection_Controller extends HP_Base_Controller
       }
     }
 
-    // Return collection ID (mimics TNG behavior)
+    // Return collection ID (standard behavior)
     echo $new_collection_id;
     wp_die();
   }
@@ -453,7 +455,7 @@ class HP_Media_Collection_Controller extends HP_Base_Controller
   }
 
   /**
-   * Clean collection ID (similar to TNG's cleanID function)
+   * Clean collection ID (clean ID function)
    */
   private function clean_collection_id($id)
   {

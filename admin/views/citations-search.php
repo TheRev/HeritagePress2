@@ -4,7 +4,7 @@
  * Search Citations View for HeritagePress
  *
  * This file provides the search citations interface for the WordPress admin.
- * Ported from TNG admin_citations.php search functionality
+ * Ported from genealogy admin citations search functionality
  *
  * @package HeritagePress
  */
@@ -346,7 +346,7 @@ $citations = $wpdb->get_results($wpdb->prepare($citations_query, $final_params))
       var citationId = $(this).data('citation-id');
       var $row = $(this).closest('tr');
 
-      if (!confirm('<?php esc_js_e('Are you sure you want to delete this citation?', 'heritagepress'); ?>')) {
+      if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this citation?', 'heritagepress')); ?>')) {
         return;
       }
 
@@ -369,7 +369,7 @@ $citations = $wpdb->get_results($wpdb->prepare($citations_query, $final_params))
           }
         },
         error: function() {
-          $('#citation-messages').html('<div class="notice notice-error"><p><?php esc_js_e('Error deleting citation.', 'heritagepress'); ?></p></div>');
+          $('#citation-messages').html('<div class="notice notice-error"><p><?php echo esc_js(__('Error deleting citation.', 'heritagepress')); ?></p></div>');
         }
       });
     });

@@ -170,7 +170,7 @@ class HP_Person_ID_Handler
     if ($exists > 0) {
       wp_send_json_error('Person ID already exists and cannot be locked');
       return;
-    }    // Create a placeholder/locked record to reserve the ID - Full TNG schema
+    }    // Create a placeholder/locked record to reserve the ID - Full genealogy schema
     $lock_data = array(
       'personID' => $person_id,
       'gedcom' => $gedcom,

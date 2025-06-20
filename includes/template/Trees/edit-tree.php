@@ -2,7 +2,7 @@
 
 /**
  * Edit Tree Tab
- * Tree editing form based on TNG admin_edittree.php
+ * Tree editing form based on admin tree editing
  */
 
 if (!defined('ABSPATH')) {

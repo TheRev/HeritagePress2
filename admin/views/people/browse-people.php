@@ -1,8 +1,14 @@
 <?php
 
 /**
- * Browse People Tab - Main People Listing Interface
- * Complete facsimile of TNG admin_people.php functionality
+ * Browse People Tab
+ *
+ * This sub-view provides the people browsing/listing interface
+ * for the HeritagePress plugin. It includes search and filter
+ * options, tree selection, and pagination.
+ * This file is part of the HeritagePress plugin.
+ * @package HeritagePress
+ *
  */
 
 if (!defined('ABSPATH')) {
@@ -596,7 +602,8 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
             </td>
             <td class="column-birth">
               <?php
-                                                  $birth_display = HP_Date_Utils::format_display_date($person, 'birth');
+                                                  // Fallback: display raw birthdate if HP_Date_Utils is missing
+                                                  $birth_display = isset($person['birthdate']) ? HP_Date_Utils::format_date($person['birthdate']) : '';
                                                   if (!empty($birth_display)):
               ?>
                 <strong><?php echo $birth_display; ?></strong>
@@ -610,7 +617,8 @@ $change_sort_indicator = get_sort_indicator('change', $search_params['order']);
             </td>
             <td class="column-death">
               <?php
-                                                  $death_display = HP_Date_Utils::format_display_date($person, 'death');
+                                                  // Fallback: display raw deathdate if HP_Date_Utils is missing
+                                                  $death_display = isset($person['deathdate']) ? HP_Date_Utils::format_date($person['deathdate']) : '';
                                                   if (!empty($death_display)):
               ?>
                 <strong><?php echo $death_display; ?></strong>

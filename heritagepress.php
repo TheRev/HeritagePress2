@@ -39,12 +39,27 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+// Debug: Log deprecation warnings for strpos/str_replace null arguments
+set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+  if (
+    strpos($errstr, 'strpos(): Passing null to parameter') !== false ||
+    strpos($errstr, 'str_replace(): Passing null to parameter') !== false
+  ) {
+    error_log('[HeritagePress Debug] Deprecated warning: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . "\nBacktrace: " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10), true));
+  }
+  // Let normal error handler run
+  return false;
+});
+
 // Define plugin constants
 define('HERITAGEPRESS_VERSION', '1.0.0');
 define('HERITAGEPRESS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('HERITAGEPRESS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('HERITAGEPRESS_PLUGIN_FILE', __FILE__);
 define('HERITAGEPRESS_DB_VERSION', '1.0.0');
+
+// Include required files
+require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/functions/citation-functions.php';
 
 // Global function to get plugin instance
 function HeritagePress()
@@ -127,8 +142,15 @@ class HeritagePress
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-importer.php';
     require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/gedcom/class-hp-gedcom-adapter.php';    // Load admin functionality if in admin area
     if (is_admin()) {
-      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin-new.php';
-      new HP_Admin_New();
+      // Only use the new admin system
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
+      // require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin-new.php'; // Disabled legacy admin
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-entity-transfer-controller.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/helpers/entity-transfer-integration.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/handlers/class-hp-clear-tree-handler.php';
+      require_once HERITAGEPRESS_PLUGIN_DIR . 'includes/helpers/citation-modal-helpers.php';
+      HeritagePress_Admin::instance(); // Only instantiate the new admin
+      // new HP_Admin_New(); // Disabled legacy admin
     }
 
     // Public facing functionality
@@ -227,90 +249,6 @@ class HeritagePress
         return false; // Let PHP handle other errors normally
       });
     }
-  }
-  /**
-   * Load admin functionality
-   */
-  private function load_admin()
-  {
-    // Load admin controllers
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/class-hp-admin.php';
-
-    // Initialize admin
-    HeritagePress_Admin::instance();
-
-    // Add menu items
-    add_action('admin_menu', array($this, 'add_admin_menu'));
-    add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
-  }
-
-  /**
-   * Add admin menus
-   */
-  public function add_admin_menu()
-  {
-    // Main menu
-    add_menu_page(
-      __('HeritagePress', 'heritagepress'),
-      __('HeritagePress', 'heritagepress'),
-      'manage_options',
-      'heritagepress',
-      array($this, 'render_admin_page'),
-      'dashicons-groups',
-      25
-    );
-
-    // Submenus
-    $submenus = array(
-      'trees' => array(
-        'title' => __('Trees', 'heritagepress'),
-        'capability' => 'manage_options',
-        'function' => array($this, 'render_trees_page')
-      ),
-      'import' => array(
-        'title' => __('Import', 'heritagepress'),
-        'capability' => 'manage_options',
-        'function' => array($this, 'render_import_page')
-      )
-    );
-
-    foreach ($submenus as $slug => $menu) {
-      add_submenu_page(
-        'heritagepress',
-        $menu['title'],
-        $menu['title'],
-        $menu['capability'],
-        'heritagepress-' . $slug,
-        $menu['function']
-      );
-    }
-  }
-
-  /**
-   * Render admin pages
-   */
-  public function render_admin_page()
-  {
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/views/dashboard.php';
-  }
-
-  public function render_trees_page()
-  {
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/views/trees/index.php';
-  }
-
-  public function render_import_page()
-  {
-    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/views/import/index.php';
-  }
-
-  /**
-   * Enqueue admin scripts and styles
-   */
-  public function admin_scripts()
-  {
-    wp_enqueue_style('heritagepress-admin', HERITAGEPRESS_PLUGIN_URL . 'admin/css/admin.css', array(), HERITAGEPRESS_VERSION);
-    wp_enqueue_script('heritagepress-admin', HERITAGEPRESS_PLUGIN_URL . 'admin/js/admin.js', array('jquery'), HERITAGEPRESS_VERSION, true);
   }
 }
 

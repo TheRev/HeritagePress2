@@ -1,8 +1,7 @@
 <?php
 
-/**
- * Add New Family - Complete TNG admin_newfamily.php facsimile
- * Comprehensive family creation form with all TNG fields and functionality
+/** * Add New Family - Complete admin new family facsimile
+ * Comprehensive family creation form with all genealogy fields and functionality
  */
 
 if (!defined('ABSPATH')) {

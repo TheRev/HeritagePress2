@@ -2193,4 +2193,52 @@ class HP_GEDCOM_Importer_Original
 
     return $count;
   }
+
+  /**
+   * Scan GEDCOM file for all event tags and auto-add new event types to hp_eventtypes table
+   */
+  public function scan_and_add_event_types($file_path, $tree_id)
+  {
+    global $wpdb;
+    if (!defined('ABSPATH')) {
+      define('ABSPATH', dirname(__FILE__, 6) . '/');
+    }
+    require_once HERITAGEPRESS_PLUGIN_DIR . 'admin/controllers/class-hp-event-type-controller.php';
+    $event_type_controller = new HP_Event_Type_Controller();
+
+    $event_tags = array();
+    $handle = fopen($file_path, 'r');
+    if (!$handle) {
+      throw new Exception('Cannot open GEDCOM file: ' . $file_path);
+    }
+    while (($line = fgets($handle)) !== false) {
+      // Parse GEDCOM line: LEVEL [ID] TAG [VALUE]
+      if (preg_match('/^\d+ +(@[^@]+@ +)?([A-Z0-9_]+) ?/', $line, $matches)) {
+        $tag = $matches[2];
+        if ($this->is_custom_event($tag) && !in_array($tag, $event_tags)) {
+          $event_tags[] = $tag;
+        }
+      }
+    }
+    fclose($handle);
+
+    foreach ($event_tags as $tag) {
+      // Use call_user_func to access private methods
+      if (!call_user_func(array($event_type_controller, 'event_type_exists'), $tag)) {
+        $event_type_data = array(
+          'eventtypeID' => $tag,
+          'tag' => $tag,
+          'description' => $tag . ' (auto-imported)',
+          'display' => $tag,
+          'type' => 'I',
+          'keep' => 1,
+          'collapse' => 0,
+          'ordernum' => 0,
+          'ldsevent' => 0
+        );
+        call_user_func(array($event_type_controller, 'create_event_type'), $event_type_data);
+      }
+    }
+    return $event_tags;
+  }
 }

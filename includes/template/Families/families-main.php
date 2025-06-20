@@ -2,7 +2,7 @@
 
 /**
  * Families Main Admin Interface
- * Complete facsimile of TNG families management with tabbed navigation
+ * Complete facsimile of families management with tabbed navigation
  */
 
 if (!defined('ABSPATH')) {

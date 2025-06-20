@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Browse Families - Complete TNG admin_families.php facsimile
+ * Browse Families - Complete admin families facsimile
  * Comprehensive family listing with search, filter, and management capabilities
  */
 

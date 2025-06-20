@@ -3,7 +3,7 @@
 /**
  * Citations Management View
  * Display and manage citations for a specific person/family/event
- * Based on TNG admin_citations.php
+ * Based on admin_citations.php
  */
 
 if (!defined('ABSPATH')) {

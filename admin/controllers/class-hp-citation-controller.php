@@ -3,11 +3,13 @@
 /**
  * Citation Controller
  *
- * Handles all citation management functionality including CRUD operations,
- * citation validation, and citation-related AJAX requests
+ * Handles all citation management functionality including CRUD       operations, AJAX requests, and display logic.
  *
- * Based on TNG admin_addcitation.php, admin_citations.php, admin_editcitation.php,
- * admin_updatecitation.php, and admin_deletecitation.php
+ * citation validation, and citation-related AJAX requests
+ * * @package HeritagePress
+ * @subpackage Controllers
+ * @since 1.0.0
+ *
  */
 
 if (!defined('ABSPATH')) {
@@ -58,6 +60,12 @@ class HP_Citation_Controller extends HP_Base_Controller
     // AJAX handlers for sources (needed for citation forms)
     add_action('wp_ajax_hp_search_sources', array($this, 'ajax_search_sources'));
     add_action('wp_ajax_hp_create_source', array($this, 'ajax_create_source'));
+
+    // AJAX handlers for citations modal
+    add_action('wp_ajax_hp_get_citations_modal', array($this, 'ajax_get_citations_modal'));
+    add_action('wp_ajax_hp_load_add_citation_form', array($this, 'ajax_load_add_citation_form'));
+    add_action('wp_ajax_hp_load_edit_citation_form', array($this, 'ajax_load_edit_citation_form'));
+    add_action('wp_ajax_hp_update_citation_order', array($this, 'ajax_update_citation_order'));
   }
 
   /**
@@ -170,7 +178,7 @@ class HP_Citation_Controller extends HP_Base_Controller
   /**
    * Handle adding a new citation
    */
-  private function handle_add_citation()
+  public function handle_add_citation()
   {
     if (!$this->verify_nonce($_POST['_wpnonce'])) {
       $this->add_notice(__('Security check failed.', 'heritagepress'), 'error');
@@ -182,7 +190,7 @@ class HP_Citation_Controller extends HP_Base_Controller
       return;
     }
 
-    // Sanitize form data (TNG field names)
+    // Sanitize form data (field names)
     $gedcom = sanitize_text_field($_POST['gedcom'] ?? '');
     $persfamID = sanitize_text_field($_POST['persfamID'] ?? '');
     $eventID = sanitize_text_field($_POST['eventID'] ?? '');
@@ -252,6 +260,7 @@ class HP_Citation_Controller extends HP_Base_Controller
       'page' => $page,
       'quay' => $quay,
       'citedate' => $citedate,
+      'citedatetr' => $citedatetr,
       'citetext' => $citetext,
       'note' => $note
     ));
@@ -266,7 +275,7 @@ class HP_Citation_Controller extends HP_Base_Controller
   /**
    * Handle deleting a citation
    */
-  private function handle_delete_citation()
+  public function handle_delete_citation()
   {
     if (!$this->verify_nonce($_POST['_wpnonce'])) {
       $this->add_notice(__('Security check failed.', 'heritagepress'), 'error');
@@ -361,7 +370,7 @@ class HP_Citation_Controller extends HP_Base_Controller
     $result = $wpdb->insert($citations_table, $insert_data);
 
     if ($result !== false) {
-      // Set last citation session variable (TNG compatibility)
+      // Set last citation session variable (compatibility)
       $_SESSION['lastcite'] = $data['gedcom'] . "|" . $wpdb->insert_id;
       return $wpdb->insert_id;
     }
@@ -458,7 +467,7 @@ class HP_Citation_Controller extends HP_Base_Controller
   /**
    * Get citations for a specific person/family and event
    */
-  private function get_citations($gedcom, $persfamID, $eventID = '')
+  public function get_citations($gedcom, $persfamID, $eventID = '')
   {
     global $wpdb;
 
@@ -587,7 +596,7 @@ class HP_Citation_Controller extends HP_Base_Controller
     $result = $this->update_citation($citation_id, $citation_data);
 
     if ($result) {
-      // Get updated citation display info (like TNG)
+      // Get updated citation display info
       $citation = $this->get_citation($citation_id);
       $display_text = $this->get_citation_display_text($citation);
 
@@ -621,7 +630,7 @@ class HP_Citation_Controller extends HP_Base_Controller
     $result = $this->delete_citation($citation_id);
 
     if ($result) {
-      // Get remaining citation count (like TNG)
+      // Get remaining citation count
       $remaining_count = count($this->get_citations($gedcom, $persfamID, $eventID));
 
       wp_send_json_success(array(
@@ -684,7 +693,7 @@ class HP_Citation_Controller extends HP_Base_Controller
   }
 
   /**
-   * AJAX: Get last citation (TNG compatibility)
+   * AJAX: Get last citation (compatibility)
    */
   public function ajax_get_last_citation()
   {
@@ -747,33 +756,248 @@ class HP_Citation_Controller extends HP_Base_Controller
   }
 
   /**
-   * Get citation display text (like TNG admin_updatecitation.php)
+   * AJAX: Get citations modal HTML
+   * Replicates TNG admin_citations.php modal interface
    */
-  private function get_citation_display_text($citation)
+  public function ajax_get_citations_modal()
   {
-    if (empty($citation)) {
-      return '';
+    if (!$this->verify_nonce($_POST['nonce'])) {
+      wp_send_json_error('Security check failed');
     }
 
-    if (!empty($citation['sourceID'])) {
-      $title = !empty($citation['title']) ? $citation['title'] : $citation['shorttitle'];
-      $display = "[{$citation['sourceID']}] $title";
-    } else {
-      $display = $citation['description'];
+    $persfamID = sanitize_text_field($_POST['persfamID'] ?? '');
+    $tree = sanitize_text_field($_POST['tree'] ?? '');
+    $eventID = sanitize_text_field($_POST['eventID'] ?? '');
+    $noteID = sanitize_text_field($_POST['noteID'] ?? '');
+
+    if (empty($persfamID) || empty($tree)) {
+      wp_send_json_error('Missing required parameters');
     }
 
-    // Truncate like TNG
-    return $this->truncate_text($display, 75);
+    // Get event type description
+    $event_type_desc = $this->get_event_type_description($eventID);
+
+    // Get citations
+    $citations = $this->get_citations_for_modal($tree, $persfamID, $eventID, $noteID);
+    $citation_count = count($citations);
+
+    // Generate HTML
+    ob_start();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-modal.php';
+    $html = ob_get_clean();
+
+    wp_send_json_success(array(
+      'html' => $html,
+      'citationCount' => $citation_count,
+      'eventTypeDesc' => $event_type_desc
+    ));
   }
 
   /**
-   * Truncate text to specified length
+   * AJAX: Load add citation form
    */
-  private function truncate_text($text, $length)
+  public function ajax_load_add_citation_form()
   {
-    if (strlen($text) <= $length) {
-      return $text;
+    if (!$this->verify_nonce($_POST['nonce'])) {
+      wp_send_json_error('Security check failed');
     }
-    return substr($text, 0, $length - 3) . '...';
+
+    $persfamID = sanitize_text_field($_POST['persfamID'] ?? '');
+    $tree = sanitize_text_field($_POST['tree'] ?? '');
+    $eventID = sanitize_text_field($_POST['eventID'] ?? '');
+
+    // Get event list for person/family
+    $events = $this->get_available_events($persfamID, $tree);
+
+    // Check for last citation
+    $last_citation = null;
+    if (isset($_SESSION['lastcite'])) {
+      $lastcite_parts = explode('|', $_SESSION['lastcite']);
+      if (count($lastcite_parts) == 2 && $lastcite_parts[0] == $tree) {
+        $last_citation = $lastcite_parts[1];
+      }
+    }
+
+    ob_start();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-add-modal.php';
+    $html = ob_get_clean();
+
+    wp_send_json_success(array('html' => $html));
+  }
+
+  /**
+   * AJAX: Load edit citation form
+   */
+  public function ajax_load_edit_citation_form()
+  {
+    if (!$this->verify_nonce($_POST['nonce'])) {
+      wp_send_json_error('Security check failed');
+    }
+
+    $citation_id = intval($_POST['citationID']);
+    $citation = $this->get_citation($citation_id);
+
+    if (!$citation) {
+      wp_send_json_error('Citation not found');
+    }
+
+    // Get event list for person/family
+    $events = $this->get_available_events($citation['persfamID'], $citation['gedcom']);
+
+    ob_start();
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/citations-edit-modal.php';
+    $html = ob_get_clean();
+
+    wp_send_json_success(array('html' => $html));
+  }
+
+  /**
+   * AJAX: Update citation order
+   */
+  public function ajax_update_citation_order()
+  {
+    if (!$this->verify_nonce($_POST['nonce'])) {
+      wp_send_json_error('Security check failed');
+    }
+
+    if (!$this->check_capability('edit_genealogy')) {
+      wp_send_json_error('Insufficient permissions');
+    }
+
+    $citation_ids = array_map('intval', $_POST['citationIds'] ?? array());
+
+    if (empty($citation_ids)) {
+      wp_send_json_error('No citation IDs provided');
+    }
+
+    global $wpdb;
+    $citations_table = $wpdb->prefix . 'hp_citations';
+
+    // Update order numbers
+    $order = 1;
+    foreach ($citation_ids as $citation_id) {
+      $wpdb->update(
+        $citations_table,
+        array('ordernum' => $order),
+        array('citationID' => $citation_id)
+      );
+      $order++;
+    }
+
+    wp_send_json_success('Order updated');
+  }
+
+  /**
+   * Get event type description
+   */
+  private function get_event_type_description($eventID)
+  {
+    if (empty($eventID)) {
+      return 'General';
+    }
+
+    global $wpdb;
+    $events_table = $wpdb->prefix . 'hp_events';
+    $eventtypes_table = $wpdb->prefix . 'hp_eventtypes';
+
+    $query = $wpdb->prepare("
+      SELECT et.tag, et.display
+      FROM $events_table e
+      LEFT JOIN $eventtypes_table et ON e.eventtypeID = et.eventtypeID
+      WHERE e.eventID = %s
+    ", $eventID);
+
+    $result = $wpdb->get_row($query, ARRAY_A);
+
+    if ($result) {
+      return !empty($result['display']) ? $result['display'] : $result['tag'];
+    }
+
+    return $eventID;
+  }
+
+  /**
+   * Get citations for modal display
+   */
+  private function get_citations_for_modal($tree, $persfamID, $eventID, $noteID = '')
+  {
+    global $wpdb;
+    $citations_table = $wpdb->prefix . 'hp_citations';
+    $sources_table = $wpdb->prefix . 'hp_sources';
+
+    $where_clause = "WHERE c.gedcom = %s AND c.persfamID = %s";
+    $params = array($tree, $persfamID);
+
+    if (!empty($eventID)) {
+      $where_clause .= " AND c.eventID = %s";
+      $params[] = $eventID;
+    }
+
+    // Include note citations if noteID is provided
+    $note_clause = '';
+    if (!empty($noteID)) {
+      $note_clause = " OR c.persfamID = %s";
+      $params[] = $noteID;
+    }
+
+    $query = $wpdb->prepare("
+      SELECT c.citationID, c.sourceID, c.description, c.page, c.ordernum,
+             s.title, s.shorttitle
+      FROM $citations_table c
+      LEFT JOIN $sources_table s ON c.sourceID = s.sourceID AND s.gedcom = c.gedcom
+      $where_clause$note_clause
+      ORDER BY c.ordernum, c.citationID
+    ", $params);
+
+    return $wpdb->get_results($query, ARRAY_A);
+  }
+
+  /**
+   * Get available events for person/family
+   */
+  private function get_available_events($persfamID, $tree)
+  {
+    // Determine if person or family
+    $is_person = strpos($persfamID, 'I') === 0 || !preg_match('/^F/', $persfamID);
+
+    $events = array();
+
+    if ($is_person) {
+      // Standard person events
+      $events[''] = 'Person';
+      $events['BIRT'] = 'Birth';
+      $events['DEAT'] = 'Death';
+      $events['BURI'] = 'Burial';
+    } else {
+      // Standard family events
+      $events[''] = 'Family';
+      $events['MARR'] = 'Marriage';
+      $events['DIV'] = 'Divorce';
+    }
+
+    // Get custom events from database
+    global $wpdb;
+    $events_table = $wpdb->prefix . 'hp_events';
+    $eventtypes_table = $wpdb->prefix . 'hp_eventtypes';
+
+    $query = $wpdb->prepare("
+      SELECT e.eventID, et.tag, et.display, e.eventdate
+      FROM $events_table e
+      LEFT JOIN $eventtypes_table et ON e.eventtypeID = et.eventtypeID
+      WHERE e.persfamID = %s AND e.gedcom = %s AND e.keep = '1'
+      ORDER BY e.ordernum, et.tag
+    ", $persfamID, $tree);
+
+    $custom_events = $wpdb->get_results($query, ARRAY_A);
+
+    foreach ($custom_events as $event) {
+      $display = !empty($event['display']) ? $event['display'] : $event['tag'];
+      if (!empty($event['eventdate'])) {
+        $display .= ' (' . $event['eventdate'] . ')';
+      }
+      $events[$event['eventID']] = $display;
+    }
+
+    return $events;
   }
 }

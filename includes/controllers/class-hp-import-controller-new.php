@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Import Controller - Simple TNG-based Implementation
+ * Import Controller - Simple genealogy-based Implementation
  *
- * Handles GEDCOM import functionality based on TNG admin_dataimport.php
+ * Handles GEDCOM import functionality based on genealogy admin import
  */
 
 if (!defined('ABSPATH')) {
@@ -32,7 +32,7 @@ class HP_Import_Controller
   }
 
   /**
-   * Process GEDCOM import (based on TNG admin_gedimport.php)
+   * Process GEDCOM import (based on genealogy admin import)
    */
   private function process_import()
   {
@@ -42,7 +42,7 @@ class HP_Import_Controller
       return;
     }
 
-    // Get form data (using exact TNG field names)
+    // Get form data (using standard field names)
     $tree = sanitize_text_field($_POST['tree1'] ?? '');
     $remotefile = $_FILES['remotefile'] ?? null;
     $database = sanitize_text_field($_POST['database'] ?? '');
@@ -50,7 +50,7 @@ class HP_Import_Controller
     $allevents = isset($_POST['allevents']) ? 'yes' : '';
     $eventsonly = isset($_POST['eventsonly']) ? 'yes' : '';
 
-    // Validation (exact TNG logic)
+    // Validation (standard logic)
     if (empty($remotefile['name']) && empty($database)) {
       echo '<div class="notice notice-error"><p>Please select an import file.</p></div>';
       return;
@@ -153,7 +153,7 @@ class HP_Import_Controller
   }
 
   /**
-   * Display import form (exact TNG structure)
+   * Display import form (standard structure)
    */
   private function display_import_form()
   {
@@ -162,7 +162,7 @@ class HP_Import_Controller
     $trees_table = $wpdb->prefix . 'hp_trees';
     $trees = $wpdb->get_results("SELECT gedcom, treename FROM $trees_table ORDER BY treename", ARRAY_A);
 
-    // Import config (TNG defaults)
+    // Import config (default values)
     $import_config = array(
       'defimpopt' => 0
     );
