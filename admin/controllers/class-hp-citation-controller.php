@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Citation Controller
@@ -757,7 +757,7 @@ class HP_Citation_Controller extends HP_Base_Controller
 
   /**
    * AJAX: Get citations modal HTML
-   * Replicates TNG admin_citations.php modal interface
+   * Replicates HeritagePress admin_citations.php modal interface
    */
   public function ajax_get_citations_modal()
   {

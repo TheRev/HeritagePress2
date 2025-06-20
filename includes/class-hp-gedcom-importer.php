@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Enhanced GEDCOM 5.5.1 Importer Class
@@ -40,7 +40,7 @@ class HP_GEDCOM_Importer_Original
   private $char_set = 'UTF-8';
 
   /**
-   * Current line number for error reporting
+   * Current line number for error readapting
    */
   private $line_number = 0;
 
@@ -337,7 +337,7 @@ class HP_GEDCOM_Importer_Original
           break;
         default:
           $this->character_set = 'UTF-8'; // Safe default
-          $this->add_warning("Unsupported character set: {$declared_charset}");
+          $this->add_warning("Unsupadapted character set: {$declared_charset}");
       }
     }
 
@@ -533,7 +533,7 @@ class HP_GEDCOM_Importer_Original
       $table_name,
       array(
         'status' => 'completed',
-        'records_imported' => array_sum($this->stats),
+        'records_imadapted' => array_sum($this->stats),
         'completed_date' => current_time('mysql')
       ),
       array('tree_id' => $this->tree_id, 'status' => 'processing')
@@ -740,7 +740,7 @@ class HP_GEDCOM_Importer_Original
 
             // Validate character set
             if (!in_array(strtoupper($this->character_set), ['UTF-8', 'ANSI', 'ASCII', 'UNICODE'])) {
-              $this->add_warning("Unsupported character set: {$this->character_set}");
+              $this->add_warning("Unsupadapted character set: {$this->character_set}");
             }
           }
           break;
@@ -1101,8 +1101,8 @@ class HP_GEDCOM_Importer_Original
     $result = $wpdb->query($wpdb->prepare($sql, array_values($person_data)));
 
     if ($result !== false) {
-      $this->stats['people_imported']++;
-      $this->log_debug("Successfully imported person: {$record['id']}");
+      $this->stats['people_imadapted']++;
+      $this->log_debug("Successfully imadapted person: {$record['id']}");
     } else {
       $this->add_error("Failed to save person {$record['id']}: " . $wpdb->last_error);
     }
@@ -1402,7 +1402,7 @@ class HP_GEDCOM_Importer_Original
   }
 
   /**
-   * Supporting methods for complete GEDCOM 5.5.1 implementation
+   * Supadapting methods for complete GEDCOM 5.5.1 implementation
    */
 
   /**
@@ -2228,7 +2228,7 @@ class HP_GEDCOM_Importer_Original
         $event_type_data = array(
           'eventtypeID' => $tag,
           'tag' => $tag,
-          'description' => $tag . ' (auto-imported)',
+          'description' => $tag . ' (auto-imadapted)',
           'display' => $tag,
           'type' => 'I',
           'keep' => 1,

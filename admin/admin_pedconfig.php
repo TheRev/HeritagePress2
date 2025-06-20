@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Pedigree/Descendant Chart Config, ported from TNG admin_pedconfig.php
+﻿<?php
+// HeritagePress: Pedigree/Descendant Chart Config, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_pedconfig_page');

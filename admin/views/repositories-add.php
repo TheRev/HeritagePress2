@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Add Repository View for HeritagePress
  *
  * This file provides the add repository interface.
- * Ported from admin_newrepo.php functionality
+ * Based on admin_newrepo.php functionality
  *
  * @package HeritagePress
  */
@@ -263,10 +263,10 @@ if (isset($_COOKIE['heritagepress_tree'])) {
         success: function(response) {
           if (response.success) {
             if (response.data.exists) {
-              statusEl.html('<span class="unavailable">✗ ' + response.data.message + '</span>')
+              statusEl.html('<span class="unavailable">âœ— ' + response.data.message + '</span>')
                 .removeClass('available').addClass('unavailable');
             } else {
-              statusEl.html('<span class="available">✓ ' + response.data.message + '</span>')
+              statusEl.html('<span class="available">âœ“ ' + response.data.message + '</span>')
                 .removeClass('unavailable').addClass('available');
             }
           }

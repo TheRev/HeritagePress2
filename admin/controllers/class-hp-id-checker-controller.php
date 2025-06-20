@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * HP_ID_Checker_Controller
  *
  * Handles ID validation for all entity types (person, family, source, repository)
- * Replicates TNG admin_checkID.php functionality with WordPress security and standards
+ * Replicates HeritagePress admin_checkID.php functionality with WordPress security and standards
  *
  * @package HeritagePress
  * @subpackage Admin/Controllers
@@ -30,7 +30,7 @@ class HP_ID_Checker_Controller
 
   /**
    * Universal ID checker for all entity types
-   * Replicates TNG admin_checkID.php functionality
+   * Replicates HeritagePress admin_checkID.php functionality
    */
   public function check_entity_id()
   {
@@ -95,9 +95,9 @@ class HP_ID_Checker_Controller
       $available = true;
     }
 
-    // Return both JSON response and HTML for TNG-style compatibility
+    // Return both JSON response and HTML for HeritagePress-style compatibility
     if (isset($_POST['format']) && $_POST['format'] === 'html') {
-      // Return HTML response like TNG
+      // Return HTML response like HeritagePress
       header("Content-type:text/html; charset=UTF-8");
       echo "<span class=\"{$css_class}\">{$message}</span>";
       die();
@@ -177,7 +177,7 @@ class HP_ID_Checker_Controller
 
   /**
    * Validate ID format with prefix/suffix rules
-   * Replicates TNG prefix/suffix validation logic
+   * Replicates HeritagePress prefix/suffix validation logic
    */
   private function validate_id_format($check_id, $entity_type)
   {
@@ -281,7 +281,7 @@ class HP_ID_Checker_Controller
 
   /**
    * Generate next available ID for entity type
-   * Replicates TNG auto-ID generation functionality
+   * Replicates HeritagePress auto-ID generation functionality
    */
   public function generate_next_id($entity_type, $tree)
   {

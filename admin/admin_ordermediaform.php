@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Ported from TNG admin_ordermediaform.php
+﻿<?php
+// HeritagePress: 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 // Register admin menu page
@@ -27,7 +27,7 @@ function heritagepress_render_ordermediaform_page()
   $message = isset($_GET['message']) ? sanitize_text_field($_GET['message']) : '';
 
   // Fetch trees
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $trees = $wpdb->get_results("SELECT gedcom, treename FROM $trees_table ORDER BY treename", ARRAY_A);
 
   // Define media types (customize as needed)
@@ -84,7 +84,7 @@ function heritagepress_render_ordermediaform_page()
           </td>
           <td>
             <!-- TODO: Implement Find button/modal for ID lookup -->
-            <a href="#" onclick="alert('TODO: Implement Find modal'); return false;" title="<?php esc_attr_e('Find', 'heritagepress'); ?>" class="button">🔍</a>
+            <a href="#" onclick="alert('TODO: Implement Find modal'); return false;" title="<?php esc_attr_e('Find', 'heritagepress'); ?>" class="button">ðŸ”</a>
           </td>
           <td>
             <input type="submit" class="button-primary" value="<?php esc_attr_e('Continue', 'heritagepress'); ?>">

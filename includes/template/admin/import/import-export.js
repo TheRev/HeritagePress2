@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Import/Export JavaScript functionality
  * Based on genealogy software admin.js and dataimport.js
  */
@@ -23,8 +23,8 @@ var entertreeid = "Please enter a tree ID.";
 var alphanum = "Tree ID must be alphanumeric.";
 var entertreename = "Please enter a tree name.";
 var confdeletefile = "Are you sure you want to delete this file?";
-var finished_msg = "Finished importing!";
-var importing_msg = "Importing GEDCOM...";
+var finished_msg = "Finished imadapting!";
+var imadapting_msg = "Imadapting GEDCOM...";
 var removeged_msg = "Remove GEDCOM";
 var close_msg = "Close Window";
 var more_options = "More Options";
@@ -698,7 +698,7 @@ function displayServerFileInfo(filename, optionElement) {
   jQuery("#file-stats").html(
     '<span class="file-size">' +
       fileSizeMB +
-      " MB</span> • " +
+      " MB</span> â€¢ " +
       '<span class="file-source">Server file</span>'
   );
   jQuery("#file-status-text").text("Ready for import");
@@ -823,7 +823,7 @@ function handleFileSelection(file) {
   if (fileStatsEl) {
     fileStatsEl.innerHTML = `<span class="file-size">${formatFileSize(
       file.size
-    )}</span> • <span class="file-source">Uploaded from computer</span>`;
+    )}</span> â€¢ <span class="file-source">Uploaded from computer</span>`;
   }
 
   // Show the file display with animation

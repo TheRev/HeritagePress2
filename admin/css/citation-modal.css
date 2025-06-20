@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Citation Modal Styles
- * Replicates TNG admin_citations.php modal appearance
+ * Replicates HeritagePress admin_citations.php modal appearance
  */
 
 /* Modal Overlay */
@@ -79,7 +79,7 @@ body.citation-modal-open {
   overflow: hidden;
 }
 
-/* Citation sections (replicating TNG databack ajaxwindow) */
+/* Citation sections (replicating genealogy databack ajaxwindow) */
 .databack.ajaxwindow {
   background: #fff;
   border: 1px solid #ddd;
@@ -175,12 +175,12 @@ body.citation-modal-open {
 }
 
 .admin-edit-icon:before {
-  content: "✏️";
+  content: "âœï¸";
   font-size: 12px;
 }
 
 .admin-delete-icon:before {
-  content: "🗑️";
+  content: "ðŸ—‘ï¸";
   font-size: 12px;
 }
 

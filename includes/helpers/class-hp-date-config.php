@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Date Configuration
@@ -160,7 +160,7 @@ class HP_Date_Config
       </div>
 
       <div class="hp-date-examples-section">
-        <h2><?php _e('Supported Date Formats', 'heritagepress'); ?></h2>
+        <h2><?php _e('Supadapted Date Formats', 'heritagepress'); ?></h2>
 
         <div class="hp-date-format-examples">
           <h4><?php _e('Complete Dates', 'heritagepress'); ?></h4>

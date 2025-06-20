@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Ported from TNG admin_newtlevent.php
+﻿<?php
+// HeritagePress: 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 // Register admin menu page

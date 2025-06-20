@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Ported from TNG admin_ordermedia.php
+﻿<?php
+// HeritagePress: 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_ordermedia_page');
@@ -34,7 +34,7 @@ function heritagepress_render_ordermedia_page()
     $order = isset($_POST['order']) ? $_POST['order'] : array();
     foreach ($order as $ordernum => $medialinkID) {
       $wpdb->update(
-        $wpdb->prefix . 'tng_medialinks',
+        $wpdb->prefix . 'HeritagePress_medialinks',
         array('ordernum' => intval($ordernum) + 1),
         array('medialinkID' => intval($medialinkID)),
         array('%d'),
@@ -47,8 +47,8 @@ function heritagepress_render_ordermedia_page()
   }
 
   // Fetch media links for the selected entity
-  $medialinks_table = $wpdb->prefix . 'tng_medialinks';
-  $media_table = $wpdb->prefix . 'tng_media';
+  $medialinks_table = $wpdb->prefix . 'HeritagePress_medialinks';
+  $media_table = $wpdb->prefix . 'HeritagePress_media';
   $where = $wpdb->prepare("$medialinks_table.personID = %s AND $medialinks_table.gedcom = %s AND $media_table.mediaID = $medialinks_table.mediaID AND $medialinks_table.eventID = %s AND $media_table.mediatypeID = %s", $personID, $tree, $eventID, $mediatypeID);
   $query = "SELECT $media_table.*, $medialinks_table.medialinkID, $medialinks_table.ordernum, $medialinks_table.defphoto, $medialinks_table.dontshow FROM $medialinks_table, $media_table WHERE $where ORDER BY $medialinks_table.ordernum ASC";
   $media_items = $wpdb->get_results($query, ARRAY_A);

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Polyfills for WordPress template functions (if needed)
 if (!function_exists('esc_html')) {
   function esc_html($text)
@@ -119,7 +119,7 @@ if (!function_exists('esc_js')) {
         <th scope="row"><label for="notes"><?php esc_html_e('Notes'); ?></label></th>
         <td><textarea name="notes" id="notes" class="large-text" rows="4"><?php echo esc_attr($family['notes'] ?? ''); ?></textarea></td>
       </tr>
-      <!-- Add more fields as needed for full TNG parity -->
+      <!-- Add more fields as needed for full HeritagePress parity -->
     </table>
     <h2><?php esc_html_e('Children'); ?></h2>
     <?php

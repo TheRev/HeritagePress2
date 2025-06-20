@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Thumbnails admin page (WordPress-native, ported from TNG admin_thumbnails.php)
+﻿<?php
+// HeritagePress: Thumbnails admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -20,7 +20,7 @@ function heritagepress_admin_thumbnails_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $message = '';
   // Handle form submissions (stubs)
   if (!empty($_POST['generate_thumbs']) && check_admin_referer('heritagepress_thumbnails_action')) {

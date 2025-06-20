@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Merge Repositories View for HeritagePress
  *
  * This file provides the merge repositories interface.
- * Ported from admin_mergerepos.php functionality
+ * Based on admin_mergerepos.php functionality
  *
  * @package HeritagePress
  */

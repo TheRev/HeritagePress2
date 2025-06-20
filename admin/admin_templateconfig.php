@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Template Configuration admin page (WordPress-native, ported from TNG admin_templateconfig.php)
+﻿<?php
+// HeritagePress: Template Configuration admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -20,9 +20,9 @@ function heritagepress_admin_templateconfig_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $templates_table = $wpdb->prefix . 'tng_templates';
-  $languages_table = $wpdb->prefix . 'tng_languages';
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $templates_table = $wpdb->prefix . 'HeritagePress_templates';
+  $languages_table = $wpdb->prefix . 'HeritagePress_languages';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $message = '';
   if (!empty($_POST['save_template_settings']) && check_admin_referer('heritagepress_templateconfig_action')) {
     // TODO: Save template settings logic here

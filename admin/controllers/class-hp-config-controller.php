@@ -4,7 +4,7 @@
  * HeritagePress Global Configuration Controller
  *
  * Handles the admin page for global plugin configuration/settings.
- * Replicates TNG admin_genconfig.php functionality using WordPress standards.
+ * Provides comprehensive genealogy configuration options using WordPress standards.
  */
 
 if (!defined('ABSPATH')) {
@@ -44,16 +44,15 @@ class HeritagePress_Config_Controller
       'gendexfile',
       'backuppath',
       'saveconfig',
-      // Site
-      'homepage',
-      'tngdomain',
+      // Site      'homepage',
+      'domain',
       'sitename',
       'site_desc',
       'doctype',
       'dbowner',
       'customheader',
       'customfooter',
-      'tng_footermsg',
+      'footer_message',
       'custommeta',
       // Media
       'photosext',

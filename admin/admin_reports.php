@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Reports admin page, ported from TNG admin_reports.php
+﻿<?php
+// HeritagePress: Reports admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_reports_page');
@@ -38,7 +38,7 @@ function heritagepress_render_reports_page()
   }
   $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-  $reports_table = $wpdb->prefix . 'tng_reports';
+  $reports_table = $wpdb->prefix . 'HeritagePress_reports';
   $total = $wpdb->get_var("SELECT COUNT(reportID) FROM $reports_table $where_sql");
   $results = $wpdb->get_results($wpdb->prepare(
     "SELECT reportID, reportname, reportdesc, ranking, active FROM $reports_table $where_sql ORDER BY ranking, reportname, reportID LIMIT %d OFFSET %d",
@@ -89,9 +89,9 @@ function heritagepress_render_reports_page()
           <?php foreach ($results as $row): ?>
             <tr>
               <td>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editreport&reportID=' . urlencode($row['reportID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">✏️</a>
-                <a href="#" class="button button-small delete-report" data-report-id="<?php echo esc_attr($row['reportID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">🗑️</a>
-                <a href="<?php echo esc_url(site_url('showreport.php?reportID=' . urlencode($row['reportID']) . '&test=1')); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('Test', 'heritagepress'); ?>">🧪</a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editreport&reportID=' . urlencode($row['reportID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">âœï¸</a>
+                <a href="#" class="button button-small delete-report" data-report-id="<?php echo esc_attr($row['reportID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">ðŸ—‘ï¸</a>
+                <a href="<?php echo esc_url(site_url('showre.php?reportID=' . urlencode($row['reportID']) . '&test=1')); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('Test', 'heritagepress'); ?>">ðŸ§ª</a>
               </td>
               <td><?php echo esc_html($row['ranking']); ?></td>
               <td><?php echo esc_html($row['reportID']); ?></td>
@@ -150,7 +150,7 @@ function heritagepress_handle_delete_report()
   global $wpdb;
   $reportID = isset($_GET['reportID']) ? sanitize_text_field($_GET['reportID']) : '';
   if ($reportID) {
-    $reports_table = $wpdb->prefix . 'tng_reports';
+    $reports_table = $wpdb->prefix . 'HeritagePress_reports';
     $wpdb->delete($reports_table, ['reportID' => $reportID]);
     wp_redirect(admin_url('admin.php?page=heritagepress-reports&message=' . urlencode(__('Report deleted.', 'heritagepress'))));
     exit;

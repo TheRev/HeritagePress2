@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Import/Export Admin View - Main Template
@@ -36,11 +36,11 @@ $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'import
   </h2>
   <div class="tab-content">
     <?php if ($current_tab === 'import'): ?>
-      <?php include __DIR__ . '/import.php'; ?>
+      <?php include __DIR__ . '/im.php'; ?>
     <?php elseif ($current_tab === 'export'): ?>
-      <?php include __DIR__ . '/export.php'; ?>
+      <?php include __DIR__ . '/ex.php'; ?>
     <?php elseif ($current_tab === 'post-import'): ?>
-      <?php include __DIR__ . '/post-import.php'; ?>
+      <?php include __DIR__ . '/post-im.php'; ?>
     <?php endif; ?>
   </div>
 </div>
@@ -251,7 +251,7 @@ $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'import
       // Show processing message
       if (hasUploadedFile || hasServerFile) {
         $('input[type="submit"]').prop('disabled', true).val('Processing...');
-        $('.wrap').prepend('<div class="notice notice-info"><p><strong>Processing:</strong> Importing GEDCOM data. This may take several minutes for large files...</p></div>');
+        $('.wrap').prepend('<div class="notice notice-info"><p><strong>Processing:</strong> Imadapting GEDCOM data. This may take several minutes for large files...</p></div>');
       }
 
       return true;

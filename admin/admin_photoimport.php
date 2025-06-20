@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Photo Import admin page, ported from TNG admin_photoimport.php
+﻿<?php
+// HeritagePress: Photo Import admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_photoimport_page');
@@ -25,11 +25,11 @@ function heritagepress_render_photoimport_page()
   $nonce = wp_create_nonce('heritagepress_photoimport');
 
   // Fetch trees
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $trees = $wpdb->get_results("SELECT gedcom, treename FROM $trees_table ORDER BY treename", ARRAY_A);
 
   // Fetch media types
-  $mediatypes_table = $wpdb->prefix . 'tng_mediatypes';
+  $mediatypes_table = $wpdb->prefix . 'HeritagePress_mediatypes';
   $mediatypes = $wpdb->get_results("SELECT ID, display FROM $mediatypes_table ORDER BY display", ARRAY_A);
 ?>
   <div class="wrap">
@@ -91,8 +91,8 @@ function heritagepress_handle_photoimport()
   $mediatypeID = isset($_POST['mediatypeID']) ? sanitize_text_field($_POST['mediatypeID']) : '';
   $overwrite = isset($_POST['overwrite']) ? true : false;
   $skipduplicates = isset($_POST['skipduplicates']) ? true : false;
-  $totalImported = 0;
-  $media_table = $wpdb->prefix . 'tng_media';
+  $totalImadapted = 0;
+  $media_table = $wpdb->prefix . 'HeritagePress_media';
 
   // Set up media directory (customize as needed)
   $upload_dir = wp_upload_dir();
@@ -146,10 +146,10 @@ function heritagepress_handle_photoimport()
         'newwindow' => 0,
         'usecollfolder' => 1
       ]);
-      $totalImported++;
+      $totalImadapted++;
     }
   }
-  $msg = sprintf(_n('%d photo imported.', '%d photos imported.', $totalImported, 'heritagepress'), $totalImported);
+  $msg = sprintf(_n('%d photo imadapted.', '%d photos imadapted.', $totalImadapted, 'heritagepress'), $totalImadapted);
   wp_redirect(admin_url('admin.php?page=heritagepress-photoimport&message=' . urlencode($msg)));
   exit;
 }

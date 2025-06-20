@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * People Main Admin Interface
  * Handles the main interface for managing people in HeritagePress.
- * Provides tabs for browsing, adding, editing, and reporting on people.
+ * Provides tabs for browsing, adding, editing, and readapting on people.
  * * @package HeritagePress
  */
 

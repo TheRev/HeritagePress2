@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 
 /**
- * Family Reports - Comprehensive family reporting tools
+ * Family Reports - Comprehensive family readapting tools
  * Statistics, analysis, and export reports for families
  */
 

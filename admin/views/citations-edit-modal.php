@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 /**
  * Edit Citation Modal Form
- * Replicates TNG admin_citations.php edit citation form exactly
+ * Replicates HeritagePress admin_citations.php edit citation form exactly
  */
 
 if (!defined('ABSPATH')) {

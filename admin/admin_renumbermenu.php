@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Renumber Menu admin page, ported from TNG admin_renumbermenu.php
+﻿<?php
+// HeritagePress: Renumber Menu admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_renumbermenu_page');
@@ -21,7 +21,7 @@ function heritagepress_render_renumbermenu_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $trees = $wpdb->get_results("SELECT gedcom, treename FROM $trees_table ORDER BY treename");
   // Maintenance mode: for now, always enabled. Replace with your own check if needed.
   $maintenance_mode = true;

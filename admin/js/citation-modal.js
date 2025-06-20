@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Citation Modal JavaScript
- * Replicates TNG admin_citations.php AJAX popup functionality
- * Based on TNG citation management modal
+ * Replicates HeritagePress admin_citations.php AJAX popup functionality
+ * Based on HeritagePress citation management modal
  */
 
 (function ($) {
@@ -156,7 +156,7 @@
       this.gotoSection("citations", "addcitation");
     },
 
-    // Navigate between sections (replicates TNG gotoSection)
+    // Navigate between sections (replicates HeritagePress gotoSection)
     gotoSection: function (from, to) {
       var fromEl = $("#" + from);
       var toEl = $("#" + to);
@@ -221,7 +221,7 @@
     },
   };
 
-  // Citation management functions (global to match TNG)
+  // Citation management functions (global to match HeritagePress)
   window.editCitation = function (citationID) {
     var data = {
       action: "hp_load_edit_citation_form",

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * People Reports Tab
@@ -373,35 +373,35 @@ function generate_century_breakdown_report($wpdb, $people_table, $selected_tree)
         <?php
         switch ($report_type) {
           case 'statistics':
-            include __DIR__ . '/reports/statistics-report.php';
+            include __DIR__ . '/reports/statistics-re.php';
             break;
 
           case 'missing_dates':
-            include __DIR__ . '/reports/missing-dates-report.php';
+            include __DIR__ . '/reports/missing-dates-re.php';
             break;
 
           case 'living_people':
-            include __DIR__ . '/reports/living-people-report.php';
+            include __DIR__ . '/reports/living-people-re.php';
             break;
 
           case 'recent_changes':
-            include __DIR__ . '/reports/recent-changes-report.php';
+            include __DIR__ . '/reports/recent-changes-re.php';
             break;
 
           case 'duplicate_names':
-            include __DIR__ . '/reports/duplicate-names-report.php';
+            include __DIR__ . '/reports/duplicate-names-re.php';
             break;
 
           case 'age_statistics':
-            include __DIR__ . '/reports/age-statistics-report.php';
+            include __DIR__ . '/reports/age-statistics-re.php';
             break;
 
           case 'surname_list':
-            include __DIR__ . '/reports/surname-list-report.php';
+            include __DIR__ . '/reports/surname-list-re.php';
             break;
 
           case 'orphans':
-            include __DIR__ . '/reports/orphans-report.php';
+            include __DIR__ . '/reports/orphans-re.php';
             break;
 
           default:

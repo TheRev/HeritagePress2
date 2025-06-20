@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Polyfills for WordPress template functions (if needed)
 if (!function_exists('esc_html_e')) {
   function esc_html_e($text)
@@ -82,7 +82,7 @@ if (!function_exists('submit_button')) {
         <th scope="row"><label for="notes"><?php esc_html_e('Notes'); ?></label></th>
         <td><textarea name="notes" id="notes" class="large-text" rows="4"></textarea></td>
       </tr>
-      <!-- Add more fields as needed for full TNG parity -->
+      <!-- Add more fields as needed for full HeritagePress parity -->
     </table>
     <?php submit_button(__('Add Family')); ?>
   </form>

@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Ported from TNG admin_optimize.php
+﻿<?php
+// HeritagePress: 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 // Register admin menu page
@@ -26,7 +26,7 @@ function heritagepress_render_optimize_page()
   $nonce = wp_create_nonce('heritagepress_optimize');
   $message = isset($_GET['message']) ? sanitize_text_field($_GET['message']) : '';
   // Get all HeritagePress tables
-  $tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}tng_%'");
+  $tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}HeritagePress_%'");
 ?>
   <div class="wrap">
     <h1><?php _e('Optimize Database Tables', 'heritagepress'); ?></h1>
@@ -71,7 +71,7 @@ function heritagepress_handle_optimize_tables()
   $selected_table = isset($_POST['optimize_table']) ? sanitize_text_field($_POST['optimize_table']) : 'all';
   $message = '';
   if ($selected_table === 'all') {
-    $tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}tng_%'");
+    $tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}HeritagePress_%'");
     foreach ($tables as $table) {
       $wpdb->query("OPTIMIZE TABLE $table");
     }

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Post-Import Admin View
@@ -33,7 +33,7 @@ $post_import_utils = array(
 <div class="post-import-section">
   <div class="section-header">
     <h2 class="section-title"><?php _e('Post-Import Utilities', 'heritagepress'); ?></h2>
-    <p class="section-description"><?php _e('Maintain data integrity and relationships after importing genealogy data', 'heritagepress'); ?></p>
+    <p class="section-description"><?php _e('Maintain data integrity and relationships after imadapting genealogy data', 'heritagepress'); ?></p>
   </div>
 
   <!-- Tree Selection Card -->
@@ -104,7 +104,7 @@ $post_import_utils = array(
       <div class="notice notice-info" style="margin-top: 25px;">
         <p style="margin: 0;">
           <strong><?php _e('Note:', 'heritagepress'); ?></strong>
-          <?php _e('These utilities help maintain data integrity after importing GEDCOM files. Run them in order for best results. Processing may take several minutes for large databases.', 'heritagepress'); ?>
+          <?php _e('These utilities help maintain data integrity after imadapting GEDCOM files. Run them in order for best results. Processing may take several minutes for large databases.', 'heritagepress'); ?>
         </p>
       </div>
 

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Repository Main/Search View for HeritagePress
  *
  * This file provides the search and listing interface for repositories.
- * Ported from admin_repositories.php functionality
+ * Based on admin_repositories.php functionality
  *
  * @package HeritagePress
  */

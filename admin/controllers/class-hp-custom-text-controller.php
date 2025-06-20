@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Custom Text Update Controller
  *
  * Handles custom text file management and updates for HeritagePress
- * Replicates functionality from TNG admin_cust_text_update.php
+ * Replicates functionality from HeritagePress admin_cust_text_update.php
  *
  * @package HeritagePress
  */

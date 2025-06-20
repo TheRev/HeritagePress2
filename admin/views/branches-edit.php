@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * Branch Edit Admin Interface
  *
- * Replicates TNG admin_editbranch.php functionality for WordPress
+ * Replicates HeritagePress admin_editbranch.php functionality for WordPress
  *
  * @package HeritagePress
  */

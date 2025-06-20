@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * AJAX Handler for Family Utilities
@@ -441,7 +441,7 @@ class HP_Family_Utilities_Handler
         $output = self::export_families_xml($families);
         break;
       default:
-        wp_send_json_error('Unsupported export format');
+        wp_send_json_error('Unsupadapted export format');
         return;
     }
 

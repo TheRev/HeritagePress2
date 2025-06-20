@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Manage Trees admin page (WordPress-native, ported from TNG admin_trees.php)
+﻿<?php
+// HeritagePress: Manage Trees admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -20,8 +20,8 @@ function heritagepress_admin_trees_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $trees_table = $wpdb->prefix . 'tng_trees';
-  $people_table = $wpdb->prefix . 'tng_people';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
+  $people_table = $wpdb->prefix . 'HeritagePress_people';
   $message = isset($_GET['message']) ? sanitize_text_field(wp_unslash($_GET['message'])) : '';
   $searchstring = isset($_GET['searchstring']) ? sanitize_text_field(wp_unslash($_GET['searchstring'])) : '';
   $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
@@ -129,7 +129,7 @@ add_action('admin_init', function () {
   if (!isset($_GET['page']) || $_GET['page'] !== 'heritagepress-trees') return;
   if (!current_user_can('manage_options')) return;
   global $wpdb;
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   if (isset($_GET['action'], $_GET['tree'])) {
     $tree = sanitize_text_field(wp_unslash($_GET['tree']));
     if ($_GET['action'] === 'delete' && check_admin_referer('heritagepress_delete_tree_' . $tree)) {

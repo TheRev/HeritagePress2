@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Export Admin View
@@ -26,7 +26,7 @@ $media_types = array(
 );
 ?>
 
-<!-- Export Tab Content (Based on admin_export.php) -->
+<!-- Export Tab Content (Based on admin_ex.php) -->
 <div class="export-section">
   <div class="section-header">
     <h2 class="section-title"><?php _e('Export GEDCOM Data', 'heritagepress'); ?></h2>

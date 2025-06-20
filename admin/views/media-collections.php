@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Media Collections View for HeritagePress
  *
  * This file provides the media collection management interface for the WordPress admin.
- * Ported from admin_addcollection.php functionality
+ * Based on admin_addcollection.php functionality
  *
  * @package HeritagePress
  */
@@ -118,7 +118,7 @@ $standard_collections = array('photos', 'histories', 'headstones', 'documents', 
                 </th>
                 <td>
                   <input type="text" name="exportas" id="exportas" class="regular-text">
-                  <p class="description"><?php esc_html_e('How this media type should be exported.', 'heritagepress'); ?></p>
+                  <p class="description"><?php esc_html_e('How this media type should be exadapted.', 'heritagepress'); ?></p>
                 </td>
               </tr>
 

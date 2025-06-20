@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Import Admin View
@@ -175,7 +175,7 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
   }
 </style>
 
-<!-- Import Tab Content (Based on admin_dataimport.php) -->
+<!-- Import Tab Content (Based on admin_dataim.php) -->
 <div class="import-section">
   <div class="section-header">
     <h2 class="section-title"><?php _e('Import GEDCOM Data', 'heritagepress'); ?></h2>
@@ -536,8 +536,8 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
             <div class="import-warning-box" style="margin-top: 20px; background: #f8f9fa; border: 1px solid #dee2e6; border-left: 4px solid #dc3545; padding: 15px; border-radius: 4px;">
               <p style="margin: 0 0 10px 0; font-weight: 600; color: #721c24;"><span class="dashicons dashicons-warning" style="color: #dc3545; margin-right: 8px;"></span><?php _e('Important Import Guidelines:', 'heritagepress'); ?></p>
               <ul style="margin: 0; padding-left: 20px; color: #495057; line-height: 1.5;">
-                <li><?php _e('Stop and backup before importing large files', 'heritagepress'); ?></li>
-                <li><?php _e('Check import settings before importing', 'heritagepress'); ?></li>
+                <li><?php _e('Stop and backup before imadapting large files', 'heritagepress'); ?></li>
+                <li><?php _e('Check import settings before imadapting', 'heritagepress'); ?></li>
                 <li><?php _e('Large imports may take several minutes', 'heritagepress'); ?></li>
               </ul>
             </div>
@@ -710,7 +710,7 @@ $max_file_size_mb = round($max_file_size / 1024 / 1024, 1);
           if (fileName) fileName.textContent = file.name;
           if (fileStats) {
             var sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            fileStats.innerHTML = '<span class="file-size">' + sizeMB + ' MB</span> • <span class="file-source">Computer file</span>';
+            fileStats.innerHTML = '<span class="file-size">' + sizeMB + ' MB</span> â€¢ <span class="file-source">Computer file</span>';
           }
           if (fileDisplay) fileDisplay.style.display = 'block';
           if (uploadedPath) uploadedPath.value = file.name;

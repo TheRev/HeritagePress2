@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * DNA Test Controller
@@ -78,7 +78,7 @@ class HP_DNA_Test_Controller extends HP_Base_Controller
     $test_ids = array_map('sanitize_text_field', $_POST['test_ids']);
     $deleted = 0;
     foreach ($test_ids as $test_id) {
-      // Delete links first (as in TNG)
+      // Delete links first (as in HeritagePress)
       $wpdb->delete($wpdb->prefix . 'hp_dna_links', ['testID' => $test_id]);
       // Delete the DNA test
       $result = $wpdb->delete($wpdb->prefix . 'hp_dna_tests', ['testID' => $test_id]);

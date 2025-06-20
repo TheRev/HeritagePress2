@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Manage Sources admin page (WordPress-native, ported from TNG admin_sources.php)
+﻿<?php
+// HeritagePress: Manage Sources admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -20,9 +20,9 @@ function heritagepress_admin_sources_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $sources_table = $wpdb->prefix . 'tng_sources';
-  $trees_table = $wpdb->prefix . 'tng_trees';
-  $users_table = $wpdb->prefix . 'tng_users';
+  $sources_table = $wpdb->prefix . 'HeritagePress_sources';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
+  $users_table = $wpdb->prefix . 'HeritagePress_users';
   $message = isset($_GET['message']) ? sanitize_text_field(wp_unslash($_GET['message'])) : '';
   $searchstring = isset($_GET['searchstring']) ? sanitize_text_field(wp_unslash($_GET['searchstring'])) : '';
   $tree = isset($_GET['tree']) ? sanitize_text_field(wp_unslash($_GET['tree'])) : '';

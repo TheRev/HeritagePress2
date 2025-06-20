@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Renumber IDs admin utility, ported from TNG admin_renumber.php
+﻿<?php
+// HeritagePress: Renumber IDs admin utility, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_renumber_page');
@@ -33,23 +33,23 @@ function heritagepress_render_renumber_page()
     // Table and ID field selection
     switch ($type) {
       case 'person':
-        $table = $wpdb->prefix . 'tng_people';
+        $table = $wpdb->prefix . 'HeritagePress_people';
         $id_field = 'personID';
         break;
       case 'family':
-        $table = $wpdb->prefix . 'tng_families';
+        $table = $wpdb->prefix . 'HeritagePress_families';
         $id_field = 'familyID';
         break;
       case 'source':
-        $table = $wpdb->prefix . 'tng_sources';
+        $table = $wpdb->prefix . 'HeritagePress_sources';
         $id_field = 'sourceID';
         break;
       case 'repo':
-        $table = $wpdb->prefix . 'tng_repositories';
+        $table = $wpdb->prefix . 'HeritagePress_repositories';
         $id_field = 'repoID';
         break;
       default:
-        $table = $wpdb->prefix . 'tng_people';
+        $table = $wpdb->prefix . 'HeritagePress_people';
         $id_field = 'personID';
     }
     // Get all IDs >= start, sorted numerically (ignoring prefix/suffix)
@@ -66,7 +66,7 @@ function heritagepress_render_renumber_page()
       $exists = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $table WHERE $id_field = %s", $newID));
       if (!$exists) {
         $wpdb->update($table, [$id_field => $newID], ['ID' => $row->ID]);
-        // TODO: Update all related tables as in TNG (families, children, events, medialinks, etc.)
+        // TODO: Update all related tables as in HeritagePress (families, children, events, medialinks, etc.)
         $count++;
       }
       $nextnum++;

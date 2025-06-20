@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Mod Manager Log admin page (WordPress-native, ported from TNG admin_showmodslog.php)
+﻿<?php
+// HeritagePress: Mod Manager Log admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -32,8 +32,8 @@ function heritagepress_admin_modslog_page()
   }
   echo '<p>';
   echo '<a href="' . esc_url(wp_nonce_url(admin_url('admin.php?page=heritagepress-modslog&action=clear'), 'heritagepress_modslog_clear')) . '" class="button" onclick="return confirm(\'' . esc_js(__('Are you sure you want to clear the log?', 'heritagepress')) . '\');">' . esc_html__('Clear Log', 'heritagepress') . '</a> ';
-  echo '<a href="https://tng.lythgoes.net/wiki/index.php?title=Mod_Manager_Syntax" target="_blank" class="button">' . esc_html__('Mod Syntax', 'heritagepress') . '</a> ';
-  echo '<a href="https://tng.lythgoes.net/wiki/index.php?title=Mod_Guidelines" target="_blank" class="button">' . esc_html__('Mod Guidelines', 'heritagepress') . '</a>';
+  echo '<a href="https://HeritagePress.lythgoes.net/wiki/index.php?title=Mod_Manager_Syntax" target="_blank" class="button">' . esc_html__('Mod Syntax', 'heritagepress') . '</a> ';
+  echo '<a href="https://HeritagePress.lythgoes.net/wiki/index.php?title=Mod_Guidelines" target="_blank" class="button">' . esc_html__('Mod Guidelines', 'heritagepress') . '</a>';
   echo '</p>';
 
   if (!file_exists($logfile)) {

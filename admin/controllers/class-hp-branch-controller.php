@@ -306,7 +306,7 @@ class HP_Branch_Controller
 
   /**
    * AJAX: Get branch options as HTML for select dropdowns
-   * Replicates TNG admin_branchoptions.php functionality
+   * Replicates genealogy branch options functionality
    */
   public function ajax_get_branch_options()
   {
@@ -663,7 +663,7 @@ class HP_Branch_Controller
   }
 
   /**
-   * Process descendants of ancestors (TNG dagens functionality)
+   * Process descendants of ancestors (advanced genealogy functionality)
    */
   private function process_descendants_of_ancestors($person_id, $tree, $branch_id, $action, $overwrite, $gender, $ancestor_generations, $descendant_generations, $include_spouses)
   {

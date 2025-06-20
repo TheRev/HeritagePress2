@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Import/Export Constants and Global Variables
  * HeritagePress Plugin - Core Constants Module
  */
@@ -23,8 +23,8 @@ var entertreeid = "Please enter a tree ID.";
 var alphanum = "Tree ID must be alphanumeric.";
 var entertreename = "Please enter a tree name.";
 var confdeletefile = "Are you sure you want to delete this file?";
-var finished_msg = "Finished importing!";
-var importing_msg = "Importing GEDCOM...";
+var finished_msg = "Finished imadapting!";
+var imadapting_msg = "Imadapting GEDCOM...";
 var removeged_msg = "Remove GEDCOM";
 var close_msg = "Close Window";
 var more_options = "More Options";

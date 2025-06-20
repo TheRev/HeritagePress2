@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Entity Transfer Modal Interface
@@ -299,7 +299,7 @@ $trees = $wpdb->get_results("SELECT gedcom, treename FROM {$trees_table} ORDER B
           self.checkNewId();
         });
 
-        // Convert ID to uppercase on blur (matching TNG behavior)
+        // Convert ID to uppercase on blur (matching HeritagePress behavior)
         $('#new-id').on('blur', function() {
           this.value = this.value.toUpperCase();
         });
@@ -490,9 +490,9 @@ $trees = $wpdb->get_results("SELECT gedcom, treename FROM {$trees_table} ORDER B
           success: function(response) {
             if (response.success) {
               if (response.data.exists) {
-                $status.html('✗ ID already exists in destination tree').removeClass('checking available').addClass('exists');
+                $status.html('âœ— ID already exists in destination tree').removeClass('checking available').addClass('exists');
               } else {
-                $status.html('✓ ID available').removeClass('checking exists').addClass('available');
+                $status.html('âœ“ ID available').removeClass('checking exists').addClass('available');
               }
             } else {
               $status.html('Error checking ID').removeClass('checking available exists');

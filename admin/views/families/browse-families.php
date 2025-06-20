@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Browse Families Admin View
  *
  * Provides a searchable, filterable, paginated list of families with add/edit/delete actions.
- * UI/UX matches TNG admin_families.php but uses WordPress admin styles and security.
+ * UI/UX matches HeritagePress admin_families.php but uses WordPress admin styles and security.
  */
 if (!defined('ABSPATH')) {
   exit;

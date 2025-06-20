@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Entity Transfer Controller
  *
  * Handles moving/transferring genealogy entities (people, sources, repositories) between trees.
- * Replicates functionality from TNG admin_changetree.php with modern WordPress patterns.
+ * Replicates functionality from HeritagePress admin_changetree.php with modern WordPress patterns.
  *
  * @package HeritagePress
  * @since 1.0.0

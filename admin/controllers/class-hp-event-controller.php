@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Event Controller
@@ -1190,7 +1190,7 @@ class HP_Event_Controller extends HP_Base_Controller
   }
 
   /**
-   * AJAX: Update event and address in a single call (TNG compatibility)
+   * AJAX: Update event and address in a single call (HeritagePress compatibility)
    */
   public function ajax_update_event_with_address()
   {

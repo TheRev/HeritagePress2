@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Repositories admin page, ported from TNG admin_repositories.php
+﻿<?php
+// HeritagePress: Repositories admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_repositories_page');
@@ -43,8 +43,8 @@ function heritagepress_render_repositories_page()
     }
   }
   $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-  $repositories_table = $wpdb->prefix . 'tng_repositories';
-  $trees_table = $wpdb->prefix . 'tng_trees';
+  $repositories_table = $wpdb->prefix . 'HeritagePress_repositories';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
   $total = $wpdb->get_var("SELECT COUNT(ID) FROM $repositories_table $where_sql");
   $results = $wpdb->get_results($wpdb->prepare(
     "SELECT ID, repoID, reponame, gedcom, changedby, DATE_FORMAT(changedate,'%d %b %Y') as changedatef FROM $repositories_table $where_sql ORDER BY repoID LIMIT %d OFFSET %d",
@@ -94,9 +94,9 @@ function heritagepress_render_repositories_page()
           <?php foreach ($results as $row): ?>
             <tr>
               <td>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editrepo&repoID=' . urlencode($row['repoID']) . '&tree=' . urlencode($row['gedcom']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">✏️</a>
-                <a href="#" class="button button-small delete-repo" data-repo-id="<?php echo esc_attr($row['ID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">🗑️</a>
-                <a href="<?php echo esc_url(site_url('showrepo.php?repoID=' . urlencode($row['repoID']) . '&tree=' . urlencode($row['gedcom']))); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('Test', 'heritagepress'); ?>">🧪</a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editrepo&repoID=' . urlencode($row['repoID']) . '&tree=' . urlencode($row['gedcom']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">âœï¸</a>
+                <a href="#" class="button button-small delete-repo" data-repo-id="<?php echo esc_attr($row['ID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">ðŸ—‘ï¸</a>
+                <a href="<?php echo esc_url(site_url('showrepo.php?repoID=' . urlencode($row['repoID']) . '&tree=' . urlencode($row['gedcom']))); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('Test', 'heritagepress'); ?>">ðŸ§ª</a>
               </td>
               <td><?php echo esc_html($row['repoID']); ?></td>
               <td><?php echo esc_html($row['reponame']); ?></td>
@@ -156,7 +156,7 @@ function heritagepress_handle_delete_repo()
   global $wpdb;
   $ID = isset($_GET['ID']) ? intval($_GET['ID']) : 0;
   if ($ID) {
-    $repositories_table = $wpdb->prefix . 'tng_repositories';
+    $repositories_table = $wpdb->prefix . 'HeritagePress_repositories';
     $wpdb->delete($repositories_table, ['ID' => $ID]);
     wp_redirect(admin_url('admin.php?page=heritagepress-repositories&message=' . urlencode(__('Repository deleted.', 'heritagepress'))));
     exit;

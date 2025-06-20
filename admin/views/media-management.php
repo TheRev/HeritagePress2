@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Media Management View for HeritagePress
  *
  * This file provides the media management interface for the WordPress admin.
- * Ported from admin_addmedia.php, admin_editmedia.php, admin_media.php functionality
+ * Based on admin_addmedia.php, admin_editmedia.php, admin_media.php functionality
  *
  * @package HeritagePress
  */

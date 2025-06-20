@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Setup admin dashboard (WordPress-native, ported from TNG admin_setup.php)
+﻿<?php
+// HeritagePress: Setup admin dashboard (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {

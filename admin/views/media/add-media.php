@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Add Media View
@@ -33,7 +33,7 @@ if (!defined('ABSPATH')) {
             <td>
               <input type="file" id="media-file" name="media_file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" required>
               <p class="description">
-                <?php esc_html_e('Supported formats: Images (JPG, PNG, GIF), Videos (MP4, AVI), Audio (MP3, WAV), Documents (PDF, DOC, DOCX, TXT)', 'heritagepress'); ?>
+                <?php esc_html_e('Supadapted formats: Images (JPG, PNG, GIF), Videos (MP4, AVI), Audio (MP3, WAV), Documents (PDF, DOC, DOCX, TXT)', 'heritagepress'); ?>
               </p>
             </td>
           </tr>

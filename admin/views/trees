@@ -2,7 +2,7 @@
 
 /**
  * Add Tree Tab
- * Tree creation form based on TNG admin_addtree.php
+ * Tree creation form for genealogy trees
  */
 
 if (!defined('ABSPATH')) {

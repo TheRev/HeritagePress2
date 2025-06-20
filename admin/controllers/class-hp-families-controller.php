@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Families Controller
  *
  * Handles all admin functionality for managing families in HeritagePress.
- * Provides CRUD, search, filter, and paging for families, with full UI/UX parity to TNG.
+ * Provides CRUD, search, filter, and paging for families, with full UI/UX parity to HeritagePress.
  */
 
 if (!defined('ABSPATH')) {

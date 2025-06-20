@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Import Controller - Based on genealogy admin import
@@ -338,7 +338,7 @@ class HP_Import_Controller
                     <input type="radio" name="del" value="yes" <?php if ($importcfg['defimpopt'] == 1) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('All current data in tree', 'heritagepress'); ?> &nbsp;
                     <input type="radio" name="del" value="match" <?php if (!$importcfg['defimpopt']) echo " checked=\"checked\""; ?> onclick="toggleNorecalcdiv(1); toggleAppenddiv(0);"> <?php _e('Matching records only', 'heritagepress'); ?> &nbsp;
                     <input type="radio" name="del" value="no" <?php if ($importcfg['defimpopt'] == 2) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(0);"> <?php _e('Do not replace any data', 'heritagepress'); ?> &nbsp;
-                    <input type="radio" name="del" value="append" <?php if ($importcfg['defimpopt'] == 3) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(1);"> <?php _e('Append all imported records', 'heritagepress'); ?><br /><br />
+                    <input type="radio" name="del" value="append" <?php if ($importcfg['defimpopt'] == 3) echo " checked=\"checked\""; ?> onclick="document.form1.norecalc.checked = false; toggleNorecalcdiv(0); toggleAppenddiv(1);"> <?php _e('Append all imadapted records', 'heritagepress'); ?><br /><br />
                     <span><em><?php _e('Select the appropriate option for how you want to handle existing data.', 'heritagepress'); ?></em></span>
                   </td>
                 </tr>
@@ -364,7 +364,7 @@ class HP_Import_Controller
               </table>
               <p>
               <ul>
-                <li><em><?php _e('Remember to backup your database before importing.', 'heritagepress'); ?></em></li>
+                <li><em><?php _e('Remember to backup your database before imadapting.', 'heritagepress'); ?></em></li>
                 <li><em><?php _e('Check your import settings carefully.', 'heritagepress'); ?></em></li>
                 <li><em><?php _e('Large files may take several minutes to import.', 'heritagepress'); ?></em></li>
               </ul>

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Add Tree Handler
  *
  * Handles the form submission for adding new trees.
- * Replicates functionality from TNG admin_addtree.php
+ * Replicates functionality from HeritagePress admin_addtree.php
  */
 
 if (!defined('ABSPATH')) {
@@ -39,9 +39,9 @@ class HP_Add_Tree_Handler
     global $wpdb;
     $trees_table = $wpdb->prefix . 'hp_trees';
 
-    // Sanitize form data - exact field mapping from TNG
+    // Sanitize form data - exact field mapping from HeritagePress
     $gedcom = sanitize_text_field($_POST['gedcom']);
-    $gedcom = preg_replace("/\s*/", "", $gedcom); // Remove whitespace like TNG
+    $gedcom = preg_replace("/\s*/", "", $gedcom); // Remove whitespace like HeritagePress
     $treename = sanitize_text_field($_POST['treename']);
     $description = sanitize_textarea_field($_POST['description']);
     $owner = sanitize_text_field($_POST['owner']);
@@ -53,7 +53,7 @@ class HP_Add_Tree_Handler
     $zip = sanitize_text_field($_POST['zip']);
     $phone = sanitize_text_field($_POST['phone']);
 
-    // Handle checkboxes (default to 0 if not set, like TNG)
+    // Handle checkboxes (default to 0 if not set, like HeritagePress)
     $private = isset($_POST['private']) ? 1 : 0;
     $disallowgedcreate = isset($_POST['disallowgedcreate']) ? 1 : 0;
     $disallowpdf = isset($_POST['disallowpdf']) ? 1 : 0;
@@ -73,7 +73,7 @@ class HP_Add_Tree_Handler
       return;
     }
 
-    // Validate tree ID format (same as TNG)
+    // Validate tree ID format (same as HeritagePress)
     if (!preg_match('/^[a-zA-Z0-9_-]+$/', $gedcom)) {
       self::redirect_with_error(__('Tree ID must contain only letters, numbers, underscores, and hyphens.', 'heritagepress'), $_POST, $before_import);
       return;
@@ -90,7 +90,7 @@ class HP_Add_Tree_Handler
       return;
     }
 
-    // Prepare data for insertion (matching TNG table structure)
+    // Prepare data for insertion (matching HeritagePress table structure)
     $tree_data = array(
       'gedcom' => $gedcom,
       'treename' => $treename,
@@ -131,7 +131,7 @@ class HP_Add_Tree_Handler
     $result = $wpdb->insert($trees_table, $tree_data, $format);
 
     if ($result === 1) {
-      // Log the action (like TNG adminwritelog)
+      // Log the action (like HeritagePress adminwritelog)
       $current_user = wp_get_current_user();
       $log_message = sprintf(
         __('Tree added: %s/%s by %s', 'heritagepress'),
@@ -141,7 +141,7 @@ class HP_Add_Tree_Handler
       );
       error_log("HeritagePress Tree Addition: $log_message");
 
-      // Handle different redirect scenarios (matching TNG logic)
+      // Handle different redirect scenarios (matching HeritagePress logic)
       if ($before_import === "yes") {
         // AJAX response for import context
         echo "1";
@@ -206,7 +206,7 @@ class HP_Add_Tree_Handler
       'message' => urlencode($message)
     );
 
-    // Preserve form data in URL (like TNG does)
+    // Preserve form data in URL (like HeritagePress does)
     $preserve_fields = array('treename', 'description', 'owner', 'email', 'address', 'city', 'state', 'country', 'zip', 'phone', 'private', 'disallowgedcreate', 'disallowpdf');
 
     foreach ($preserve_fields as $field) {

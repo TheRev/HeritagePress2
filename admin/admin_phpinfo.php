@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: PHP Info admin page, ported from TNG admin_phpinfo.php
+﻿<?php
+// HeritagePress: PHP Info admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_phpinfo_page');

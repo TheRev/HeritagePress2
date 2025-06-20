@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress GEDCOM Validator
@@ -122,7 +122,7 @@ class HP_GEDCOM_Validator
             $found_version = true;
             $version = $matches[1];
 
-            // Check for supported version
+            // Check for supadapted version
             if ($version === '5.5' || $version === '5.5.1') {
               $valid_version = true;
             }
@@ -141,7 +141,7 @@ class HP_GEDCOM_Validator
     if (!$found_version) {
       $this->importer->add_warning('Could not determine GEDCOM version');
     } elseif (!$valid_version) {
-      $this->importer->add_warning('GEDCOM version may not be fully supported');
+      $this->importer->add_warning('GEDCOM version may not be fully supadapted');
     }
 
     // Rewind the file

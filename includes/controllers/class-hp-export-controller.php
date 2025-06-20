@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress GEDCOM Export Controller
  *
- * Handles backend logic for exporting genealogy data to GEDCOM format.
+ * Handles backend logic for exadapting genealogy data to GEDCOM format.
  */
 if (!defined('ABSPATH')) {
   exit;

@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Clear Tree Handler
  *
- * Replicates TNG admin_cleartree.php functionality
+ * Replicates HeritagePress admin_cleartree.php functionality
  * Direct endpoint for clearing tree data with proper logging
  */
 
@@ -26,13 +26,13 @@ class HP_Clear_Tree_Handler
    */
   private function init_hooks()
   {
-    // Handle GET requests to clear tree (like TNG)
+    // Handle GET requests to clear tree (like HeritagePress)
     add_action('wp_loaded', array($this, 'handle_clear_tree_request'));
   }
 
   /**
    * Handle direct clear tree requests
-   * Replicates TNG admin_cleartree.php behavior
+   * Replicates HeritagePress admin_cleartree.php behavior
    */
   public function handle_clear_tree_request()
   {
@@ -67,7 +67,7 @@ class HP_Clear_Tree_Handler
       exit;
     }
 
-    // Verify nonce if provided (recommended but TNG doesn't use this)
+    // Verify nonce if provided (recommended but HeritagePress doesn't use this)
     if (isset($_GET['_wpnonce']) && !wp_verify_nonce($_GET['_wpnonce'], 'heritagepress_clear_tree_' . $gedcom)) {
       wp_die(__('Security check failed.', 'heritagepress'));
     }
@@ -75,7 +75,7 @@ class HP_Clear_Tree_Handler
     // Perform tree clearing
     $result = $this->clear_tree_data($gedcom);
 
-    // Log the action (replicates TNG adminwritelog)
+    // Log the action (replicates HeritagePress adminwritelog)
     $this->log_tree_action($gedcom, $tree);
 
     // Prepare success message
@@ -86,7 +86,7 @@ class HP_Clear_Tree_Handler
       $message = __('Tree was successfully cleared.', 'heritagepress');
     }
 
-    // Redirect back to trees admin (replicates TNG behavior)
+    // Redirect back to trees admin (replicates HeritagePress behavior)
     wp_redirect(admin_url('admin.php?page=heritagepress-trees&message=' . urlencode($message)));
     exit;
   }
@@ -131,7 +131,7 @@ class HP_Clear_Tree_Handler
   {
     global $wpdb;
 
-    // List of tables that contain tree data (matches TNG pattern)
+    // List of tables that contain tree data (matches HeritagePress pattern)
     $tables = array(
       $wpdb->prefix . 'hp_people',
       $wpdb->prefix . 'hp_families',
@@ -174,7 +174,7 @@ class HP_Clear_Tree_Handler
 
   /**
    * Log tree clearing action
-   * Replicates TNG adminwritelog functionality
+   * Replicates HeritagePress adminwritelog functionality
    */
   private function log_tree_action($gedcom, $tree)
   {
@@ -185,13 +185,13 @@ class HP_Clear_Tree_Handler
     error_log("HeritagePress: {$action} by {$current_user->user_login}");
 
     // Could also log to custom admin log table if implemented
-    // This would match TNG's adminlog.php functionality
+    // This would match HeritagePress's adminlog.php functionality
     do_action('heritagepress_log_admin_action', 'clear_tree', $gedcom, $action, $current_user->ID);
   }
 
   /**
    * Generate clear tree URL (helper method)
-   * Creates URLs that match TNG pattern
+   * Creates URLs that match HeritagePress pattern
    */
   public static function get_clear_tree_url($gedcom, $tree_name = null)
   {

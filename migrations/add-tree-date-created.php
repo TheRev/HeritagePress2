@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Migration: Add date_created field to hp_trees table
  *
  * This migration adds a dedicated date_created field to track when trees were actually created,
- * rather than relying on lastimportdate which tracks when data was last imported.
+ * rather than relying on lastimportdate which tracks when data was last imadapted.
  */
 
 if (!defined('ABSPATH')) {

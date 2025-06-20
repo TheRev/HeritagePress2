@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * Citations Modal View
- * Replicates TNG admin_citations.php modal interface exactly
- * Based on TNG citation listing and management
+ * Replicates HeritagePress admin_citations.php modal interface exactly
+ * Based on HeritagePress citation listing and management
  */
 
 if (!defined('ABSPATH')) {

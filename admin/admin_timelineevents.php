@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress Timeline Events Admin Page
- * WordPress-native admin page for managing timeline events (ported from TNG)
+ * WordPress-native admin page for managing timeline events ()
  */
 if (!defined('ABSPATH')) exit;
 

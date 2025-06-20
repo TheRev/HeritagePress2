@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 /**
  * Add Tree Tab - Admin Interface
- * Complete facsimile of TNG admin_newtree.php functionality
+ * Complete facsimile of HeritagePress admin_newtree.php functionality
  */
 
 if (!defined('ABSPATH')) {

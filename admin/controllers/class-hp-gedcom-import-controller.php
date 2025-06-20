@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * HeritagePress GEDCOM Import Admin Controller
@@ -14,6 +14,6 @@ class HeritagePress_Gedcom_Import_Controller
     if (!current_user_can('manage_options')) {
       wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
     }
-    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/gedcom-import.php';
+    include HERITAGEPRESS_PLUGIN_DIR . 'admin/views/gedcom-im.php';
   }
 }

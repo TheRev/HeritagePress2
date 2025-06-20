@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Edit Repository View for HeritagePress
  *
  * This file provides the edit repository interface.
- * Ported from admin_editrepo.php functionality
+ * Based on admin_editrepo.php functionality
  *
  * @package HeritagePress
  */

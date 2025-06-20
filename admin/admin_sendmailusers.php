@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Send mail to users handler, ported from TNG admin_sendmailusers.php
+﻿<?php
+// HeritagePress: Send mail to users handler, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_post_heritagepress_sendmailusers', 'heritagepress_handle_sendmailusers');
@@ -10,7 +10,7 @@ function heritagepress_handle_sendmailusers()
   }
   check_admin_referer('heritagepress_sendmailusers');
   global $wpdb;
-  $users_table = $wpdb->prefix . 'tng_users';
+  $users_table = $wpdb->prefix . 'HeritagePress_users';
 
   $tree = isset($_POST['tree']) ? sanitize_text_field($_POST['tree']) : '';
   $branch = isset($_POST['branch']) ? sanitize_text_field($_POST['branch']) : '';

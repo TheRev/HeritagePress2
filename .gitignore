@@ -59,7 +59,7 @@ composer.lock
 .env.test.local
 .env.production.local
 
-# TNG Reference (read-only access, do not upload)
+# HeritagePress Reference (read-only access, do not upload)
 tng-reference/
 tng-reference
 

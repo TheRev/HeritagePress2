@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 /**
  * ID Checker Endpoint
  *
- * Replicates TNG admin_checkID.php as a standalone endpoint
+ * Replicates HeritagePress admin_checkID.php as a standalone endpoint
  * Accessible via: /wp-admin/admin-ajax.php?action=hp_check_id_standalone
  *
  * @package HeritagePress
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 
 /**
  * Handle standalone ID checking endpoint
- * Replicates TNG admin_checkID.php behavior exactly
+ * Replicates HeritagePress admin_checkID.php behavior exactly
  */
 function hp_check_id_standalone_endpoint()
 {

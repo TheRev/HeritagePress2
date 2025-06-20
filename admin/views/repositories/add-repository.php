@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Polyfills for WordPress template functions (if needed)
 if (!function_exists('esc_html_e')) {
   function esc_html_e($text)
@@ -42,7 +42,7 @@ if (!function_exists('submit_button')) {
         <th scope="row"><label for="gedcom"><?php esc_html_e('Tree (GEDCOM)'); ?></label></th>
         <td><input name="gedcom" type="text" id="gedcom" value="" class="regular-text" required></td>
       </tr>
-      <!-- Add more fields as needed for full TNG parity -->
+      <!-- Add more fields as needed for full HeritagePress parity -->
     </table>
     <?php submit_button(__('Add Repository')); ?>
   </form>

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 /**
  * Search Citations View for HeritagePress
  *
  * This file provides the search citations interface for the WordPress admin.
- * Ported from genealogy admin citations search functionality
+ * Based on genealogy admin citations search functionality
  *
  * @package HeritagePress
  */

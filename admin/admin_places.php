@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Places admin page, ported from TNG admin_places.php
+﻿<?php
+// HeritagePress: Places admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_places_page');
@@ -51,10 +51,10 @@ function heritagepress_render_places_page()
   if ($temples === 'yes') {
     $where[] = 'temple = 1';
   }
-  // Note: $noevents filter is complex in TNG, skipping for MVP. Add if needed.
+  // Note: $noevents filter is complex in HeritagePress, skipping for MVP. Add if needed.
 
   $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-  $places_table = $wpdb->prefix . 'tng_places';
+  $places_table = $wpdb->prefix . 'HeritagePress_places';
   $total = $wpdb->get_var("SELECT COUNT(ID) FROM $places_table $where_sql");
   $results = $wpdb->get_results($wpdb->prepare(
     "SELECT ID, place, placelevel, longitude, latitude, zoom, changedby, DATE_FORMAT(changedate,'%d %b %Y') as changedatef FROM $places_table $where_sql ORDER BY place LIMIT %d OFFSET %d",
@@ -109,8 +109,8 @@ function heritagepress_render_places_page()
             <?php foreach ($results as $row): ?>
               <tr>
                 <td>
-                  <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editplace&ID=' . urlencode($row['ID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">✏️</a>
-                  <a href="#" class="button button-small delete-place" data-place-id="<?php echo esc_attr($row['ID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">🗑️</a>
+                  <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editplace&ID=' . urlencode($row['ID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">âœï¸</a>
+                  <a href="#" class="button button-small delete-place" data-place-id="<?php echo esc_attr($row['ID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">ðŸ—‘ï¸</a>
                 </td>
                 <td><input type="checkbox" name="del[]" value="<?php echo esc_attr($row['ID']); ?>"></td>
                 <td><?php echo esc_html($row['place']); ?></td>
@@ -187,7 +187,7 @@ function heritagepress_handle_delete_place()
   global $wpdb;
   $ID = isset($_GET['ID']) ? intval($_GET['ID']) : 0;
   if ($ID) {
-    $places_table = $wpdb->prefix . 'tng_places';
+    $places_table = $wpdb->prefix . 'HeritagePress_places';
     $wpdb->delete($places_table, ['ID' => $ID]);
     wp_redirect(admin_url('admin.php?page=heritagepress-places&message=' . urlencode(__('Place deleted.', 'heritagepress'))));
     exit;
@@ -207,7 +207,7 @@ function heritagepress_handle_delete_places()
   global $wpdb;
   $IDs = isset($_POST['del']) ? array_map('intval', (array)$_POST['del']) : [];
   if ($IDs) {
-    $places_table = $wpdb->prefix . 'tng_places';
+    $places_table = $wpdb->prefix . 'HeritagePress_places';
     foreach ($IDs as $ID) {
       $wpdb->delete($places_table, ['ID' => $ID]);
     }

@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Template Messages admin page (WordPress-native, ported from TNG admin_templatemsgs.php)
+﻿<?php
+// HeritagePress: Template Messages admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -20,7 +20,7 @@ function heritagepress_admin_templatemsgs_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $templates_table = $wpdb->prefix . 'tng_templates';
+  $templates_table = $wpdb->prefix . 'HeritagePress_templates';
   $templatenum = isset($_GET['template']) ? sanitize_text_field($_GET['template']) : '';
   $message = '';
   // Handle add message (stub)

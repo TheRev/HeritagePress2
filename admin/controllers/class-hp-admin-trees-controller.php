@@ -4,7 +4,7 @@
  * HeritagePress Admin Trees Controller
  *
  * Handles admin page functionality for trees management
- * Replicates TNG admin trees functionality
+ *
  */
 
 if (!defined('ABSPATH')) {
@@ -103,9 +103,7 @@ class HP_Admin_Trees_Controller extends HP_Base_Controller
     if (!current_user_can('manage_options')) {
       $this->add_notice(__('You do not have sufficient permissions.', 'heritagepress'), 'error');
       return;
-    }
-
-    // Process the form (similar to TNG admin_addtree.php logic)
+    }    // Process the form for adding a genealogy tree
     global $wpdb;
     $trees_table = $wpdb->prefix . 'hp_trees';
 

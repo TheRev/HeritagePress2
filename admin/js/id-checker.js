@@ -1,8 +1,8 @@
-/**
+﻿/**
  * HeritagePress ID Checker Utilities
  *
  * JavaScript functions for AJAX ID validation across all entity types
- * Replicates TNG admin_checkID.php functionality
+ * Replicates HeritagePress admin_checkID.php functionality
  */
 
 (function ($) {

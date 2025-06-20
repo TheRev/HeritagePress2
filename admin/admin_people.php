@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: People admin page, ported from TNG admin_people.php
+﻿<?php
+// HeritagePress: People admin page, 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', 'heritagepress_add_people_page');
@@ -59,7 +59,7 @@ function heritagepress_render_people_page()
   }
   $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-  $people_table = $wpdb->prefix . 'tng_people';
+  $people_table = $wpdb->prefix . 'HeritagePress_people';
   $total = $wpdb->get_var("SELECT COUNT(personID) FROM $people_table $where_sql");
   $results = $wpdb->get_results($wpdb->prepare(
     "SELECT personID, lastname, firstname, birthdate, deathdate, living, private FROM $people_table $where_sql ORDER BY lastname, firstname, personID LIMIT %d OFFSET %d",
@@ -121,9 +121,9 @@ function heritagepress_render_people_page()
           <?php foreach ($results as $row): ?>
             <tr>
               <td>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editperson&personID=' . urlencode($row['personID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">✏️</a>
-                <a href="#" class="button button-small delete-person" data-person-id="<?php echo esc_attr($row['personID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">🗑️</a>
-                <a href="<?php echo esc_url(site_url('person.php?personID=' . urlencode($row['personID']))); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('View', 'heritagepress'); ?>">👁️</a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=heritagepress-editperson&personID=' . urlencode($row['personID']))); ?>" class="button button-small" title="<?php esc_attr_e('Edit', 'heritagepress'); ?>">âœï¸</a>
+                <a href="#" class="button button-small delete-person" data-person-id="<?php echo esc_attr($row['personID']); ?>" title="<?php esc_attr_e('Delete', 'heritagepress'); ?>">ðŸ—‘ï¸</a>
+                <a href="<?php echo esc_url(site_url('person.php?personID=' . urlencode($row['personID']))); ?>" class="button button-small" target="_blank" title="<?php esc_attr_e('View', 'heritagepress'); ?>">ðŸ‘ï¸</a>
               </td>
               <td><?php echo esc_html($row['personID']); ?></td>
               <td><?php echo esc_html($row['lastname']); ?></td>
@@ -191,7 +191,7 @@ function heritagepress_handle_delete_person()
   global $wpdb;
   $personID = isset($_GET['personID']) ? sanitize_text_field($_GET['personID']) : '';
   if ($personID) {
-    $people_table = $wpdb->prefix . 'tng_people';
+    $people_table = $wpdb->prefix . 'HeritagePress_people';
     $wpdb->delete($people_table, ['personID' => $personID]);
     wp_redirect(admin_url('admin.php?page=heritagepress-people&message=' . urlencode(__('Person deleted.', 'heritagepress'))));
     exit;

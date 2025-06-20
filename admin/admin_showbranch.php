@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Show Branch admin page (WordPress-native, ported from TNG admin_showbranch.php)
+﻿<?php
+// HeritagePress: Show Branch admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -19,9 +19,9 @@ function heritagepress_admin_showbranch_page()
     wp_die(__('You do not have sufficient permissions to access this page.', 'heritagepress'));
   }
   global $wpdb;
-  $trees_table = $wpdb->prefix . 'tng_trees';
-  $branches_table = $wpdb->prefix . 'tng_branches';
-  $people_table = $wpdb->prefix . 'tng_people';
+  $trees_table = $wpdb->prefix . 'HeritagePress_trees';
+  $branches_table = $wpdb->prefix . 'HeritagePress_branches';
+  $people_table = $wpdb->prefix . 'HeritagePress_people';
 
   $tree = isset($_GET['tree']) ? sanitize_text_field(wp_unslash($_GET['tree'])) : '';
   $branch = isset($_GET['branch']) ? sanitize_text_field(wp_unslash($_GET['branch'])) : '';

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Import/Export JavaScript functionality
  * Based on genealogy software admin.js and dataimport.js
  */
@@ -23,8 +23,8 @@ var entertreeid = "Please enter a tree ID.";
 var alphanum = "Tree ID must be alphanumeric.";
 var entertreename = "Please enter a tree name.";
 var confdeletefile = "Are you sure you want to delete this file?";
-var finished_msg = "Finished importing!";
-var importing_msg = "Importing GEDCOM...";
+var finished_msg = "Finished imadapting!";
+var imadapting_msg = "Imadapting GEDCOM...";
 var removeged_msg = "Remove GEDCOM";
 var close_msg = "Close Window";
 var more_options = "More Options";
@@ -264,7 +264,7 @@ function showValidationResults(results) {
       issuesDiv.innerHTML = issuesHtml;
     } else {
       issuesDiv.innerHTML =
-        '<div class="validation-success">✅ No issues found in the GEDCOM file.</div>';
+        '<div class="validation-success">âœ… No issues found in the GEDCOM file.</div>';
     }
   }
 }
@@ -654,20 +654,20 @@ function showImportResults() {
   if (resultsSection) {
     // Populate results
     if (validationResults) {
-      const importedIndividuals = document.getElementById(
-        "imported-individuals"
+      const imadaptedIndividuals = document.getElementById(
+        "imadapted-individuals"
       );
-      const importedFamilies = document.getElementById("imported-families");
-      const importedSources = document.getElementById("imported-sources");
-      const importedMedia = document.getElementById("imported-media");
+      const imadaptedFamilies = document.getElementById("imadapted-families");
+      const imadaptedSources = document.getElementById("imadapted-sources");
+      const imadaptedMedia = document.getElementById("imadapted-media");
 
-      if (importedIndividuals)
-        importedIndividuals.textContent = validationResults.individuals;
-      if (importedFamilies)
-        importedFamilies.textContent = validationResults.families;
-      if (importedSources)
-        importedSources.textContent = validationResults.sources;
-      if (importedMedia) importedMedia.textContent = validationResults.media;
+      if (imadaptedIndividuals)
+        imadaptedIndividuals.textContent = validationResults.individuals;
+      if (imadaptedFamilies)
+        imadaptedFamilies.textContent = validationResults.families;
+      if (imadaptedSources)
+        imadaptedSources.textContent = validationResults.sources;
+      if (imadaptedMedia) imadaptedMedia.textContent = validationResults.media;
     }
 
     resultsSection.style.display = "block";

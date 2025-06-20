@@ -1,5 +1,5 @@
-<?php
-// HeritagePress: Table Creation admin page (WordPress-native, ported from TNG admin_tablecreate.php)
+﻿<?php
+// HeritagePress: Table Creation admin page (WordPress-native, )
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 add_action('admin_menu', function () {
@@ -25,7 +25,7 @@ function heritagepress_admin_tablecreate_page()
     // TODO: Define your table creation SQL here or include from a file
     $table_sql = [
       // Example:
-      // $wpdb->prefix . 'tng_trees' => "CREATE TABLE ...",
+      // $wpdb->prefix . 'HeritagePress_trees' => "CREATE TABLE ...",
     ];
     foreach ($table_sql as $table => $sql) {
       $result = $wpdb->query($sql);

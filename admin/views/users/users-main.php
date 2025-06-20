@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 /**
  * Users Main Admin Interface
- * List users, add/edit links, replicate TNG user admin UI
+ * List users, add/edit links, replicate HeritagePress user admin UI
  * @package HeritagePress
  */
 if (!defined('ABSPATH')) exit;
